@@ -34,6 +34,7 @@ Documenting all actions, architectural decisions, and verification steps taken t
 - **Clerk Appearance**: Injected brand red palette (`colorPrimary: '#E30B1C'`, `borderRadius: '0.75rem'`) into `<ClerkProvider>` globally and directly into `<SignIn>` and `<SignUp>`.
 - **Link Reconciliation**: Replaced all references to `/login` and `/register` with `/sign-in` and `/sign-up` across navigation headers, footers, landing page hero/CTAs, about page, and job/programme detail views.
 - **Build Verification**: Executed `npm run build` with Turbopack — all 57 routes compiled successfully with 0 errors.
+- **Git & GitHub Integration**: Configured remote `origin` (`https://github.com/mittai17/Cooperative-EcoSystem.git`), ensured zero secrets or `.env` files were tracked, created initial commit, and pushed branch `main` to `origin/main`.
 
 ### Milestone 2: JWT Identity & Role Authorization on Backend Write Endpoints
 - **Identity Dependencies** in [`backend/app/deps.py`](file:///home/mittai/Documents/Cooperative-EcoSystem/backend/app/deps.py):

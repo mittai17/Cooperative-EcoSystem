@@ -1,0 +1,275 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * CoopSetu design tokens
+ * Direction: matched to the definitive reference mockup -- bright white
+ * surfaces with a faint pink/red tint, rounded-2xl cards with soft shadows,
+ * a single strong primary red/crimson (sampled directly from the reference's
+ * solid buttons at #E30B1C) for buttons, links, active nav states, progress
+ * bars, chart bars/lines and focus rings. Green (#059669-family "success"
+ * token) is now reserved specifically for match-percentage badges and
+ * clearly-positive trend indicators -- it must not leak into general UI
+ * chrome, that is red's job now. A small fixed palette of pastel "icon tint"
+ * colors (red / blue / green / violet / amber) is layered on top for
+ * stat-card icon backgrounds, with red as the default/primary choice.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-dm-sans);
+  --font-heading: var(--font-jakarta);
+  --font-mono: var(--font-plex-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* Icon-tint palette used on stat cards throughout the app */
+  --color-tint-red-bg: var(--tint-red-bg);
+  --color-tint-red-fg: var(--tint-red-fg);
+  --color-tint-blue-bg: var(--tint-blue-bg);
+  --color-tint-blue-fg: var(--tint-blue-fg);
+  --color-tint-green-bg: var(--tint-green-bg);
+  --color-tint-green-fg: var(--tint-green-fg);
+  --color-tint-violet-bg: var(--tint-violet-bg);
+  --color-tint-violet-fg: var(--tint-violet-fg);
+  --color-tint-amber-bg: var(--tint-amber-bg);
+  --color-tint-amber-fg: var(--tint-amber-fg);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Bright, faintly blue-tinted surfaces (not warm stone, not sterile pure white) */
+  --background: oklch(0.9867 0.0051 247.88);
+  --foreground: oklch(0.1936 0.0621 271.21);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.1936 0.0621 271.21);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.1936 0.0621 271.21);
+
+  /* Primary: single strong brand red, sampled from reference buttons/links */
+  --primary: oklch(0.5785 0.2323 27);
+  --primary-hover: oklch(0.4809 0.1923 26.79);
+  --primary-foreground: oklch(0.99 0.005 27);
+
+  /* Secondary surfaces: cool light neutral */
+  --secondary: oklch(0.965 0.008 260);
+  --secondary-foreground: oklch(0.27 0.03 265);
+
+  --muted: oklch(0.96 0.008 260);
+  --muted-foreground: oklch(0.6645 0.0386 269.7);
+
+  /* Accent chips: light tint of the primary red */
+  --accent: oklch(0.9481 0.0248 27);
+  --accent-foreground: oklch(0.5785 0.2323 27);
+
+  /* Status colors */
+  --success: oklch(0.596 0.1274 163.23);
+  --success-foreground: oklch(0.99 0.006 163);
+  --warning: oklch(0.6 0.16 60);
+  --warning-foreground: oklch(0.99 0.02 65);
+  --destructive: oklch(0.5771 0.2152 27.33);
+  --destructive-foreground: oklch(0.99 0.004 25);
+
+  --border: oklch(0.9303 0.0116 264.51);
+  --input: oklch(0.9303 0.0116 264.51);
+  --ring: oklch(0.5785 0.2323 27);
+
+  /* Icon-tint palette: soft pastel background + saturated foreground, used
+     for stat-card / feature icons. Red is the default/primary tint to match
+     the reference; blue, green, violet, amber remain available for a card
+     that needs to stand out. */
+  --tint-red-bg: oklch(0.9345 0.0298 20.25);
+  --tint-red-fg: oklch(0.5785 0.2323 27);
+  --tint-blue-bg: oklch(0.9481 0.0248 246.2);
+  --tint-blue-fg: oklch(0.5803 0.2256 259.06);
+  --tint-green-bg: oklch(0.9624 0.0434 156.74);
+  --tint-green-fg: oklch(0.596 0.1274 163.23);
+  --tint-violet-bg: oklch(0.9433 0.0284 294.59);
+  --tint-violet-fg: oklch(0.5225 0.2549 280.33);
+  --tint-amber-bg: oklch(0.9658 0.0372 88.46);
+  --tint-amber-fg: oklch(0.7686 0.1647 70.08);
+
+  /* Chart palette: red (primary) -> green (success/positive) -> violet -> amber -> slate */
+  --chart-1: oklch(0.5785 0.2323 27);
+  --chart-2: oklch(0.596 0.1274 163.23);
+  --chart-3: oklch(0.5225 0.2549 280.33);
+  --chart-4: oklch(0.7686 0.1647 70.08);
+  --chart-5: oklch(0.6 0.02 260);
+
+  --radius: 0.75rem;
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.27 0.03 265);
+  --sidebar-primary: oklch(0.5785 0.2323 27);
+  --sidebar-primary-foreground: oklch(0.99 0.005 27);
+  --sidebar-accent: oklch(0.9481 0.0248 27);
+  --sidebar-accent-foreground: oklch(0.5785 0.2323 27);
+  --sidebar-border: oklch(0.9303 0.0116 264.51);
+  --sidebar-ring: oklch(0.5785 0.2323 27);
+}
+
+.dark {
+  --background: oklch(0.17 0.02 265);
+  --foreground: oklch(0.95 0.006 260);
+  --card: oklch(0.22 0.022 265);
+  --card-foreground: oklch(0.95 0.006 260);
+  --popover: oklch(0.22 0.022 265);
+  --popover-foreground: oklch(0.95 0.006 260);
+
+  --primary: oklch(0.7 0.19 27);
+  --primary-hover: oklch(0.76 0.17 27);
+  --primary-foreground: oklch(0.15 0.03 27);
+
+  --secondary: oklch(0.27 0.02 265);
+  --secondary-foreground: oklch(0.95 0.006 260);
+
+  --muted: oklch(0.27 0.02 265);
+  --muted-foreground: oklch(0.68 0.02 265);
+
+  --accent: oklch(0.3 0.05 27);
+  --accent-foreground: oklch(0.85 0.08 27);
+
+  --success: oklch(0.7 0.13 163);
+  --success-foreground: oklch(0.14 0.03 163);
+  --warning: oklch(0.78 0.14 70);
+  --warning-foreground: oklch(0.2 0.04 70);
+  --destructive: oklch(0.68 0.19 27);
+  --destructive-foreground: oklch(0.14 0.02 25);
+
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.7 0.19 27);
+
+  --tint-red-bg: oklch(0.3 0.06 27);
+  --tint-red-fg: oklch(0.78 0.14 27);
+  --tint-blue-bg: oklch(0.3 0.06 259);
+  --tint-blue-fg: oklch(0.78 0.14 259);
+  --tint-green-bg: oklch(0.3 0.05 163);
+  --tint-green-fg: oklch(0.75 0.12 163);
+  --tint-violet-bg: oklch(0.3 0.07 280);
+  --tint-violet-fg: oklch(0.78 0.15 280);
+  --tint-amber-bg: oklch(0.32 0.07 70);
+  --tint-amber-fg: oklch(0.82 0.13 70);
+
+  --chart-1: oklch(0.7 0.19 27);
+  --chart-2: oklch(0.7 0.13 163);
+  --chart-3: oklch(0.72 0.15 280);
+  --chart-4: oklch(0.8 0.13 70);
+  --chart-5: oklch(0.7 0.02 260);
+
+  --sidebar: oklch(0.2 0.02 265);
+  --sidebar-foreground: oklch(0.93 0.006 260);
+  --sidebar-primary: oklch(0.7 0.19 27);
+  --sidebar-primary-foreground: oklch(0.15 0.03 27);
+  --sidebar-accent: oklch(0.28 0.02 265);
+  --sidebar-accent-foreground: oklch(0.93 0.006 260);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.7 0.19 27);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  .demo-data-tag {
+    @apply inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  /* Icon-tint tiles: pastel rounded backgrounds with a saturated icon color,
+     used for stat cards / feature icons across the marketing and app shell.
+     Red is the default/primary tile color; the others remain available. */
+  .icon-tile-red {
+    @apply flex shrink-0 items-center justify-center rounded-2xl bg-tint-red-bg text-tint-red-fg;
+  }
+  .icon-tile-blue {
+    @apply flex shrink-0 items-center justify-center rounded-2xl bg-tint-blue-bg text-tint-blue-fg;
+  }
+  .icon-tile-green {
+    @apply flex shrink-0 items-center justify-center rounded-2xl bg-tint-green-bg text-tint-green-fg;
+  }
+  .icon-tile-violet {
+    @apply flex shrink-0 items-center justify-center rounded-2xl bg-tint-violet-bg text-tint-violet-fg;
+  }
+  .icon-tile-amber {
+    @apply flex shrink-0 items-center justify-center rounded-2xl bg-tint-amber-bg text-tint-amber-fg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

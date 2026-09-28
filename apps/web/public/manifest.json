@@ -1,0 +1,16 @@
+{
+  "name": "CoopSetu AI - Cooperative Skill & Employment Ecosystem",
+  "short_name": "CoopSetu AI",
+  "description": "Connecting cooperative training directly to skills, certification, and employment.",
+  "start_url": "/my-learning",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#E30B1C",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

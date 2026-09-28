@@ -1,0 +1,75 @@
+# ── Environment & Secrets ─────────────────────────────────────────────────────
+# Never commit environment files containing real secrets.
+# Use *.env.example / *.env.sample as templates (committed without real values).
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+
+# ── Node / npm / pnpm ─────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+
+# ── Next.js ───────────────────────────────────────────────────────────────────
+.next/
+out/
+.vercel
+
+# ── Python / Backend ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.so
+.venv/
+venv/
+ENV/
+env/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ── Alembic ───────────────────────────────────────────────────────────────────
+# (keep migrations/ committed — only generated files excluded)
+
+# ── IDE & OS ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# ── TypeScript ────────────────────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Docker / Build ────────────────────────────────────────────────────────────
+*.log
+nohup.out

@@ -138,11 +138,13 @@ function MainStack() {
         }}
       >
         {/* Role Shells */}
-        <Stack.Screen name="TraineeTabs" component={TraineeTabs} />
-        <Stack.Screen name="TrainerTabs" component={TrainerTabs} />
-        <Stack.Screen name="InstitutionTabs" component={InstitutionTabs} />
-        <Stack.Screen name="EmployerTabs" component={EmployerTabs} />
-        <Stack.Screen name="AdminTabs" component={AdminTabs} />
+        {role === 'trainer' && <Stack.Screen name="TrainerTabs" component={TrainerTabs} />}
+        {role === 'institution' && <Stack.Screen name="InstitutionTabs" component={InstitutionTabs} />}
+        {role === 'employer' && <Stack.Screen name="EmployerTabs" component={EmployerTabs} />}
+        {role === 'admin' && <Stack.Screen name="AdminTabs" component={AdminTabs} />}
+        {(role === 'trainee' || !['trainer', 'institution', 'employer', 'admin'].includes(role ?? '')) && (
+          <Stack.Screen name="TraineeTabs" component={TraineeTabs} />
+        )}
 
         {/* Common Stack Routes */}
         <Stack.Screen name="Inbox" component={InboxScreen} />

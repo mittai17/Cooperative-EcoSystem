@@ -80,7 +80,7 @@ export const ProfileScreen = ({ navigation }: any) => {
         accessibilityRole="button"
         accessibilityLabel="Switch Role (Demo)"
       >
-        <IconChip size={40} tint={COLORS.primarySurface}>
+        <IconChip size={40} tint={COLORS.primaryLight}>
           <Repeat size={ICON.md} color={COLORS.primary} />
         </IconChip>
         <View style={styles.flex}>

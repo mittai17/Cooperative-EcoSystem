@@ -2,6 +2,9 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
+// Support expo-sqlite on web by treating wasm as an asset extension
+config.resolver.assetExts.push('wasm');
+
 // Dev-only same-origin proxy for the Expo web preview.
 //
 // The real backend (FastAPI, http://localhost:8000) has a CORS allowlist

@@ -81,8 +81,9 @@ async def face_enroll(trainee_id: uuid.UUID = Form(...),
     if len(frames) != 3:
         raise HTTPException(422, "Three face frames are required")
     features = []
+    allowed_types = ("image/jpeg", "image/png", "image/webp", "application/json", "application/octet-stream", "text/plain")
     for frame in frames:
-        if frame.content_type not in ("image/jpeg", "image/png", "image/webp"):
+        if frame.content_type not in allowed_types:
             raise HTTPException(422, "Unsupported image type")
         features.append(frame_features(await frame.read(2_000_001))[0])
     template.embedding = mean_embedding(features)

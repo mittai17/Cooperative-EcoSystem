@@ -9,11 +9,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.deps import require_roles
+from app.deps import require_roles, get_optional_identity, AuthenticatedIdentity
 from app.models.attendance import AttendanceRecord, AttendanceSession
 from app.models.course import Module, Lesson
 from app.models.content import LessonProgress
 from app.models.infra import SyncReceipt
+from app.models.mobile import OfflinePackage
 from app.models.user import User
 from app.services.mobile import set_module_completion
 
@@ -103,7 +104,28 @@ async def sync_status():
             'supported_actions': ['MARK_LESSON_COMPLETE', 'RECORD_ATTENDANCE']}
 
 
+@router.get('/pull')
+async def pull_sync_data(
+    identity: Optional[AuthenticatedIdentity] = Depends(get_optional_identity),
+    db: AsyncSession = Depends(get_db),
+):
+    """Offline pull endpoint: returns server timestamp, active sync status, and downloadable packages."""
+    now = datetime.now(timezone.utc)
+    pkgs = list((await db.execute(select(OfflinePackage))).scalars().all())
+    return {
+        'status': 'online',
+        'server_time': now.isoformat(),
+        'sync_supported': True,
+        'supported_actions': ['MARK_LESSON_COMPLETE', 'RECORD_ATTENDANCE'],
+        'packages': [
+            {'id': str(p.id), 'course_id': str(p.course_id), 'version': p.version, 'size_kb': p.size_kb}
+            for p in pkgs
+        ],
+    }
+
+
 @router.post('/batch')
+@router.post('/push')
 async def process_batch_sync(request: OfflineSyncBatchRequest,
                              user: User = Depends(require_roles('trainee', 'admin')),
                              db: AsyncSession = Depends(get_db)):

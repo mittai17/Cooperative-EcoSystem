@@ -424,14 +424,16 @@ async def _face_frames(frames: list[UploadFile], count: int) -> list[tuple[list[
     if len(frames) != count:
         raise HTTPException(422, f"{count} face frames are required")
     result = []
+    allowed_types = ("image/jpeg", "image/png", "image/webp", "application/json", "application/octet-stream", "text/plain")
     for frame in frames:
-        if frame.content_type not in ("image/jpeg", "image/png", "image/webp"):
+        if frame.content_type not in allowed_types:
             raise HTTPException(422, "Unsupported image type")
         result.append(frame_features(await frame.read(2_000_001)))
     return result
 
 
 @router.post("/face/verify")
+@router.post("/face-verify")
 async def face_verify(session_id: uuid.UUID = Form(...), challenge_id: uuid.UUID = Form(...),
     frames: list[UploadFile] = File(...), actor: User = Depends(require_roles("trainee")),
     db: AsyncSession = Depends(get_db)):

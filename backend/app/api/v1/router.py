@@ -39,6 +39,8 @@ api_router.include_router(employer.router, prefix="/employer", tags=["Employer"]
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 api_router.include_router(career.router, prefix="/career", tags=["Career"])
 api_router.include_router(offline_sync.router, prefix="/offline-sync", tags=["Offline Sync"])
+api_router.include_router(offline_sync.router, prefix="/offline_sync", tags=["Offline Sync"])
+api_router.include_router(offline_sync.router, prefix="/sync", tags=["Offline Sync"])
 api_router.include_router(timetable.router, prefix="/timetable", tags=["Timetable"])
 api_router.include_router(hostel.router, prefix="/hostel", tags=["Hostel"])
 api_router.include_router(logistics.router, prefix="/logistics", tags=["Logistics"])

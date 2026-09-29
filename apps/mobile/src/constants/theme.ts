@@ -20,6 +20,7 @@ export const COLORS = {
   dangerSurface: '#FEF2F2',
 
   // Neutrals / typography
+  text: '#1F1416',
   textPrimary: '#1F1416',
   textSecondary: '#5E5257',
   textMuted: '#8A7E82',

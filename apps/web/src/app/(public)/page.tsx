@@ -10,6 +10,7 @@ import {
   Building2,
   GraduationCap,
   Layers,
+  QrCode,
   ShieldCheck,
   Sparkles,
   Star,
@@ -29,6 +30,7 @@ const roleIcons: Record<string, LucideIcon> = {
   trainer: Users,
   employer: Briefcase,
   admin: ShieldCheck,
+  kiosk: QrCode,
 };
 
 const stats: { value: string; label: string; icon: LucideIcon; tile: string }[] = [
@@ -170,7 +172,7 @@ export default function LandingPage() {
           </div>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
             {ROLE_OPTIONS.map((role) => {
-              const Icon = roleIcons[role.value];
+              const Icon = roleIcons[role.value] || Layers;
               const isTrainee = role.value === "trainee";
               const isAdmin = role.value === "admin";
               return (

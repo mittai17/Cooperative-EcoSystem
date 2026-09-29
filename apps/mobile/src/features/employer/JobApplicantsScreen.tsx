@@ -34,9 +34,10 @@ import {
   FileCheck,
   MapPin,
   TrendingUp,
+  XCircle,
 } from 'lucide-react-native';
 
-const STATUS_TABS = ['All', 'Applied', 'Shortlisted', 'Interview', 'Offered'] as const;
+const STATUS_TABS = ['All', 'Applied', 'Shortlisted', 'Interview', 'Offered', 'Rejected'] as const;
 
 export const JobApplicantsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -326,6 +327,23 @@ export const JobApplicantsScreen: React.FC = () => {
                 <Award size={ICON.md} color={COLORS.success} />
                 <Text style={[styles.modalActionText, { color: COLORS.success }]}>
                   Extend Cooperative Offer
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalActionButton, { borderColor: COLORS.danger, backgroundColor: '#FEF2F2' }]}
+                onPress={() =>
+                  activeApplicantModal &&
+                  updateApplicantStatus(
+                    activeApplicantModal.id,
+                    'rejected',
+                    'Application rejected following preliminary review'
+                  )
+                }
+              >
+                <XCircle size={ICON.md} color={COLORS.danger} />
+                <Text style={[styles.modalActionText, { color: COLORS.danger }]}>
+                  Reject Candidate
                 </Text>
               </TouchableOpacity>
 

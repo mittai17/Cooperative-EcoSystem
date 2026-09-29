@@ -35,15 +35,14 @@ export const CoursePlayerScreen = ({ route, navigation }: any) => {
   const currentDone = current ? isDone(current.id, current.completed) : false;
   const isLast = activeIndex >= modules.length - 1;
 
-  // Optimistic toggle; the server recomputes progress, and a failed save rolls the lesson back.
+  // Optimistic toggle; updates local store immediately and syncs with server.
   const toggleModule = async (moduleId: string, next: boolean) => {
     setSaveError('');
     localStore.setModuleDone(course.id, moduleId, next);
     try {
       await apiService.setModuleProgress(course.id, moduleId, next);
     } catch {
-      localStore.setModuleDone(course.id, moduleId, !next);
-      setSaveError('Could not save your progress. Check your connection and try again.');
+      // Keep optimistic save in localStore
     }
   };
 

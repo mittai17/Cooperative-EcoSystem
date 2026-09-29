@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,8 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useClerk } from '@clerk/expo';
 import { useSignIn, useSignUp } from '@clerk/expo/legacy';
-import { COLORS, HIT, ICON, SPACE, TEXT, RADII } from '../constants/theme';
-import { SUPPORTED_ROLES } from '../constants/auth';
+import { COLORS, HIT, ICON, SPACE, TEXT, RADII, CARD } from '../constants/theme';
 import {
   GraduationCap,
   Eye,
@@ -28,55 +27,33 @@ import {
   Briefcase,
   Shield,
   ChevronRight,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react-native';
 import { Button } from '../components/Button';
 import { FIELD_ICON, TextField } from '../components/TextField';
-import { authApi, DemoAccount } from '../services/api';
 import { describeAuthError } from '../services/authErrors';
 import { useAuthContext } from '../navigation/AuthContext';
+import { DEMO_ROLE_LIST, DemoRoleConfig } from '../constants/demoProfiles';
 
 type Mode = 'signin' | 'signup' | 'verify-signup' | 'verify-signin';
 
-const MIN_PASSWORD = 15; // enforced by the Clerk instance; checked here for a faster message
+const MIN_PASSWORD = 15;
 
 const CAPTION: Record<Mode, string> = {
-  signin: 'Sign in to continue',
+  signin: 'Cooperative Training & Employment Network',
   signup: 'Create your account',
   'verify-signup': 'Verify your email',
   'verify-signin': 'Verify this device',
 };
 
-const ROLE_META: Record<string, { label: string; icon: any; color: string; desc: string }> = {
-  trainee: {
-    label: 'Trainee / Learner',
-    icon: GraduationCap,
-    color: '#D8232A',
-    desc: 'Skill Passport, courses & job applications',
-  },
-  trainer: {
-    label: 'Trainer / Faculty',
-    icon: Users,
-    color: '#0284C7',
-    desc: 'Attendance sessions, class roster & grading',
-  },
-  institution: {
-    label: 'Cooperative Institution',
-    icon: Building2,
-    color: '#7C3AED',
-    desc: 'Programmes, nominations & campus operations',
-  },
-  employer: {
-    label: 'Employer / Society',
-    icon: Briefcase,
-    color: '#D97706',
-    desc: 'Job postings, candidates & hire feedback',
-  },
-  admin: {
-    label: 'NCCT Administrator',
-    icon: Shield,
-    color: '#059669',
-    desc: 'National oversight, demand & institution analytics',
-  },
+const ROLE_ICONS: Record<string, React.ComponentType<{ size: number; color: string }>> = {
+  trainee: GraduationCap,
+  institution: Building2,
+  trainer: Users,
+  employer: Briefcase,
+  admin: Shield,
 };
 
 export const LoginScreen = () => {
@@ -84,7 +61,7 @@ export const LoginScreen = () => {
   const clerk = useClerk();
   const { isLoaded: signInLoaded, signIn } = useSignIn();
   const { isLoaded: signUpLoaded, signUp } = useSignUp();
-  const { notice, clearNotice, signOut } = useAuthContext();
+  const { notice, clearNotice, setDemoRole } = useAuthContext();
 
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
@@ -93,27 +70,14 @@ export const LoginScreen = () => {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState<'form' | 'resend' | string | null>(null);
   const [error, setError] = useState('');
-  const [demoError, setDemoError] = useState('');
-  const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([]);
+  const [showClerkForm, setShowClerkForm] = useState(false);
   const passwordRef = useRef<TextInput>(null);
 
   const ready = signInLoaded && signUpLoaded;
 
-  useEffect(() => {
-    let active = true;
-    authApi.demoAccounts().then((res) => {
-      if (!active || !res.enabled) return;
-      setDemoAccounts(res.accounts.filter((a) => SUPPORTED_ROLES.includes(a.role)));
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-
   const switchMode = (next: Mode) => {
     setMode(next);
     setError('');
-    setDemoError('');
     setCode('');
     if (next === 'signin' || next === 'signup') setShowPw(false);
   };
@@ -121,7 +85,6 @@ export const LoginScreen = () => {
   const beginAction = (kind: string) => {
     clearNotice();
     setError('');
-    setDemoError('');
     setBusy(kind);
   };
 
@@ -136,9 +99,8 @@ export const LoginScreen = () => {
       const attempt = await signIn.create({ identifier: email.trim(), password });
       if (attempt.status === 'complete') {
         await clerk.setActive({ session: attempt.createdSessionId });
-        return; // the auth provider takes over
+        return;
       }
-      // New device: Clerk asks for an email code as a second factor.
       const factors = attempt.supportedSecondFactors ?? [];
       const canEmail = factors.some((f) => f.strategy === 'email_code');
       if ((attempt.status === 'needs_client_trust' || attempt.status === 'needs_second_factor') && canEmail) {
@@ -223,40 +185,11 @@ export const LoginScreen = () => {
     }
   };
 
-  const handleDemo = async (account: DemoAccount) => {
-    if (!signIn || !clerk.setActive || busy) return;
-    beginAction(`demo:${account.role}`);
-    let ticket: string;
-    try {
-      ticket = await authApi.demoLogin(account.role);
-    } catch (e) {
-      setDemoError(e instanceof Error ? e.message : 'Demo sign-in is not available right now.');
-      setBusy(null);
-      return;
-    }
-    try {
-      let attempt;
-      try {
-        attempt = await signIn.create({ strategy: 'ticket', ticket });
-      } catch (err: unknown) {
-        const msg = String(err);
-        if (msg.includes('already signed in') || (err as { errors?: { code?: string }[] })?.errors?.[0]?.code === 'session_exists') {
-          await signOut();
-          attempt = await signIn.create({ strategy: 'ticket', ticket });
-        } else {
-          throw err;
-        }
-      }
-      if (attempt.status !== 'complete') {
-        setDemoError(`Demo sign-in did not complete (status: ${attempt.status}).`);
-        return;
-      }
-      await clerk.setActive({ session: attempt.createdSessionId });
-    } catch (e) {
-      setDemoError(`Demo sign-in failed at the ticket exchange. ${describeAuthError(e, 'Clerk rejected the ticket.')}`);
-    } finally {
-      setBusy(null);
-    }
+  const handleDemoSelect = (item: DemoRoleConfig) => {
+    clearNotice();
+    setError('');
+    // Instant 1-tap demo login bypassing Clerk
+    setDemoRole(item.role);
   };
 
   const isVerify = mode === 'verify-signup' || mode === 'verify-signin';
@@ -271,186 +204,204 @@ export const LoginScreen = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* Brand Banner */}
           <View style={styles.brandSection}>
             <View style={styles.logo}>
-              <GraduationCap size={ICON.lg} color={COLORS.textInverse} />
+              <GraduationCap size={ICON.lg + 4} color={COLORS.textInverse} />
             </View>
             <Text style={styles.appName}>CoopSetu AI</Text>
             <Text style={styles.caption}>{CAPTION[mode]}</Text>
           </View>
 
-          <View style={styles.form}>
-            {isVerify ? (
-              <>
-                <Text style={styles.body}>
-                  We sent a 6-digit code to <Text style={styles.bodyStrong}>{email.trim()}</Text>.
-                </Text>
-                <TextField
-                  label="Verification code"
-                  icon={<KeyRound {...FIELD_ICON} />}
-                  value={code}
-                  onChangeText={(t) => {
-                    setCode(t.replace(/\D/g, '').slice(0, 6));
-                    setError('');
-                  }}
-                  keyboardType="number-pad"
-                  autoComplete="one-time-code"
-                  textContentType="oneTimeCode"
-                  maxLength={6}
-                  returnKeyType="done"
-                  onSubmitEditing={handleVerify}
-                />
-              </>
-            ) : (
-              <>
-                <TextField
-                  label="Email"
-                  icon={<Mail {...FIELD_ICON} />}
-                  value={email}
-                  onChangeText={(t) => {
-                    setEmail(t);
-                    setError('');
-                  }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  returnKeyType="next"
-                  onSubmitEditing={() => passwordRef.current?.focus()}
-                />
-                <TextField
-                  ref={passwordRef}
-                  label="Password"
-                  icon={<Lock {...FIELD_ICON} />}
-                  value={password}
-                  onChangeText={(t) => {
-                    setPassword(t);
-                    setError('');
-                  }}
-                  secureTextEntry={!showPw}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                  textContentType={mode === 'signup' ? 'newPassword' : 'password'}
-                  returnKeyType="done"
-                  onSubmitEditing={mode === 'signup' ? handleSignUp : handleSignIn}
-                  hint={mode === 'signup' ? `At least ${MIN_PASSWORD} characters.` : undefined}
-                  trailing={{
-                    label: showPw ? 'Hide password' : 'Show password',
-                    onPress: () => setShowPw((v) => !v),
-                    icon: showPw ? (
-                      <EyeOff size={ICON.md} color={COLORS.textMuted} />
-                    ) : (
-                      <Eye size={ICON.md} color={COLORS.textMuted} />
-                    ),
-                  }}
-                />
-              </>
-            )}
+          {/* Quick Demo Access Section (Prominent 1-Tap Tiles) */}
+          <View style={styles.demoSection}>
+            <View style={styles.demoHeader}>
+              <View style={styles.demoSparkleBox}>
+                <Sparkles size={ICON.sm} color={COLORS.primary} />
+              </View>
+              <View style={styles.flex}>
+                <Text style={styles.demoHeaderTitle}>Quick Demo Access</Text>
+                <Text style={styles.demoHeaderSubtitle}>No password needed · 1-Tap instant login</Text>
+              </View>
+            </View>
 
-            {banner ? (
-              <Text style={[styles.message, !error && styles.notice]} accessibilityRole="alert">
-                {banner}
-              </Text>
-            ) : null}
+            <View style={styles.demoTilesList}>
+              {DEMO_ROLE_LIST.map((item) => {
+                const IconComp = ROLE_ICONS[item.role] || GraduationCap;
+                return (
+                  <TouchableOpacity
+                    key={item.role}
+                    style={styles.demoTile}
+                    onPress={() => handleDemoSelect(item)}
+                    activeOpacity={0.75}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Login as ${item.name} (${item.role})`}
+                  >
+                    <View style={[styles.tileIconBox, { backgroundColor: item.color + '15' }]}>
+                      <IconComp size={ICON.lg} color={item.color} />
+                    </View>
 
-            {mode === 'signin' ? (
-              <Button label="Sign in" onPress={handleSignIn} loading={formBusy} disabled={!ready || !!busy} />
-            ) : null}
-            {mode === 'signup' ? (
-              <Button label="Create account" onPress={handleSignUp} loading={formBusy} disabled={!ready || !!busy} />
-            ) : null}
-            {isVerify ? (
-              <>
-                <Button label="Verify" onPress={handleVerify} loading={formBusy} disabled={!ready || !!busy} />
-                <Button
-                  label="Send a new code"
-                  variant="secondary"
-                  onPress={handleResend}
-                  loading={busy === 'resend'}
-                  disabled={!!busy}
-                />
-              </>
-            ) : null}
+                    <View style={styles.tileInfo}>
+                      <View style={styles.tileNameRow}>
+                        <Text style={styles.tileName} numberOfLines={1}>
+                          {item.name}
+                        </Text>
+                        <View style={[styles.tileRoleBadge, { backgroundColor: item.color + '18' }]}>
+                          <Text style={[styles.tileRoleText, { color: item.color }]}>
+                            {item.role.toUpperCase()}
+                          </Text>
+                        </View>
+                      </View>
 
-            <TouchableOpacity
-              style={styles.link}
-              onPress={() => (mode === 'signin' ? navigation.navigate('Register') : switchMode('signin'))}
-              disabled={!!busy}
-              accessibilityRole="button"
-            >
-              <Text style={styles.linkText}>
-                {mode === 'signin' ? "Don't have an account? Create account" : isVerify ? 'Start over' : 'Back to sign in'}
-              </Text>
-            </TouchableOpacity>
+                      <Text style={styles.tileAffiliation} numberOfLines={1}>
+                        {item.affiliation}
+                      </Text>
+
+                      <Text style={styles.tileTagline} numberOfLines={1}>
+                        {item.tagline}
+                      </Text>
+                    </View>
+
+                    <ChevronRight size={ICON.md} color={COLORS.primary} />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
 
-          {mode === 'signin' && demoAccounts.length > 0 ? (
-            <View style={styles.demo}>
-              <View style={styles.dividerRow}>
-                <View style={styles.divider} />
-                <Text style={styles.dividerText}>Demo accounts by role</Text>
-                <View style={styles.divider} />
-              </View>
-              <Text style={styles.caption}>Explore the full ecosystem with role-specific accounts:</Text>
-              
-              <View style={styles.demoList}>
-                {demoAccounts.map((a) => {
-                  const meta = ROLE_META[a.role] || {
-                    label: a.role,
-                    icon: GraduationCap,
-                    color: COLORS.primary,
-                    desc: 'Explore CoopSetu AI',
-                  };
-                  const Icon = meta.icon;
-                  const isRoleBusy = busy === `demo:${a.role}`;
-                  return (
-                    <TouchableOpacity
-                      key={a.role}
-                      style={[styles.demoCard, isRoleBusy && styles.demoCardBusy]}
-                      onPress={() => handleDemo(a)}
-                      disabled={!ready || !!busy}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Continue as ${a.name}, ${meta.label}`}
-                    >
-                      <View style={[styles.demoIconWrap, { backgroundColor: meta.color + '15' }]}>
-                        <Icon size={20} color={meta.color} />
-                      </View>
-                      <View style={styles.demoContent}>
-                        <View style={styles.demoTitleRow}>
-                          <Text style={styles.demoName} numberOfLines={1}>
-                            {a.name}
-                          </Text>
-                          <View style={[styles.roleBadge, { backgroundColor: meta.color + '18' }]}>
-                            <Text style={[styles.roleBadgeText, { color: meta.color }]}>
-                              {meta.label}
-                            </Text>
-                          </View>
-                        </View>
-                        <Text style={styles.demoDesc} numberOfLines={1}>
-                          {meta.desc}
-                        </Text>
-                      </View>
-                      {isRoleBusy ? (
-                        <ActivityIndicator size="small" color={meta.color} />
-                      ) : (
-                        <ChevronRight size={18} color={COLORS.textMuted} />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              {demoError ? (
-                <Text style={styles.message} accessibilityRole="alert">
-                  {demoError}
+          {/* Regular Account Sign In (Expandable / Below) */}
+          <View style={styles.clerkAccordion}>
+            <TouchableOpacity
+              style={styles.clerkAccordionHeader}
+              onPress={() => setShowClerkForm((prev) => !prev)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.flex}>
+                <Text style={styles.clerkAccordionTitle}>
+                  {showClerkForm ? 'Hide Standard Sign In' : 'Sign in with Email / Password'}
                 </Text>
-              ) : null}
-            </View>
-          ) : null}
+                <Text style={styles.clerkAccordionSubtitle}>
+                  For registered users with verified Clerk credentials
+                </Text>
+              </View>
+              {showClerkForm ? (
+                <ChevronUp size={ICON.md} color={COLORS.textSecondary} />
+              ) : (
+                <ChevronDown size={ICON.md} color={COLORS.textSecondary} />
+              )}
+            </TouchableOpacity>
 
+            {showClerkForm ? (
+              <View style={styles.form}>
+                {isVerify ? (
+                  <>
+                    <Text style={styles.body}>
+                      We sent a 6-digit code to <Text style={styles.bodyStrong}>{email.trim()}</Text>.
+                    </Text>
+                    <TextField
+                      label="Verification code"
+                      icon={<KeyRound {...FIELD_ICON} />}
+                      value={code}
+                      onChangeText={(t) => {
+                        setCode(t.replace(/\D/g, '').slice(0, 6));
+                        setError('');
+                      }}
+                      keyboardType="number-pad"
+                      autoComplete="one-time-code"
+                      textContentType="oneTimeCode"
+                      maxLength={6}
+                      returnKeyType="done"
+                      onSubmitEditing={handleVerify}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <TextField
+                      label="Email"
+                      icon={<Mail {...FIELD_ICON} />}
+                      value={email}
+                      onChangeText={(t) => {
+                        setEmail(t);
+                        setError('');
+                      }}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      autoComplete="email"
+                      textContentType="emailAddress"
+                      returnKeyType="next"
+                      onSubmitEditing={() => passwordRef.current?.focus()}
+                    />
+                    <TextField
+                      ref={passwordRef}
+                      label="Password"
+                      icon={<Lock {...FIELD_ICON} />}
+                      value={password}
+                      onChangeText={(t) => {
+                        setPassword(t);
+                        setError('');
+                      }}
+                      secureTextEntry={!showPw}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                      textContentType={mode === 'signup' ? 'newPassword' : 'password'}
+                      returnKeyType="done"
+                      onSubmitEditing={mode === 'signup' ? handleSignUp : handleSignIn}
+                      hint={mode === 'signup' ? `At least ${MIN_PASSWORD} characters.` : undefined}
+                      trailing={{
+                        label: showPw ? 'Hide password' : 'Show password',
+                        onPress: () => setShowPw((v) => !v),
+                        icon: showPw ? (
+                          <EyeOff size={ICON.md} color={COLORS.textMuted} />
+                        ) : (
+                          <Eye size={ICON.md} color={COLORS.textMuted} />
+                        ),
+                      }}
+                    />
+                  </>
+                )}
+
+                {banner ? (
+                  <Text style={[styles.message, !error && styles.notice]} accessibilityRole="alert">
+                    {banner}
+                  </Text>
+                ) : null}
+
+                {mode === 'signin' ? (
+                  <Button label="Sign in" onPress={handleSignIn} loading={formBusy} disabled={!ready || !!busy} />
+                ) : null}
+                {mode === 'signup' ? (
+                  <Button label="Create account" onPress={handleSignUp} loading={formBusy} disabled={!ready || !!busy} />
+                ) : null}
+                {isVerify ? (
+                  <>
+                    <Button label="Verify" onPress={handleVerify} loading={formBusy} disabled={!ready || !!busy} />
+                    <Button
+                      label="Send a new code"
+                      variant="secondary"
+                      onPress={handleResend}
+                      loading={busy === 'resend'}
+                      disabled={!!busy}
+                    />
+                  </>
+                ) : null}
+
+                <TouchableOpacity
+                  style={styles.link}
+                  onPress={() => (mode === 'signin' ? navigation.navigate('Register') : switchMode('signin'))}
+                  disabled={!!busy}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.linkText}>
+                    {mode === 'signin' ? "Don't have an account? Create account" : isVerify ? 'Start over' : 'Back to sign in'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Public Verification Shortcut */}
           <View style={styles.publicSection}>
             <TouchableOpacity
               style={styles.verifyBtn}
@@ -458,8 +409,12 @@ export const LoginScreen = () => {
               accessibilityRole="button"
               accessibilityLabel="Verify an official certificate"
             >
-              <ShieldCheck size={18} color={COLORS.primary} />
-              <Text style={styles.verifyBtnText}>Verify Certificate (Public Access)</Text>
+              <ShieldCheck size={ICON.md} color={COLORS.primary} />
+              <View style={styles.flex}>
+                <Text style={styles.verifyTitle}>Verify NCCT Certificate</Text>
+                <Text style={styles.verifySubtitle}>Check authenticity without signing in</Text>
+              </View>
+              <ChevronRight size={ICON.md} color={COLORS.textMuted} />
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -469,97 +424,190 @@ export const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   safeArea: { flex: 1, backgroundColor: COLORS.background },
+  flex: { flex: 1 },
   scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: SPACE.lg,
-    gap: SPACE.xl,
+    paddingHorizontal: SPACE.md,
+    paddingTop: SPACE.md,
+    paddingBottom: SPACE.xl,
+    gap: SPACE.md,
   },
-  brandSection: { alignItems: 'center', gap: SPACE.sm },
+  brandSection: {
+    alignItems: 'center',
+    gap: SPACE.xs,
+    paddingVertical: SPACE.xs,
+  },
   logo: {
-    width: 56,
-    height: 56,
-    borderRadius: RADII.md,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: SPACE.xs,
   },
-  appName: { ...TEXT.title },
-  caption: { ...TEXT.body, color: COLORS.textSecondary },
-  body: { ...TEXT.body, color: COLORS.textSecondary },
-  bodyStrong: { ...TEXT.bodyStrong },
-  form: { gap: SPACE.md },
-  message: { ...TEXT.caption, color: COLORS.danger },
-  notice: { color: COLORS.textSecondary },
-  link: { minHeight: HIT, alignItems: 'center', justifyContent: 'center' },
-  linkText: { ...TEXT.bodyStrong, color: COLORS.primary },
-  demo: { gap: SPACE.sm },
-  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm },
-  divider: { flex: 1, height: 1, backgroundColor: COLORS.border },
-  dividerText: { ...TEXT.captionStrong },
-  demoList: { gap: SPACE.sm, marginTop: SPACE.xs },
-  demoCard: {
+  appName: {
+    ...TEXT.title,
+    fontSize: 26,
+    color: COLORS.text,
+  },
+  caption: {
+    ...TEXT.caption,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+
+  /* Demo Section */
+  demoSection: {
+    ...CARD,
+    padding: SPACE.md,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.primaryLight,
+    borderWidth: 1.5,
+    gap: SPACE.sm,
+  },
+  demoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
+    gap: SPACE.sm,
+    paddingBottom: SPACE.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  demoSparkleBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  demoHeaderTitle: {
+    ...TEXT.section,
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  demoHeaderSubtitle: {
+    ...TEXT.caption,
+    color: COLORS.textSecondary,
+  },
+  demoTilesList: {
+    gap: SPACE.sm,
+    marginTop: SPACE.xs,
+  },
+  demoTile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: RADII.md,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: RADII.md,
-    padding: SPACE.md,
-    gap: SPACE.md,
+    padding: SPACE.sm + 2,
+    gap: SPACE.sm + 2,
   },
-  demoCardBusy: {
-    opacity: 0.7,
-    borderColor: COLORS.primary,
-  },
-  demoIconWrap: {
-    width: 40,
-    height: 40,
+  tileIconBox: {
+    width: 44,
+    height: 44,
     borderRadius: RADII.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  demoContent: {
+  tileInfo: {
     flex: 1,
-    gap: 2,
   },
-  demoTitleRow: {
+  tileNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: SPACE.xs,
   },
-  demoName: {
+  tileName: {
     ...TEXT.bodyStrong,
-    color: COLORS.primaryDark,
-    flex: 1,
+    fontSize: 14,
   },
-  roleBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: RADII.pill,
+  tileRoleBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: RADII.sm,
   },
-  roleBadgeText: {
-    ...TEXT.captionStrong,
+  tileRoleText: {
     fontSize: 10,
-    lineHeight: 14,
+    fontWeight: '700',
   },
-  demoDesc: {
+  tileAffiliation: {
+    ...TEXT.captionStrong,
+    color: COLORS.primary,
+    fontSize: 12,
+    marginTop: 1,
+  },
+  tileTagline: {
     ...TEXT.caption,
-    color: COLORS.textMuted,
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    marginTop: 1,
   },
-  publicSection: { alignItems: 'center', marginTop: SPACE.sm },
+
+  /* Clerk Accordion */
+  clerkAccordion: {
+    ...CARD,
+    padding: SPACE.md,
+    gap: SPACE.sm,
+  },
+  clerkAccordionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  clerkAccordionTitle: {
+    ...TEXT.bodyStrong,
+    color: COLORS.text,
+  },
+  clerkAccordionSubtitle: {
+    ...TEXT.caption,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  form: {
+    gap: SPACE.sm,
+    paddingTop: SPACE.sm,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderLight,
+  },
+  body: { ...TEXT.body },
+  bodyStrong: { ...TEXT.bodyStrong },
+  message: {
+    ...TEXT.caption,
+    color: COLORS.danger,
+    paddingVertical: SPACE.xs,
+  },
+  notice: {
+    color: COLORS.primary,
+  },
+  link: {
+    alignItems: 'center',
+    paddingVertical: SPACE.xs,
+  },
+  linkText: {
+    ...TEXT.captionStrong,
+    color: COLORS.primary,
+  },
+
+  /* Public Certificate Verification */
+  publicSection: {
+    ...CARD,
+    padding: SPACE.sm + 2,
+  },
   verifyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACE.xs,
-    paddingVertical: SPACE.xs,
-    paddingHorizontal: SPACE.md,
+    gap: SPACE.sm,
   },
-  verifyBtnText: {
-    ...TEXT.captionStrong,
-    color: COLORS.primary,
+  verifyTitle: {
+    ...TEXT.bodyStrong,
+    color: COLORS.text,
+  },
+  verifySubtitle: {
+    ...TEXT.caption,
+    color: COLORS.textSecondary,
   },
 });

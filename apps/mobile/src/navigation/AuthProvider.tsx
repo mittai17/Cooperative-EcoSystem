@@ -4,11 +4,13 @@ import { useAuth } from '@clerk/expo';
 import { COLORS, SPACE, TEXT } from '../constants/theme';
 import { isSupportedRole, SUPPORTED_ROLES } from '../constants/auth';
 import { ApiError, authApi, configureAuthClient, MeResponse } from '../services/api';
+import { configureAuthClient as configureApiClientAuth } from '../api/client';
 import { localStore } from '../services/localStore';
 import { AuthUser } from '../types';
 import { Button } from '../components/Button';
 import { queryClient } from '../api/queryClient';
 import { AuthContext } from './AuthContext';
+import { getDemoProfileByRole } from '../constants/demoProfiles';
 
 /** Outcome of resolving the local identity for one Clerk user (tagged so a stale result is never shown for another user). */
 type Resolution = { clerkUserId: string; user: AuthUser } | { clerkUserId: string; error: string };
@@ -60,10 +62,9 @@ const FullScreen: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 /**
- * Bridges Clerk to the app: wires the API client to the Clerk session token,
- * resolves the local identity after any sign-in and exposes it via AuthContext.
- * Children are only rendered signed-in-and-resolved through `renderSignedIn`,
- * or signed-out through `renderSignedOut`.
+ * Bridges Clerk and Demo Auth to the app: wires the API client to the session token,
+ * resolves the local identity after sign-in and exposes it via AuthContext.
+ * In demo mode, bypasses Clerk completely and resolves directly using rich demo profiles.
  */
 export const AuthProvider: React.FC<{
   renderSignedOut: () => React.ReactNode;
@@ -71,6 +72,7 @@ export const AuthProvider: React.FC<{
 }> = ({ renderSignedOut, renderSignedIn }) => {
   const { isLoaded, isSignedIn, userId, getToken, signOut: clerkSignOut } = useAuth();
   const [resolution, setResolution] = useState<Resolution | null>(null);
+  const [demoUser, setDemoUser] = useState<AuthUser | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const signingOut = useRef(false);
 
@@ -82,32 +84,68 @@ export const AuthProvider: React.FC<{
         localStore.reset();
         queryClient.clear();
         setResolution(null);
+        setDemoUser(null);
         setNotice(message ?? null);
-        await clerkSignOut();
+        if (isSignedIn) {
+          await clerkSignOut();
+        }
       } catch (e) {
-        console.warn('Clerk signOut failed', e);
+        console.warn('SignOut failed', e);
         setNotice('Sign out did not complete. Try again.');
       } finally {
         signingOut.current = false;
       }
     },
-    [clerkSignOut]
+    [clerkSignOut, isSignedIn]
   );
 
-  // Keep the API client pointed at the live Clerk session.
+  const setDemoRole = useCallback((role: string) => {
+    const config = getDemoProfileByRole(role);
+    if (!config) {
+      console.warn(`[AuthProvider] Unknown demo role requested: "${role}"`);
+      return;
+    }
+    // Set synthetic auth config for demo mode so api calls don't reject on missing token
+    const demoAuthConfig = {
+      getToken: async () => 'demo-bearer-token',
+      onUnauthorized: () => {},
+    };
+    configureAuthClient(demoAuthConfig);
+    configureApiClientAuth(demoAuthConfig);
+
+    localStore.reset();
+    queryClient.clear();
+    setResolution(null);
+    setNotice(null);
+    setDemoUser(config.user);
+  }, []);
+
+  const switchDemoRole = useCallback((role: string) => {
+    setDemoRole(role);
+  }, [setDemoRole]);
+
+  // Keep the API client pointed at the live Clerk session when not in demo mode.
   useEffect(() => {
-    configureAuthClient({
-      getToken: (options) => getToken(options),
+    if (demoUser) return;
+    const authConfig = {
+      getToken: (options?: { skipCache?: boolean }) => getToken(options),
       onUnauthorized: () => {
         void signOut('Your session expired. Sign in again.');
       },
-    });
-    return () => configureAuthClient({ getToken: null, onUnauthorized: null });
-  }, [getToken, signOut]);
+    };
+    configureAuthClient(authConfig);
+    configureApiClientAuth(authConfig);
+    return () => {
+      if (!demoUser) {
+        configureAuthClient({ getToken: null, onUnauthorized: null });
+        configureApiClientAuth({ getToken: null, onUnauthorized: null });
+      }
+    };
+  }, [getToken, signOut, demoUser]);
 
-  // Any sign-in method lands here: resolve the local identity once per session.
+  // Any regular Clerk sign-in method lands here: resolve the local identity once per session.
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || !userId) return;
+    if (demoUser || !isLoaded || !isSignedIn || !userId) return;
     let cancelled = false;
     void resolveFor(userId).then((r) => {
       if (!cancelled && r) setResolution(r);
@@ -115,17 +153,21 @@ export const AuthProvider: React.FC<{
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn, userId]);
+  }, [isLoaded, isSignedIn, userId, demoUser]);
 
   const current = userId && resolution?.clerkUserId === userId ? resolution : null;
-  const user = current && 'user' in current ? current.user : null;
+  const clerkUser = current && 'user' in current ? current.user : null;
+  const activeUser = demoUser ?? clerkUser;
+  const activeRole = activeUser?.role ?? null;
+  const isDemo = Boolean(demoUser);
   const errorMessage = current && 'error' in current ? current.error : '';
 
   const refresh = useCallback(async () => {
+    if (demoUser) return;
     if (!userId) return;
     const r = await resolveFor(userId);
     if (r) setResolution(r);
-  }, [userId]);
+  }, [userId, demoUser]);
 
   const retry = () => {
     setResolution(null);
@@ -134,18 +176,25 @@ export const AuthProvider: React.FC<{
 
   const value = useMemo(
     () => ({
-      user,
-      role: user?.role ?? null,
+      user: activeUser,
+      role: activeRole,
+      isDemo,
+      demoUser,
       signOut,
       refresh,
       notice,
       clearNotice: () => setNotice(null),
+      setDemoRole,
+      switchDemoRole,
     }),
-    [user, signOut, refresh, notice]
+    [activeUser, activeRole, isDemo, demoUser, signOut, refresh, notice, setDemoRole, switchDemoRole]
   );
 
   let content: React.ReactNode;
-  if (!isLoaded) {
+  if (demoUser) {
+    // Demo Mode bypasses Clerk entirely and resolves instantly
+    content = renderSignedIn();
+  } else if (!isLoaded) {
     content = (
       <FullScreen>
         <ActivityIndicator color={COLORS.primary} />
@@ -164,19 +213,19 @@ export const AuthProvider: React.FC<{
         </View>
       </FullScreen>
     );
-  } else if (!user) {
+  } else if (!activeUser) {
     content = (
       <FullScreen>
         <ActivityIndicator color={COLORS.primary} />
         <Text style={styles.message}>Loading your account</Text>
       </FullScreen>
     );
-  } else if (!isSupportedRole(user.role)) {
+  } else if (!isSupportedRole(activeUser.role)) {
     content = (
       <FullScreen>
         <Text style={styles.title}>This account is not supported yet</Text>
         <Text style={styles.message}>
-          This app currently supports {SUPPORTED_ROLES.join(', ')} accounts. You are signed in as {user.role}.
+          This app currently supports {SUPPORTED_ROLES.join(', ')} accounts. You are signed in as {activeUser.role}.
         </Text>
         <View style={styles.actions}>
           <Button label="Sign out" onPress={() => void signOut()} />

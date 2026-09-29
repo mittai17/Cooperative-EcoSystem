@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 Seed = Callable[[AsyncSession], Awaitable[None]]
 DOMAIN_ORDER = ("profiles", "programmes", "learning", "schedule", "assessments",
-                "attendance", "employer", "translations")
+                "attendance", "employer", "career", "translations")
 _registry: dict[str, Seed] = {}
 
 

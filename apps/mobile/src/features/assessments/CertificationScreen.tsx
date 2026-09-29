@@ -16,7 +16,7 @@ import { COLORS, CARD, HIT, ICON, RADII, SPACE, TEXT } from '../../constants/the
 import { ScrollScreen } from '../../components/ScrollScreen';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
-import { assessmentApi } from './assessmentApi';
+import { assessmentApi, AssessmentApiError } from './assessmentApi';
 import { TraineeEligibilityCheck } from './assessmentTypes';
 import {
   Award,
@@ -99,10 +99,28 @@ export const CertificationScreen = () => {
     try {
       const res = await assessmentApi.issueBatchCertificates('prog-1', batchId, selectedIds, grade);
       setIssuing(false);
+      // Real backend response: never a fabricated "issued" list. Surface a
+      // partial-rejection outcome honestly instead of always celebrating.
+      if (res.issued.length === 0) {
+        Alert.alert(
+          'No Certificates Issued',
+          'The registry rejected all selected trainees as ineligible. Refresh eligibility and try again.'
+        );
+        return;
+      }
       setIssuedResult(res.issued);
-    } catch {
+      if (res.rejected.length > 0) {
+        Alert.alert(
+          'Some Trainees Skipped',
+          `${res.rejected.length} of ${selectedIds.length} selected trainees were rejected by the eligibility check and were not issued a certificate.`
+        );
+      }
+    } catch (e) {
       setIssuing(false);
-      Alert.alert('Issuance Failed', 'Could not complete batch certification. Please try again.');
+      Alert.alert(
+        'Issuance Failed',
+        e instanceof AssessmentApiError ? e.message : 'Could not complete batch certification. Please try again.'
+      );
     }
   };
 

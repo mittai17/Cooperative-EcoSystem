@@ -6,6 +6,17 @@ import {
   TraineeEligibilityCheck,
 } from './assessmentTypes';
 
+/** Thrown by assessmentApi calls when the real backend request fails (network
+ * error or non-200). The backend has a substantive server-graded engine —
+ * never fabricate a success (a fake save, a locally-graded result, or a
+ * made-up verification code) on this path. Callers must surface the error. */
+export class AssessmentApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AssessmentApiError';
+  }
+}
+
 const MOCK_ASSESSMENT_INFO: Record<string, AssessmentInfo> = {
   default: {
     id: 'asmt-coop-001',
@@ -234,71 +245,53 @@ export const assessmentApi = {
     };
   },
 
+  /**
+   * Persists one answer to the real attempt. Never swallows a failure into a
+   * fake success — on a network error or non-200 response this throws
+   * `AssessmentApiError` so the caller can show a real "save failed" state.
+   */
   async saveAnswer(attemptId: string, questionId: string, answer: string[]): Promise<boolean> {
+    let res: Response;
     try {
-      const res = await fetch(`${API_BASE_URL}/assessments/attempts/${encodeURIComponent(attemptId)}/answers`, {
+      res = await fetch(`${API_BASE_URL}/assessments/attempts/${encodeURIComponent(attemptId)}/answers`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question_id: questionId, answer }),
       });
-      return res.ok;
     } catch {
-      return true; // Local success
+      throw new AssessmentApiError('Could not save your answer — check your connection.');
     }
+    if (!res.ok) {
+      throw new AssessmentApiError('Could not save your answer — check your connection.');
+    }
+    return true;
   },
 
-  async submitAttempt(attemptId: string, localAnswers: Record<string, string[]> = {}): Promise<AssessmentResultData> {
+  /**
+   * Submits the attempt to the real, server-graded engine. This is one-shot —
+   * the backend only accepts it while the attempt is in_progress. Never falls
+   * back to locally-graded fake results; on failure throws `AssessmentApiError`
+   * so the caller can show a real error with retry.
+   */
+  async submitAttempt(attemptId: string): Promise<AssessmentResultData> {
+    let res: Response;
     try {
-      const res = await fetch(`${API_BASE_URL}/assessments/attempts/${encodeURIComponent(attemptId)}/submit`, {
+      res = await fetch(`${API_BASE_URL}/assessments/attempts/${encodeURIComponent(attemptId)}/submit`, {
         method: 'POST',
       });
-      if (res.ok) {
-        return (await res.json()) as AssessmentResultData;
-      }
     } catch {
-      // Fallback grading logic
+      throw new AssessmentApiError('Could not submit your assessment — check your connection and try again.');
     }
-
-    // Grade locally if offline/mock
-    let earned = 0;
-    const breakdown: Record<string, { earned: number; possible: number }> = {};
-    const review: AssessmentResultData['review'] = [];
-
-    for (const q of MOCK_QUESTIONS) {
-      const given = localAnswers[q.id] || [];
-      const isCorrect =
-        given.length > 0 &&
-        given.length === q.correct.length &&
-        given.every((val) => q.correct.includes(val));
-
-      if (isCorrect) earned += q.marks;
-
-      if (!breakdown[q.topic]) {
-        breakdown[q.topic] = { earned: 0, possible: 0 };
+    if (!res.ok) {
+      let detail: string | undefined;
+      try {
+        detail = (await res.json())?.detail;
+      } catch {
+        // Not JSON
       }
-      breakdown[q.topic].possible += q.marks;
-      if (isCorrect) breakdown[q.topic].earned += q.marks;
-
-      review.push({
-        question_id: q.id,
-        prompt: q.prompt,
-        answer: given,
-        correctly_answered: isCorrect,
-        correct: q.correct,
-        explanation: q.explanation,
-      });
+      throw new AssessmentApiError(detail || 'Could not submit your assessment — check your connection and try again.');
     }
-
-    const score = Math.round((earned / 100) * 100);
-    return {
-      attempt_id: attemptId,
-      assessment_id: 'asmt-coop-001',
-      score,
-      passed: score >= 60,
-      skill_updated: score >= 60 ? 'Cooperative Governance & Auditing' : null,
-      topic_breakdown: breakdown,
-      review,
-    };
+    return (await res.json()) as AssessmentResultData;
   },
 
   async getBatchEligibility(batchId: string): Promise<{
@@ -406,14 +399,21 @@ export const assessmentApi = {
     };
   },
 
+  /**
+   * Issues certificates via the real, DB-backed batch-issue endpoint. Never
+   * fabricates verification codes or a fake "issued" list on failure — on a
+   * network error or non-200 response this throws `AssessmentApiError` so the
+   * caller can show a real error instead of a fabricated success.
+   */
   async issueBatchCertificates(
     programmeId: string,
     batchId: string,
     traineeIds: string[],
     grade: string = 'A'
   ): Promise<{ issued: Array<{ trainee_id: string; verification_code: string }>; rejected: string[] }> {
+    let res: Response;
     try {
-      const res = await fetch(`${API_BASE_URL}/certificates/issue-batch`, {
+      res = await fetch(`${API_BASE_URL}/certificates/issue-batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -423,19 +423,18 @@ export const assessmentApi = {
           grade,
         }),
       });
-      if (res.ok) {
-        return await res.json();
-      }
     } catch {
-      // Mock issue
+      throw new AssessmentApiError('Could not issue certificates — check your connection and try again.');
     }
-
-    return {
-      issued: traineeIds.map((id, idx) => ({
-        trainee_id: id,
-        verification_code: `NCCT-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-      })),
-      rejected: [],
-    };
+    if (!res.ok) {
+      let detail: string | undefined;
+      try {
+        detail = (await res.json())?.detail;
+      } catch {
+        // Not JSON
+      }
+      throw new AssessmentApiError(detail || 'Could not issue certificates — check your connection and try again.');
+    }
+    return await res.json();
   },
 };

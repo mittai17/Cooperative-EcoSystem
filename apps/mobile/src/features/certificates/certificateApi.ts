@@ -31,6 +31,16 @@ export interface VerificationResult {
   };
 }
 
+/** Thrown by verifyCertificate when the real API call fails (network error or
+ * non-200). Never fabricate a verification result on this path — the caller
+ * must render a "could not verify" error state with retry, not a fake result. */
+export class CertificateVerificationError extends Error {
+  constructor(message = 'Could not verify — check your connection and try again') {
+    super(message);
+    this.name = 'CertificateVerificationError';
+  }
+}
+
 const MOCK_CERTIFICATES: CertificateItem[] = [
   {
     id: 'NCCT-2026-X89J4K',
@@ -75,107 +85,50 @@ export const certificateApi = {
     };
   },
 
+  /**
+   * Verifies a certificate against the real, DB-backed backend endpoint
+   * (`GET /certificates/verify/{code}`). Trusts the backend's answer as-is —
+   * it is the source of truth for integrity, hash matching, and signature
+   * validity. On a real API failure (network error or non-200 response) this
+   * throws `CertificateVerificationError`; it never fabricates a result
+   * (no invented "valid" status, no made-up content_hash/signature/seal).
+   * Callers must catch this and render an error state with retry.
+   */
   async verifyCertificate(code: string): Promise<VerificationResult> {
     const trimmed = code.trim().toUpperCase();
 
+    let res: Response;
     try {
-      const res = await fetch(`${API_BASE_URL}/certificates/verify/${encodeURIComponent(trimmed)}`);
-      if (res.ok) {
-        const data = await res.json();
-        const cert = data.certificate;
-        const isValid = data.valid === true;
-        return {
-          valid: isValid,
-          status: data.status || (isValid ? 'valid' : 'not_found'),
-          integrity: data.integrity || (isValid ? 'ok' : 'failed'),
-          certificate: cert
-            ? {
-                ...cert,
-                content_hash:
-                  cert.content_hash ||
-                  'a6c8e9b4d32f10578e91024bc681029c54e3a890db7214e9bf439c2018ea65f1',
-                signature_algorithm: 'HMAC-SHA256 with NCCT Root Key',
-                authority_seal: 'Govt. of India · Ministry of Cooperation',
-              }
-            : null,
-          message: data.message,
-          checks: {
-            hash_match: data.integrity === 'ok',
-            issuer_authenticated: true,
-            unrevoked: data.status !== 'revoked',
-            not_expired: data.status !== 'expired',
-          },
-        };
-      }
+      res = await fetch(`${API_BASE_URL}/certificates/verify/${encodeURIComponent(trimmed)}`);
     } catch {
-      // Fallback verification check against mock records
+      throw new CertificateVerificationError();
     }
 
-    const found = MOCK_CERTIFICATES.find(
-      (c) => c.id.toUpperCase() === trimmed || trimmed.includes(c.id.toUpperCase())
-    );
-
-    if (found) {
-      return {
-        valid: true,
-        status: 'valid',
-        integrity: 'ok',
-        certificate: {
-          ...found,
-          content_hash: 'a6c8e9b4d32f10578e91024bc681029c54e3a890db7214e9bf439c2018ea65f1',
-          signature_algorithm: 'HMAC-SHA256 with NCCT Root Key',
-          authority_seal: 'Govt. of India · Ministry of Cooperation',
-        },
-        checks: {
-          hash_match: true,
-          issuer_authenticated: true,
-          unrevoked: true,
-          not_expired: true,
-        },
-      };
+    if (!res.ok) {
+      throw new CertificateVerificationError();
     }
 
-    // If looking up any valid-looking NCCT code, generate a verified credential
-    if (trimmed.startsWith('NCCT-')) {
-      return {
-        valid: true,
-        status: 'valid',
-        integrity: 'ok',
-        certificate: {
-          id: trimmed,
-          holder_name: 'Verified Cooperative Trainee',
-          programme_title: 'National Diploma in Cooperative Management & Technology',
-          issuer: 'National Council for Cooperative Training (NCCT)',
-          issue_date: '2026-07-01',
-          expiry_date: '2029-06-30',
-          status: 'valid',
-          grade: 'Distinction (A+)',
-          skills_certified: ['Cooperative Management', 'Digital Accounting', 'Statutory Compliance'],
-          verification_url: `https://coopsetu.in/verify-certificate/${trimmed}`,
-          content_hash: '7b91d24ef081ac54b892301cde914028af53b190cd6215e4ef321c1097ba54e2',
-          signature_algorithm: 'HMAC-SHA256 with NCCT Root Key',
-          authority_seal: 'Govt. of India · Ministry of Cooperation',
-        },
-        checks: {
-          hash_match: true,
-          issuer_authenticated: true,
-          unrevoked: true,
-          not_expired: true,
-        },
-      };
-    }
-
+    const data = await res.json();
+    const cert = data.certificate;
+    const isValid = data.valid === true;
     return {
-      valid: false,
-      status: 'not_found',
-      integrity: 'failed',
-      certificate: null,
-      message: 'Certificate not found in national registry or tamper-evident signature check failed.',
+      valid: isValid,
+      status: data.status || (isValid ? 'valid' : 'not_found'),
+      integrity: data.integrity || (isValid ? 'ok' : 'failed'),
+      certificate: cert
+        ? {
+            ...cert,
+            content_hash: cert.content_hash,
+            signature_algorithm: cert.signature_algorithm,
+            authority_seal: cert.authority_seal,
+          }
+        : null,
+      message: data.message,
       checks: {
-        hash_match: false,
-        issuer_authenticated: false,
-        unrevoked: false,
-        not_expired: false,
+        hash_match: data.integrity === 'ok',
+        issuer_authenticated: true,
+        unrevoked: data.status !== 'revoked',
+        not_expired: data.status !== 'expired',
       },
     };
   },

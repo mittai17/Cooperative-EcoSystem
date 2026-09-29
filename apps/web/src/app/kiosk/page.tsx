@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { QrCode, ScanLine, Wifi, WifiOff } from "lucide-react";
+import { DemoRoleSwitcherBanner } from "@/components/auth/demo-role-switcher-banner";
 
 // ── Live clock ────────────────────────────────────────────────────────────────
 
@@ -84,7 +85,9 @@ function ConnectivityBadge() {
 
 export default function KioskLandingPage() {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-[#0f0404] px-6 py-8">
+    <>
+      <DemoRoleSwitcherBanner />
+      <div className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-[#0f0404] px-6 py-8">
       {/* Radial glow behind the card area */}
       <div
         aria-hidden
@@ -196,5 +199,6 @@ export default function KioskLandingPage() {
         </Link>
       </footer>
     </div>
+    </>
   );
 }

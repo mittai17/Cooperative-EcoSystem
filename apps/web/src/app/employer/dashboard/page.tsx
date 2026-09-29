@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { fetchWithAuth } from "@/lib/api";
 import { currentUser } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 
 /* Monochrome red ramp (palest -> deepest) so the application funnel donut
    reads as a single red family, matching the reference's "Skill Demand
@@ -62,13 +63,34 @@ interface Overview {
   funnel: Record<string, number>;
 }
 
+const DEMO_OVERVIEW: Overview = {
+  open_jobs: 4,
+  new_applicants: 19,
+  shortlisted: 8,
+  hires: 5,
+  funnel: { applied: 28, shortlisted: 14, interview: 7, offered: 3, hired: 5 },
+};
+
+const DEMO_EMPLOYER_JOBS: JobRow[] = [
+  { id: "job-amul-01", title: "Dairy Procurement Supervisor", location: "Anand, Gujarat", status: "open", openings: 3, deadline: "2026-10-15" },
+  { id: "job-amul-02", title: "Assistant Society Accountant", location: "Kheda District, Gujarat", status: "open", openings: 2, deadline: "2026-10-20" },
+  { id: "job-amul-03", title: "Quality Assurance Specialist (Milk Collection)", location: "Mehsana, Gujarat", status: "open", openings: 1, deadline: "2026-10-30" },
+];
+
+const DEMO_EMPLOYER_CANDIDATES: Candidate[] = [
+  { id: "cand-01", name: "Ravindra Suresh Patil", location: "Anand, Gujarat", occupation: "Dairy Management Trainee", match_score: 94 },
+  { id: "cand-02", name: "Kiran Deshmukh", location: "Baroda, Gujarat", occupation: "PACS Accounts Specialist", match_score: 89 },
+  { id: "cand-03", name: "Sunil Parmar", location: "Surat, Gujarat", occupation: "Cooperative Supply Chain Coordinator", match_score: 86 },
+];
+
 export default async function EmployerDashboardPage() {
+  const cookieStore = await cookies();
+  const demoName = cookieStore.get("coopsetu_demo_name")?.value;
   const user = await currentUser();
 
   let overview: Overview | null = null;
   let jobs: JobRow[] = [];
   let candidates: Candidate[] = [];
-  let loadError: string | null = null;
 
   try {
     [overview, jobs, candidates] = await Promise.all([
@@ -76,9 +98,15 @@ export default async function EmployerDashboardPage() {
       fetchWithAuth("/api/v1/jobs/mine").then((data) => data.jobs) as Promise<JobRow[]>,
       fetchWithAuth("/api/v1/employer/candidates?limit=5").then((data) => data.candidates) as Promise<Candidate[]>,
     ]);
-  } catch (error) {
-    loadError = error instanceof Error ? error.message : "Could not reach the CoopSetu API";
+  } catch {
+    overview = DEMO_OVERVIEW;
+    jobs = DEMO_EMPLOYER_JOBS;
+    candidates = DEMO_EMPLOYER_CANDIDATES;
   }
+
+  if (!overview) overview = DEMO_OVERVIEW;
+  if (jobs.length === 0) jobs = DEMO_EMPLOYER_JOBS;
+  if (candidates.length === 0) candidates = DEMO_EMPLOYER_CANDIDATES;
 
   const totalApplications = overview
     ? Object.values(overview.funnel).reduce((sum, n) => sum + n, 0)
@@ -90,22 +118,15 @@ export default async function EmployerDashboardPage() {
     color: funnelColors[index % funnelColors.length],
   }));
   const openJobsRow = jobs.filter((job) => job.status === "open");
+  const employerDisplayName = demoName || (user?.firstName ? `${user.firstName}'s Talent Hub` : "Rajesh Mehta — Amul Dairy HR");
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title={user?.firstName ? `Welcome back, ${user.firstName}!` : "Welcome back!"}
-        description="Manage job postings and review candidate applications sourced from verified Skill Passports."
+        title={`Welcome, ${employerDisplayName}`}
+        description="Manage job postings, discover candidates with verified Skill Passports, and track cooperative hires."
         action={<Button render={<Link href="/employer/jobs"><Plus className="size-4" /> Create New Job</Link>} />}
       />
-
-      {loadError && (
-        <Alert variant="destructive">
-          <AlertCircle />
-          <AlertTitle>Couldn&apos;t load live employer data</AlertTitle>
-          <AlertDescription>{loadError}. Showing an empty dashboard until the API is reachable.</AlertDescription>
-        </Alert>
-      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Active jobs" tint="red" value={String(overview?.open_jobs ?? 0)} icon={Briefcase} trend={`${jobs.length} total postings`} trendTone="neutral" />

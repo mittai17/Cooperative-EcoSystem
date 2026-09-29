@@ -3,7 +3,8 @@ export type UserRole =
   | "institution"
   | "trainer"
   | "employer"
-  | "admin";
+  | "admin"
+  | "kiosk";
 
 export interface RoleOption {
   value: UserRole;
@@ -36,6 +37,11 @@ export const ROLE_OPTIONS: RoleOption[] = [
     value: "admin",
     label: "NCCT Administrator",
     description: "Oversee institutions, programmes, and national outcomes",
+  },
+  {
+    value: "kiosk",
+    label: "Digital Kiosk Station",
+    description: "Offline-first village station for attendance and certificate verification",
   },
 ];
 

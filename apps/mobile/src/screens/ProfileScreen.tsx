@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { COLORS, CARD, HIT, ICON, SPACE, TEXT } from '../constants/theme';
+import { COLORS, CARD, HIT, ICON, RADII, SPACE, TEXT } from '../constants/theme';
 import { ScrollScreen } from '../components/ScrollScreen';
 import { LoadingState } from '../components/EmptyState';
 import { Button } from '../components/Button';
 import { IconChip } from '../components/IconChip';
 import { useAuthContext } from '../navigation/AuthContext';
-import { Award, GraduationCap, Download, QrCode, LogOut, ChevronRight } from 'lucide-react-native';
+import {
+  Award,
+  GraduationCap,
+  Download,
+  QrCode,
+  LogOut,
+  ChevronRight,
+  Repeat,
+  Sparkles,
+} from 'lucide-react-native';
+import { DemoRoleSwitcherModal } from '../components/DemoRoleSwitcherModal';
 
 const MENU = [
   { title: 'Skill passport', icon: Award, route: 'Passport' },
@@ -17,6 +27,7 @@ const MENU = [
 
 export const ProfileScreen = ({ navigation }: any) => {
   const { user, signOut } = useAuthContext();
+  const [switcherVisible, setSwitcherVisible] = useState(false);
   const trainee = user?.trainee ?? null;
   const name = trainee?.name || user?.fullName || user?.email || '';
   const initials =
@@ -32,7 +43,6 @@ export const ProfileScreen = ({ navigation }: any) => {
   const affiliation = trainee?.enrolled_institution ?? user?.organisation?.name ?? '';
 
   const handleLogout = () => {
-    console.log('[ProfileScreen] handleLogout called');
     Alert.alert('Log out', 'Sign out of your account?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Log out', style: 'destructive', onPress: () => void signOut() },
@@ -62,6 +72,32 @@ export const ProfileScreen = ({ navigation }: any) => {
         </View>
       )}
 
+      {/* Demo Role Switcher Trigger */}
+      <TouchableOpacity
+        style={styles.demoSwitcher}
+        onPress={() => setSwitcherVisible(true)}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Switch Role (Demo)"
+      >
+        <IconChip size={40} tint={COLORS.primarySurface}>
+          <Repeat size={ICON.md} color={COLORS.primary} />
+        </IconChip>
+        <View style={styles.flex}>
+          <View style={styles.demoRow}>
+            <Text style={styles.demoTitle}>Switch Role (Demo)</Text>
+            <View style={styles.demoBadge}>
+              <Sparkles size={10} color={COLORS.primary} />
+              <Text style={styles.demoBadgeText}>DEMO</Text>
+            </View>
+          </View>
+          <Text style={styles.demoDesc}>
+            Current: {user?.fullName} ({user?.role?.toUpperCase()})
+          </Text>
+        </View>
+        <ChevronRight size={ICON.md} color={COLORS.primary} />
+      </TouchableOpacity>
+
       <View style={styles.menu}>
         {MENU.map((item, idx) => {
           const Icon = item.icon;
@@ -90,6 +126,11 @@ export const ProfileScreen = ({ navigation }: any) => {
         icon={<LogOut size={ICON.md} color={COLORS.primary} />}
         onPress={handleLogout}
       />
+
+      <DemoRoleSwitcherModal
+        visible={switcherVisible}
+        onClose={() => setSwitcherVisible(false)}
+      />
     </ScrollScreen>
   );
 };
@@ -114,6 +155,46 @@ const styles = StyleSheet.create({
   avatarText: { ...TEXT.section, color: COLORS.textInverse },
   name: { ...TEXT.section },
   caption: { ...TEXT.caption },
+
+  demoSwitcher: {
+    ...CARD,
+    padding: SPACE.md - 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.md - SPACE.xs,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
+  },
+  demoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.xs,
+  },
+  demoTitle: {
+    ...TEXT.bodyStrong,
+    color: COLORS.primaryDark,
+  },
+  demoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: RADII.sm,
+    gap: 2,
+  },
+  demoBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  demoDesc: {
+    ...TEXT.caption,
+    color: COLORS.textSecondary,
+    marginTop: 1,
+  },
+
   menu: { ...CARD, overflow: 'hidden' },
   menuItem: {
     minHeight: HIT + SPACE.md,

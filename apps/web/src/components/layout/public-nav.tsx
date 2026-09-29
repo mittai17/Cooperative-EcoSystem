@@ -50,9 +50,7 @@ export function PublicNav() {
         <div className="hidden items-center gap-2 md:flex">
           <LanguageSelector />
           <ThemeToggle />
-          {/* Reference shows a single filled primary button in the nav's action
-              slot; Get Started stays reachable via the hero CTAs and the
-              mobile menu, so no navigable functionality is lost. */}
+          <Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10" render={<Link href="/demo">⚡ Demo Hub</Link>} />
           <Button render={<Link href="/sign-in">Sign In</Link>} />
         </div>
 

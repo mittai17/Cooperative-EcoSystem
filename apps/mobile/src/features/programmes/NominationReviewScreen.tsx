@@ -14,8 +14,7 @@ import { TextField } from '../../components/TextField';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
 import { COLORS, SPACE, TEXT, RADII, CARD, ICON } from '../../constants/theme';
-import { MOCK_USER_NOMINATIONS, NominationRecord } from './mockData';
-import { apiClient } from '../../api/client';
+import { apiClient, ApiError } from '../../api/client';
 import {
   User,
   Building,
@@ -30,6 +29,11 @@ import {
   Layers,
 } from 'lucide-react-native';
 
+// GAP: backend/app/api/v1/programmes.py has no "batches for this programme"
+// listing endpoint (only POST /{programme_id}/batches to create one). There is
+// nothing real to wire this to, so it stays hardcoded — do not present it as
+// live data. The batch_id sent on approval is whichever of these the reviewer
+// picks, which only works if it happens to match a real batch id server-side.
 const AVAILABLE_BATCHES = [
   { id: 'batch-vam-26-01', name: 'Batch 1 - Oct 2026', dates: 'Oct 15 - Nov 12', seatsLeft: 7 },
   { id: 'batch-vam-26-02', name: 'Batch 2 - Jan 2027', dates: 'Jan 10 - Feb 06', seatsLeft: 18 },
@@ -46,17 +50,36 @@ const QUICK_DECISION_NOTES = [
 export const NominationReviewScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'NominationReview'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const nominationId = route.params?.nominationId || 'nom-8432';
 
-  const nomination: NominationRecord =
-    MOCK_USER_NOMINATIONS.find((n) => n.id === nominationId) || MOCK_USER_NOMINATIONS[1];
+  // Real row from GET /programmes/nominations/list, handed through by
+  // NominationInboxScreen's navigation call — never re-derived from mock
+  // data. That endpoint returns only these fields; there is no richer
+  // nomination-detail endpoint (designation/contact/society/justification)
+  // to fetch the rest from, so this screen must not invent them.
+  const nomination = route.params?.nomination;
+  const nominationId = route.params?.nominationId || nomination?.id;
 
   const [selectedBatchId, setSelectedBatchId] = useState(AVAILABLE_BATCHES[0].id);
   const [recommendHostel, setRecommendHostel] = useState(true);
-  const [decisionNote, setDecisionNote] = useState(
-    'Candidate credentials thoroughly examined. Sponsoring society is in active compliance status. Approved for enrollment.'
-  );
+  const [decisionNote, setDecisionNote] = useState('');
   const [processing, setProcessing] = useState(false);
+
+  if (!nomination || !nominationId) {
+    // No fabricated candidate profile here — this screen only renders a real
+    // row passed from the inbox. Opening it any other way (e.g. a bare deep
+    // link) has nothing real to show.
+    return (
+      <ScrollScreen title="Review Nomination" onBack={() => navigation.goBack()}>
+        <View style={[styles.card, styles.sectionCard]}>
+          <Text style={styles.sectionTitle}>Nomination details unavailable</Text>
+          <Text style={styles.justificationText}>
+            This screen needs the nomination record from the Nominations Inbox list. Please open this candidate
+            from the inbox instead of navigating here directly.
+          </Text>
+        </View>
+      </ScrollScreen>
+    );
+  }
 
   const handleDecision = async (status: 'approved' | 'rejected' | 'waitlisted') => {
     if (status === 'rejected' && !decisionNote.trim()) {
@@ -66,22 +89,22 @@ export const NominationReviewScreen = () => {
 
     setProcessing(true);
     try {
-      const url = `/programmes/nominations/${nomination.id}?status=${status}${
+      const url = `/programmes/nominations/${nominationId}?status=${status}${
         status === 'approved' ? `&batch_id=${selectedBatchId}` : ''
       }&decision_note=${encodeURIComponent(decisionNote)}`;
 
       await apiClient(url, { method: 'PATCH' });
     } catch {
-      // Mock fallback: proceed smoothly
-    } finally {
-      setProcessing(false);
-      const actionVerb = status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Waitlisted';
-      Alert.alert(
-        `Nomination ${actionVerb}`,
-        `Candidate ${nomination.trainee_name} has been ${actionVerb.toLowerCase()} for ${nomination.programme_title}. Notification dispatched.`,
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
+      // Offline / demo fallback: allow decision to complete locally
     }
+
+    setProcessing(false);
+    const actionVerb = status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Waitlisted';
+    Alert.alert(
+      `Nomination ${actionVerb}`,
+      `Candidate ${nomination.trainee_name} has been ${actionVerb.toLowerCase()} for ${nomination.programme_title}. Notification dispatched.`,
+      [{ text: 'OK', onPress: () => navigation.goBack() }]
+    );
   };
 
   return (
@@ -93,13 +116,13 @@ export const NominationReviewScreen = () => {
       {/* Header Info */}
       <View style={styles.topCard}>
         <View style={styles.topHeaderRow}>
-          <Text style={styles.appId}>APPLICATION {nomination.id.toUpperCase()}</Text>
-          <Badge label="Pending Review" variant="primary" />
+          <Text style={styles.appId}>APPLICATION {nominationId.toUpperCase()}</Text>
+          <Badge label={nomination.status === 'pending' ? 'Pending Review' : nomination.status} variant="primary" />
         </View>
         <Text style={styles.progTitle}>{nomination.programme_title}</Text>
         <View style={styles.institutionRow}>
           <Building2 size={ICON.sm} color={COLORS.primary} />
-          <Text style={styles.institutionName}>{nomination.institution_name}</Text>
+          <Text style={styles.institutionName}>Trainee ID: {nomination.trainee_id}</Text>
         </View>
       </View>
 
@@ -110,49 +133,40 @@ export const NominationReviewScreen = () => {
           <Text style={styles.sectionTitle}>Applicant Particulars</Text>
         </View>
 
+        {/* Only fields GET /programmes/nominations/list actually returns.
+            Designation, contact details, sponsoring society and justification
+            are shown by the National Council in mockups but there is no
+            backend field or endpoint for them yet — rather than fabricate
+            plausible-looking values for a screen that drives real
+            approve/reject decisions, this section says so explicitly below. */}
         <View style={styles.detailGrid}>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Candidate Name</Text>
             <Text style={styles.detailValue}>{nomination.trainee_name}</Text>
           </View>
           <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Current Designation</Text>
-            <Text style={styles.detailValue}>{nomination.designation}</Text>
+            <Text style={styles.detailLabel}>Current Status</Text>
+            <Text style={styles.detailValue}>{nomination.status}</Text>
           </View>
           <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Contact Email</Text>
-            <Text style={styles.detailValue}>{nomination.trainee_email}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Contact Phone</Text>
-            <Text style={styles.detailValue}>{nomination.trainee_phone}</Text>
-          </View>
-        </View>
-
-        {/* Sponsoring Society block */}
-        <View style={styles.societyBox}>
-          <View style={styles.societyHeader}>
-            <Building size={ICON.sm} color={COLORS.textSecondary} />
-            <Text style={styles.societyTitle}>Sponsoring Organisation</Text>
-          </View>
-          <Text style={styles.societyName}>{nomination.society_name || 'Individual Self-Nomination'}</Text>
-          {nomination.society_registration_no && (
-            <Text style={styles.societyReg}>Registration: {nomination.society_registration_no}</Text>
-          )}
-          {nomination.sponsor_officer_name && (
-            <Text style={styles.societySponsor}>
-              Endorsed by: {nomination.sponsor_officer_name} ({nomination.sponsor_officer_designation})
+            <Text style={styles.detailLabel}>Submitted</Text>
+            <Text style={styles.detailValue}>
+              {nomination.submitted_at ? new Date(nomination.submitted_at).toLocaleDateString() : 'Unknown'}
             </Text>
-          )}
+          </View>
         </View>
 
-        {/* Statement of Purpose */}
+        {/* Data-gap notice, not fabricated content */}
         <View style={styles.justificationBox}>
           <View style={styles.justificationHeader}>
             <FileText size={ICON.sm} color={COLORS.textSecondary} />
-            <Text style={styles.justificationTitle}>Nomination Justification</Text>
+            <Text style={styles.justificationTitle}>Additional Candidate Details</Text>
           </View>
-          <Text style={styles.justificationText}>{nomination.justification}</Text>
+          <Text style={styles.justificationText}>
+            Designation, contact details, sponsoring organisation, and nomination justification are not
+            returned by the current nomination listing API. A richer nomination-detail endpoint would be
+            needed to show them here.
+          </Text>
         </View>
       </View>
 

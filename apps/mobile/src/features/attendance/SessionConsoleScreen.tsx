@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -55,19 +55,31 @@ export const SessionConsoleScreen = () => {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const [rosterRetrying, setRosterRetrying] = useState(false);
+
+  const loadConsole = useCallback(
+    async (isRetry = false) => {
+      if (isRetry) setRosterRetrying(true);
+      try {
+        const data = await attendanceApi.getSessionConsole(sessionId);
+        setSession(data);
+        setQrToken(data.qr_token);
+        setQrData(data.qr_data);
+        setSecondsRemaining(data.expires_in || 15);
+      } finally {
+        setLoading(false);
+        if (isRetry) setRosterRetrying(false);
+      }
+    },
+    [sessionId]
+  );
+
   // Initial session fetch
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const data = await attendanceApi.getSessionConsole(sessionId);
-        if (mounted) {
-          setSession(data);
-          setQrToken(data.qr_token);
-          setQrData(data.qr_data);
-          setSecondsRemaining(data.expires_in || 15);
-          setLoading(false);
-        }
+        await loadConsole();
       } catch {
         if (mounted) setLoading(false);
       }
@@ -76,7 +88,7 @@ export const SessionConsoleScreen = () => {
     return () => {
       mounted = false;
     };
-  }, [sessionId]);
+  }, [loadConsole]);
 
   // Dynamic 15s rotating QR code countdown
   useEffect(() => {
@@ -266,6 +278,26 @@ export const SessionConsoleScreen = () => {
             <Text style={styles.rosterSubtitle}>Tap any student to manually override attendance</Text>
           </View>
 
+          {session?.roster_available === false ? (
+            <View style={styles.rosterUnavailableBox}>
+              <AlertTriangle size={ICON.md} color={COLORS.danger} />
+              <Text style={styles.rosterUnavailableText}>
+                Live roster is unavailable right now (could not reach the attendance server). The rotating QR
+                code above is still live — check-ins are being recorded, they just cannot be shown here until
+                the connection is restored.
+              </Text>
+              <TouchableOpacity
+                style={styles.rosterRetryBtn}
+                onPress={() => loadConsole(true)}
+                disabled={rosterRetrying}
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading roster"
+              >
+                <RefreshCw size={ICON.sm} color={COLORS.primary} />
+                <Text style={styles.rosterRetryText}>{rosterRetrying ? 'Retrying…' : 'Retry'}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
           <View style={styles.rosterList}>
             {roster.map((student) => {
               const isPresent = student.status === 'present';
@@ -306,6 +338,7 @@ export const SessionConsoleScreen = () => {
               );
             })}
           </View>
+          )}
         </View>
       </View>
 
@@ -555,6 +588,37 @@ const styles = StyleSheet.create({
   rosterList: {
     gap: SPACE.xs,
     marginTop: SPACE.xs,
+  },
+  rosterUnavailableBox: {
+    marginTop: SPACE.xs,
+    padding: SPACE.md,
+    gap: SPACE.sm,
+    alignItems: 'center',
+    backgroundColor: COLORS.dangerSurface,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.danger,
+  },
+  rosterUnavailableText: {
+    ...TEXT.caption,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  rosterRetryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: SPACE.xs,
+    paddingHorizontal: SPACE.md,
+    borderRadius: RADII.pill,
+    borderWidth: 1,
+    borderColor: COLORS.primaryBorder,
+    backgroundColor: COLORS.primarySurface,
+  },
+  rosterRetryText: {
+    ...TEXT.captionStrong,
+    color: COLORS.primary,
   },
   rosterItem: {
     flexDirection: 'row',

@@ -27,8 +27,19 @@ import {
   BookOpen,
   WifiOff,
   Lock,
+  Plus,
+  Search,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 function formatSavedAt(iso: string): string {
   try {
@@ -56,6 +67,19 @@ const enrolledCatalog = [
 
 export default function MyLearningPage() {
   const [filter, setFilter] = useState("In Progress");
+  const [enrolledList, setEnrolledList] = useState<{ courseId: string; initialProgress: number }[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("coopsetu_enrolled_courses");
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return enrolledCatalog;
+  });
+  const [enrolModalOpen, setEnrolModalOpen] = useState(false);
+  const [enrolSearch, setEnrolSearch] = useState("");
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+
   const [offlineMap, setOfflineMap] = useState<Record<string, CachedCourse>>({});
   const [downloadingMap, setDownloadingMap] = useState<Record<string, boolean>>({});
   const [storageStats, setStorageStats] = useState<{
@@ -66,6 +90,11 @@ export default function MyLearningPage() {
   }>({ coursesCount: 0, lessonsCount: 0, pendingCount: 0, estimatedSizeBytes: 0 });
 
   const { isOnline, pendingCount, lastSyncedAt, isSyncing, syncNow } = useOfflineSync();
+
+  const showNotice = (msg: string) => {
+    setActionNotice(msg);
+    setTimeout(() => setActionNotice(null), 4000);
+  };
 
   // Load offline status of all courses
   const refreshStorage = async () => {
@@ -93,7 +122,7 @@ export default function MyLearningPage() {
   }, []);
 
   const fullEnrolledCourses = useMemo(() => {
-    return enrolledCatalog.map((item) => {
+    return enrolledList.map((item) => {
       const match = courses.find((c) => c.id === item.courseId) || courses[0];
       const cached = offlineMap[match.id];
       return {
@@ -103,7 +132,7 @@ export default function MyLearningPage() {
         cachedInfo: cached,
       };
     });
-  }, [offlineMap]);
+  }, [enrolledList, offlineMap]);
 
   const filteredCourses = useMemo(() => {
     return fullEnrolledCourses.filter((c) => {
@@ -113,6 +142,35 @@ export default function MyLearningPage() {
       return true; // All
     });
   }, [fullEnrolledCourses, filter]);
+
+  // Catalog courses not yet enrolled in
+  const availableToEnrol = useMemo(() => {
+    const enrolledIds = new Set(enrolledList.map((e) => e.courseId));
+    return courses.filter((c) => !enrolledIds.has(c.id));
+  }, [enrolledList]);
+
+  const handleEnrolCourse = (courseId: string) => {
+    if (enrolledList.some((e) => e.courseId === courseId)) return;
+    const course = courses.find((c) => c.id === courseId);
+    const updated = [{ courseId, initialProgress: 0 }, ...enrolledList];
+    setEnrolledList(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("coopsetu_enrolled_courses", JSON.stringify(updated));
+    }
+    showNotice(`Enrolled in "${course?.title || "New Course"}" successfully!`);
+    setEnrolModalOpen(false);
+  };
+
+  const handleRemoveCourse = async (courseId: string) => {
+    const course = courses.find((c) => c.id === courseId);
+    const updated = enrolledList.filter((e) => e.courseId !== courseId);
+    setEnrolledList(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("coopsetu_enrolled_courses", JSON.stringify(updated));
+    }
+    await handleRemoveOffline(courseId);
+    showNotice(`Removed "${course?.title || "Course"}" from My Learning.`);
+  };
 
   const handleDownload = async (courseId: string) => {
     const course = courses.find((c) => c.id === courseId);
@@ -149,7 +207,24 @@ export default function MyLearningPage() {
       <PageHeader
         title="My Learning & Offline Hub"
         description="Download individual courses for offline access. Only downloaded courses remain accessible without a connection; progress syncs automatically once you're back online."
+        action={
+          <Button onClick={() => setEnrolModalOpen(true)} className="gap-1.5 shadow-sm">
+            <Plus className="size-4" /> Enrol New Course
+          </Button>
+        }
       />
+
+      {actionNotice && (
+        <Alert className="border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="size-4 text-emerald-600" />
+            <AlertDescription className="font-medium text-xs sm:text-sm">{actionNotice}</AlertDescription>
+          </div>
+          <button onClick={() => setActionNotice(null)} className="text-xs text-muted-foreground hover:text-foreground">
+            <X className="size-4" />
+          </button>
+        </Alert>
+      )}
 
       {/* Honest, localized offline notice - only shown when the browser is actually offline,
           and scoped to what's actually true (downloaded courses only), never a blanket
@@ -411,6 +486,17 @@ export default function MyLearningPage() {
                           {isDownloading ? "Saving..." : "Save Offline"}
                         </Button>
                       )}
+
+                      {/* Drop / Unenrol Action */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Remove from My Learning"
+                        onClick={() => handleRemoveCourse(c.id)}
+                        className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-2"
+                      >
+                        Drop
+                      </Button>
                     </div>
                   )}
                 </CardFooter>
@@ -419,6 +505,81 @@ export default function MyLearningPage() {
           })}
         </div>
       )}
+
+      {/* Enrol In New Course Modal */}
+      <Dialog open={enrolModalOpen} onOpenChange={setEnrolModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl">Enrol in a Cooperative Course</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Choose from the accredited NCCT cooperative curriculum to add to your active learning curriculum.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="relative my-2">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              value={enrolSearch}
+              onChange={(e) => setEnrolSearch(e.target.value)}
+              placeholder="Search course title, sector, skills..."
+              className="pl-9 text-sm"
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto pr-1 space-y-3 max-h-[50vh]">
+            {availableToEnrol
+              .filter((c) =>
+                !enrolSearch.trim() ||
+                c.title.toLowerCase().includes(enrolSearch.toLowerCase()) ||
+                c.category.toLowerCase().includes(enrolSearch.toLowerCase()) ||
+                c.skills.some((s) => s.toLowerCase().includes(enrolSearch.toLowerCase()))
+              )
+              .map((c) => (
+                <div
+                  key={c.id}
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-muted/30 transition-all"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px]">
+                        {c.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{c.durationHours} hrs</span>
+                      <span className="text-xs text-muted-foreground">&middot; {c.level}</span>
+                    </div>
+                    <h4 className="font-semibold text-sm text-foreground mt-1 truncate">
+                      {c.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                      {c.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {c.skills.slice(0, 3).map((s) => (
+                        <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    className="shrink-0 text-xs gap-1"
+                    onClick={() => handleEnrolCourse(c.id)}
+                  >
+                    <Plus className="size-3.5" /> Enrol Now
+                  </Button>
+                </div>
+              ))}
+
+            {availableToEnrol.length === 0 && (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                🎉 You are already enrolled in all catalog courses!
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

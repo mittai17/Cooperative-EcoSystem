@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,7 +15,6 @@ import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
 import { ProgressBar } from '../../components/ProgressBar';
 import { ProgressRing } from '../../components/ProgressRing';
-import { assessmentApi } from './assessmentApi';
 import { AssessmentResultData } from './assessmentTypes';
 import {
   Award,
@@ -30,35 +28,19 @@ import {
   BookOpen,
   ArrowRight,
   ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react-native';
 
 export const AssessmentResultScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'AssessmentResult'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const attemptId = route.params?.attemptId || 'att-demo-1';
 
-  const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<AssessmentResultData | null>(null);
+  // The real submit endpoint (POST /assessments/attempts/{id}/submit) is
+  // one-shot — the backend rejects a second call once the attempt is closed.
+  // AssessmentAttemptScreen already called it and passes the server-graded
+  // result here; this screen must render that, never re-submit.
+  const result: AssessmentResultData | null = route.params?.result ?? null;
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const data = await assessmentApi.submitAttempt(attemptId, {});
-        if (mounted) {
-          setResult(data);
-          setLoading(false);
-        }
-      } catch {
-        if (mounted) setLoading(false);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [attemptId]);
 
   const toggleExpand = (qId: string) => {
     setExpandedQuestions((prev) => ({
@@ -67,21 +49,34 @@ export const AssessmentResultScreen = () => {
     }));
   };
 
-  if (loading) {
+  if (!result) {
+    // No fabricated 0%/failed scorecard here — this screen only renders a
+    // real, server-graded result handed to it by AssessmentAttemptScreen.
     return (
-      <ScrollScreen title="Assessment Results">
+      <ScrollScreen
+        title="Assessment Results"
+        onBack={() => navigation.navigate('TraineeTabs', { screen: 'LearnTab' })}
+      >
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Compiling scorecard & competency evaluation...</Text>
+          <AlertTriangle size={ICON.lg} color={COLORS.danger} />
+          <Text style={styles.loadingText}>
+            No result available for this attempt. This can happen if the assessment was not submitted
+            successfully — return to the exam and try submitting again.
+          </Text>
+          <Button
+            label="Return to Learning Dashboard"
+            variant="secondary"
+            onPress={() => navigation.navigate('TraineeTabs', { screen: 'LearnTab' })}
+          />
         </View>
       </ScrollScreen>
     );
   }
 
-  const passed = result?.passed ?? false;
-  const score = result?.score ?? 0;
-  const topicBreakdown = result?.topic_breakdown ?? {};
-  const reviewQuestions = result?.review ?? [];
+  const passed = result.passed;
+  const score = result.score;
+  const topicBreakdown = result.topic_breakdown ?? {};
+  const reviewQuestions = result.review ?? [];
 
   return (
     <ScrollScreen

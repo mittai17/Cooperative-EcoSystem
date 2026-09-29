@@ -12,13 +12,26 @@ import {
   CircleX,
   MapPin,
   Sparkles,
+  CheckCircle2,
+  Send,
+  BadgeCheck,
+  ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import type { Job } from "@/lib/types";
 import { getJobMatch, getRecommendedCourse } from "@/lib/job-match";
 import { buildCompanyBlurb, buildRequirements, buildResponsibilities } from "./job-copy";
+import { getActiveDemoSession } from "@/lib/demo-users";
 
 function MatchGauge({ percent }: { percent: number }) {
   const size = 176;
@@ -57,11 +70,61 @@ function MatchGauge({ percent }: { percent: number }) {
 
 export function JobDetailsView({ job }: { job: Job }) {
   const [saved, setSaved] = useState(false);
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [coverNote, setCoverNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [appliedSuccess, setAppliedSuccess] = useState(false);
+  const [isApplied, setIsApplied] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("coopsetu_applications");
+        if (stored) {
+          const apps = JSON.parse(stored);
+          return apps.some((a: { jobId?: string; title?: string }) => a.jobId === job.id || a.title === job.title);
+        }
+      } catch {}
+    }
+    return false;
+  });
+
+  const session = getActiveDemoSession();
+  const applicantName = session.name || "Ravindra Suresh Patil";
+  const applicantEmail = session.email || "ravindra.patil@coopsetu.ai";
+
   const match = getJobMatch(job);
   const recommendedCourse = getRecommendedCourse(job);
   const responsibilities = buildResponsibilities(job);
   const requirements = buildRequirements(job);
   const companyBlurb = buildCompanyBlurb(job);
+
+  const handleSubmitApplication = () => {
+    setSubmitting(true);
+    setTimeout(() => {
+      const newApp = {
+        id: `app-${Date.now()}`,
+        jobId: job.id,
+        title: job.title,
+        employer: job.employer,
+        location: job.location,
+        type: job.type,
+        date: new Date().toISOString().split("T")[0],
+        status: "Applied",
+        coverNote,
+      };
+
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("coopsetu_applications");
+          const list = stored ? JSON.parse(stored) : [];
+          localStorage.setItem("coopsetu_applications", JSON.stringify([newApp, ...list]));
+        } catch {}
+      }
+
+      setIsApplied(true);
+      setSubmitting(false);
+      setAppliedSuccess(true);
+    }, 700);
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -79,6 +142,11 @@ export function JobDetailsView({ job }: { job: Job }) {
             <Badge className="gap-1 bg-success/10 text-success">
               <Sparkles className="size-3" /> {match.percent}% Match
             </Badge>
+            {isApplied && (
+              <Badge className="gap-1 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                <CheckCircle2 className="size-3" /> Application Submitted
+              </Badge>
+            )}
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
@@ -92,14 +160,99 @@ export function JobDetailsView({ job }: { job: Job }) {
             </span>
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Button size="lg" render={<Link href="/sign-up">Apply Now</Link>} />
+        <div className="flex shrink-0 gap-2 items-center">
+          {isApplied ? (
+            <Button size="lg" variant="secondary" render={<Link href="/applications">View in Applications <ArrowRight className="ml-1.5 size-4" /></Link>} />
+          ) : (
+            <Button size="lg" onClick={() => setApplyModalOpen(true)}>
+              Apply with Skill Passport
+            </Button>
+          )}
           <Button size="lg" variant="outline" className="gap-1.5" onClick={() => setSaved((v) => !v)}>
             {saved ? <BookmarkCheck className="size-4 text-primary" /> : <Bookmark className="size-4" />}
             {saved ? "Saved" : "Save"}
           </Button>
         </div>
       </div>
+
+      {/* Interactive Apply Dialog */}
+      <Dialog open={applyModalOpen} onOpenChange={setApplyModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl">Apply to {job.title}</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {job.employer} &middot; {job.location}
+            </DialogDescription>
+          </DialogHeader>
+
+          {appliedSuccess ? (
+            <div className="py-6 flex flex-col items-center text-center gap-3">
+              <div className="size-12 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="size-6" />
+              </div>
+              <h3 className="font-bold text-lg text-foreground">Application Submitted!</h3>
+              <p className="text-xs text-muted-foreground max-w-sm">
+                Your verified Skill Passport and contact details have been sent to <strong>{job.employer}</strong>. You can monitor the review progress in your Applications hub.
+              </p>
+              <div className="flex gap-2 mt-3">
+                <Button size="sm" variant="outline" onClick={() => setApplyModalOpen(false)}>
+                  Done
+                </Button>
+                <Button size="sm" render={<Link href="/applications">Go to Applications</Link>} />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2 text-xs sm:text-sm">
+              <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 flex items-start gap-3">
+                <BadgeCheck className="size-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-foreground text-xs sm:text-sm">
+                    Verified Skill Passport Attached ({match.percent}% Job Match)
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Includes your NCCT-certified skills: {job.skillsRequired.slice(0, 3).join(", ")}.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-lg border border-border p-3 bg-muted/20">
+                <p className="text-xs font-semibold text-foreground">Applicant Details</p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Candidate:</span>
+                    <p className="font-medium text-foreground">{applicantName}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Email:</span>
+                    <p className="font-medium text-foreground truncate">{applicantEmail}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1">
+                  Note to Employer (Optional)
+                </label>
+                <Textarea
+                  placeholder="Share a short note about your practical cooperative experience or availability..."
+                  value={coverNote}
+                  onChange={(e) => setCoverNote(e.target.value)}
+                  className="text-xs min-h-[80px]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <Button variant="ghost" size="sm" onClick={() => setApplyModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSubmitApplication} disabled={submitting}>
+                  {submitting ? "Submitting..." : "Confirm & Apply"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Tabs defaultValue="overview" className="mt-6">
         <TabsList variant="line" className="flex-wrap border-b border-border">

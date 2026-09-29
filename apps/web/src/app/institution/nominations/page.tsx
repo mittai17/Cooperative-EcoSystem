@@ -13,12 +13,22 @@ import {
   Search,
   Timer,
   X,
+  Plus,
+  CheckCircle2,
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { HorizontalBarList } from "@/components/dashboard/horizontal-bar-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
@@ -98,6 +108,13 @@ export default function NominationsPage() {
   const [query, setQuery] = useState("");
   const [programme, setProgramme] = useState<ProgrammeFilter>("all");
   const [selected, setSelected] = useState<string[]>([]);
+  const [nominateOpen, setNominateOpen] = useState(false);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [newTrainee, setNewTrainee] = useState("");
+  const [newSociety, setNewSociety] = useState("");
+  const [newDistrict, setNewDistrict] = useState("");
+  const [newState, setNewState] = useState("Gujarat");
+  const [newProgrammeCode, setNewProgrammeCode] = useState<ProgrammeCode>("CMF");
 
   const pending = rows.filter((row) => row.status === "Pending");
   const approvedThisMonth = rows.filter(
@@ -173,6 +190,34 @@ export default function NominationsPage() {
       ),
     );
     setSelected([]);
+    setActionNotice(`${ids.length} nomination${ids.length > 1 ? "s" : ""} marked as ${status}.`);
+    setTimeout(() => setActionNotice(null), 4000);
+  }
+
+  function handleSubmitNomination() {
+    if (!newTrainee.trim() || !newSociety.trim()) return;
+    const prog = institutionProgrammes.find((p) => p.code === newProgrammeCode) ?? institutionProgrammes[0];
+    const newRow: Nomination = {
+      id: `nom-${Date.now()}`,
+      trainee: newTrainee.trim(),
+      society: newSociety.trim(),
+      district: newDistrict.trim() || "Anand",
+      state: newState,
+      programmeCode: newProgrammeCode,
+      programme: prog.title,
+      submittedOn: INSTITUTION_DEMO_TODAY,
+      decidedOn: null,
+      daysToDecide: null,
+      status: "Pending",
+      batchCode: null,
+    };
+    setRows((prev) => [newRow, ...prev]);
+    setNominateOpen(false);
+    setNewTrainee("");
+    setNewSociety("");
+    setNewDistrict("");
+    setActionNotice(`Nomination for "${newRow.trainee}" submitted successfully! It is now pending review.`);
+    setTimeout(() => setActionNotice(null), 5000);
   }
 
   function toggleSelected(id: string, checked: boolean) {
@@ -221,9 +266,24 @@ export default function NominationsPage() {
               />
               Refresh
             </Button>
+            <Button onClick={() => setNominateOpen(true)} className="gap-1.5 shadow-sm">
+              <Plus className="size-4" /> Submit Nomination
+            </Button>
           </div>
         }
       />
+
+      {actionNotice && (
+        <Alert className="border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="size-4 text-emerald-600" />
+            <AlertDescription className="text-xs sm:text-sm font-medium">{actionNotice}</AlertDescription>
+          </div>
+          <button onClick={() => setActionNotice(null)} className="text-xs text-muted-foreground hover:text-foreground">
+            <X className="size-4" />
+          </button>
+        </Alert>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
@@ -480,6 +540,103 @@ export default function NominationsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Submit Nomination Dialog */}
+      <Dialog open={nominateOpen} onOpenChange={setNominateOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl">Submit Trainee Nomination</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Nominate a member from an affiliated cooperative society for upcoming training programmes.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3.5 py-2 text-xs sm:text-sm">
+            <div>
+              <label className="text-xs font-semibold text-foreground block mb-1">
+                Trainee Full Name *
+              </label>
+              <Input
+                placeholder="e.g. Suresh V. Chaudhari"
+                value={newTrainee}
+                onChange={(e) => setNewTrainee(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-foreground block mb-1">
+                Nominating Cooperative Society *
+              </label>
+              <Input
+                placeholder="e.g. Mehsana District Milk Producers Union"
+                value={newSociety}
+                onChange={(e) => setNewSociety(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-foreground block mb-1">
+                  District
+                </label>
+                <Input
+                  placeholder="e.g. Mehsana"
+                  value={newDistrict}
+                  onChange={(e) => setNewDistrict(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-foreground block mb-1">
+                  State
+                </label>
+                <Input
+                  placeholder="e.g. Gujarat"
+                  value={newState}
+                  onChange={(e) => setNewState(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-foreground block mb-1">
+                Programme Applied For *
+              </label>
+              <Select
+                value={newProgrammeCode}
+                onValueChange={(val) => setNewProgrammeCode(val as ProgrammeCode)}
+              >
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue placeholder="Select programme" />
+                </SelectTrigger>
+                <SelectContent>
+                  {institutionProgrammes.map((p) => (
+                    <SelectItem key={p.code} value={p.code} className="text-xs">
+                      {p.code} &middot; {p.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setNominateOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmitNomination}
+                disabled={!newTrainee.trim() || !newSociety.trim()}
+              >
+                Submit Nomination
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

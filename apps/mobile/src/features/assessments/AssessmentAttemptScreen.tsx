@@ -17,7 +17,7 @@ import { ScrollScreen } from '../../components/ScrollScreen';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
 import { ProgressBar } from '../../components/ProgressBar';
-import { assessmentApi } from './assessmentApi';
+import { assessmentApi, AssessmentApiError } from './assessmentApi';
 import { AssessmentAttemptData, AssessmentQuestion } from './assessmentTypes';
 import {
   Clock,
@@ -45,6 +45,7 @@ export const AssessmentAttemptScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [autoSaved, setAutoSaved] = useState(true);
+  const [autoSaveFailed, setAutoSaveFailed] = useState(false);
 
   const [initialSeconds, setInitialSeconds] = useState(30 * 60);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -88,25 +89,24 @@ export const AssessmentAttemptScreen = () => {
     setReviewOpen(false);
 
     try {
-      await assessmentApi.submitAttempt(attemptId, answers);
-      navigation.replace('AssessmentResult', { attemptId });
-    } catch {
+      const result = await assessmentApi.submitAttempt(attemptId);
+      // Pass the real, server-graded result forward — the submit endpoint is
+      // one-shot, so AssessmentResultScreen must not call it again.
+      navigation.replace('AssessmentResult', { attemptId, result });
+    } catch (e) {
+      // A real failure must stay visible and must NOT navigate to a result
+      // screen — there is no result to show, and re-submitting is safe to
+      // retry since the attempt is still in_progress on the backend.
       Alert.alert(
-        'Submission Error',
-        'Could not submit the assessment directly. Submitting with saved responses.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              navigation.replace('AssessmentResult', { attemptId });
-            },
-          },
-        ]
+        'Submission Failed',
+        e instanceof AssessmentApiError
+          ? e.message
+          : 'Could not submit your assessment. Please check your connection and try again.'
       );
     } finally {
       setSubmitting(false);
     }
-  }, [answers, attemptId, navigation, submitting]);
+  }, [attemptId, navigation, submitting]);
 
   // Countdown timer with auto-submit
   useEffect(() => {
@@ -160,11 +160,19 @@ export const AssessmentAttemptScreen = () => {
     };
     setAnswers(newAnswers);
     setAutoSaved(false);
+    setAutoSaveFailed(false);
 
-    // Debounced autosave
-    assessmentApi.saveAnswer(attemptId, qId, [option]).then(() => {
-      setAutoSaved(true);
-    });
+    // Debounced autosave — a real failure must be visible, not silently
+    // treated as saved.
+    assessmentApi
+      .saveAnswer(attemptId, qId, [option])
+      .then(() => {
+        setAutoSaved(true);
+      })
+      .catch(() => {
+        setAutoSaved(false);
+        setAutoSaveFailed(true);
+      });
   };
 
   const answeredCount = useMemo(() => {
@@ -234,8 +242,10 @@ export const AssessmentAttemptScreen = () => {
             </View>
 
             <View style={styles.autoSaveRow}>
-              <Save size={ICON.sm} color={autoSaved ? COLORS.success : COLORS.textMuted} />
-              <Text style={styles.autoSaveText}>{autoSaved ? 'Saved' : 'Saving...'}</Text>
+              <Save size={ICON.sm} color={autoSaveFailed ? COLORS.danger : autoSaved ? COLORS.success : COLORS.textMuted} />
+              <Text style={[styles.autoSaveText, autoSaveFailed && { color: COLORS.danger }]}>
+                {autoSaveFailed ? 'Save failed — check connection' : autoSaved ? 'Saved' : 'Saving...'}
+              </Text>
             </View>
           </View>
 

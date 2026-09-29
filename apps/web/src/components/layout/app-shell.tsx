@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { roleNav } from "@/lib/nav-config";
 import type { UserRole } from "@/lib/types";
+import { DemoRoleSwitcherBanner } from "@/components/auth/demo-role-switcher-banner";
 
 interface AppShellProps {
   role: UserRole;
@@ -55,6 +56,10 @@ const roleNotifications: Record<UserRole, { title: string; detail: string }[]> =
   admin: [
     { title: "Monthly outcomes report ready", detail: "September employment funnel updated" },
     { title: "New institution onboarded", detail: "Fisheries Cooperative Federation, Kochi" },
+  ],
+  kiosk: [
+    { title: "Terminal Online", detail: "Station 01 sync complete with Central Hub" },
+    { title: "Attendance Buffer", detail: "18 offline records synced successfully" },
   ],
 };
 
@@ -143,6 +148,7 @@ export function AppShell({ role, children }: AppShellProps) {
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <DemoRoleSwitcherBanner />
         {/* Topbar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-background px-4 sm:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-3">

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Ravindra Suresh Patil",
+    "role": "trainee",
+    "email": "demo.trainee@coopsetu.example.com",
+    "organization": "Vaikunth Mehta National Institute of Cooperative Management",
+    "target_url": "http://localhost:3000/dashboard",
+    "external_id": "coopsetu-demo-trainee",
+    "clerk_org_id": "org_3JuDps9pToYytp56TVQeh2Z3UJw"
+  },
+  {
+    "name": "Prof. K. S. Rao",
+    "role": "institution",
+    "email": "demo.institution@coopsetu.example.com",
+    "organization": "Vaikunth Mehta National Institute of Cooperative Management",
+    "target_url": "http://localhost:3000/institution/dashboard",
+    "external_id": "coopsetu-demo-institution",
+    "clerk_org_id": "org_3JuDps9pToYytp56TVQeh2Z3UJw"
+  },
+  {
+    "name": "Dr. Meera Deshmukh",
+    "role": "trainer",
+    "email": "demo.trainer@coopsetu.example.com",
+    "organization": "Vaikunth Mehta National Institute of Cooperative Management",
+    "target_url": "http://localhost:3000/trainer/dashboard",
+    "external_id": "coopsetu-demo-trainer",
+    "clerk_org_id": "org_3JuDps9pToYytp56TVQeh2Z3UJw"
+  },
+  {
+    "name": "Ramesh Verma",
+    "role": "employer",
+    "email": "demo.employer@coopsetu.example.com",
+    "organization": "Amul Dairy Cooperative Union",
+    "target_url": "http://localhost:3000/employer/dashboard",
+    "external_id": "coopsetu-demo-employer",
+    "clerk_org_id": "org_3JuDq6UqDKMazOZEkpaS9yy2HLn"
+  },
+  {
+    "name": "Dr. Anita Sharma",
+    "role": "admin",
+    "email": "demo.admin@coopsetu.example.com",
+    "organization": "NCCT - National Council for Cooperative Training",
+    "target_url": "http://localhost:3000/admin/dashboard",
+    "external_id": "coopsetu-demo-admin",
+    "clerk_org_id": "org_3JuDpiq9fMIaoraENb94kHLdXu7"
+  },
+  {
+    "name": "CoopSetu Attendance Kiosk",
+    "role": "kiosk",
+    "email": null,
+    "organization": "CoopSetu AI (shared on-premise kiosk device)",
+    "target_url": "http://localhost:3000/kiosk",
+    "external_id": null,
+    "clerk_org_id": null,
+    "note": "Shared unauthenticated device; not a Clerk identity. Not part of the backend DEMO_ACCOUNTS allowlist. Trainer flow: /trainer/attendance, Trainee flow: /attendance."
+  }
+]

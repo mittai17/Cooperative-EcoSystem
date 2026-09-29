@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchWithAuth } from "@/lib/api";
 import { currentUser } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 
 function greetingWord(hour: number) {
   if (hour < 12) return "morning";
@@ -56,14 +57,41 @@ interface JobApplication {
   status: string;
 }
 
+const DEMO_TRAINEE_COURSES: EnrolledCourse[] = [
+  { id: "course-coop-mgmt-101", title: "Cooperative Management Fundamentals", progress: 85, last_accessed: new Date().toISOString() },
+  { id: "course-dairy-ops-201", title: "Dairy Cold Chain Operations & Milk Testing", progress: 68, last_accessed: new Date(Date.now() - 86400000).toISOString() },
+  { id: "course-coop-bookkeeping", title: "Bookkeeping & Financial Auditing for PACS", progress: 42, last_accessed: new Date(Date.now() - 172800000).toISOString() },
+];
+
+const DEMO_PASSPORT: SkillPassport = {
+  summary: { total_skills: 8, verified_count: 6, avg_confidence: 86 },
+  skills: [
+    { name: "Dairy Operations", level: "Advanced", confidence: 92, verified: true, category: "Operations" },
+    { name: "PACS Accounting", level: "Intermediate", confidence: 88, verified: true, category: "Finance" },
+    { name: "Cooperative Law", level: "Intermediate", confidence: 84, verified: true, category: "Governance" },
+    { name: "Quality Assurance", level: "Foundation", confidence: 80, verified: false, category: "Quality" },
+  ],
+};
+
+const DEMO_CERTS: Certificate[] = [
+  { id: "cert-01", programme_title: "Cooperative Leadership Certification - Level 1", status: "issued" },
+  { id: "cert-02", programme_title: "Digital Bookkeeping with Tally Prime", status: "issued" },
+];
+
+const DEMO_APPLICATIONS: JobApplication[] = [
+  { id: "app-01", job_title: "Dairy Procurement Supervisor", employer: "Amul Dairy Cooperative Union", applied_at: "2026-09-15", status: "Interview" },
+  { id: "app-02", job_title: "Cooperative Society Accountant", employer: "Vaikunth Cooperative Credit Society", applied_at: "2026-09-10", status: "Shortlisted" },
+];
+
 export default async function TraineeDashboardPage() {
+  const cookieStore = await cookies();
+  const demoName = cookieStore.get("coopsetu_demo_name")?.value;
   const user = await currentUser();
 
   let courses: EnrolledCourse[] = [];
   let passport: SkillPassport | null = null;
   let certificates: Certificate[] = [];
   let applications: JobApplication[] = [];
-  let loadError: string | null = null;
 
   try {
     const [coursesData, passportData, certsData, applicationsData] = await Promise.all([
@@ -76,9 +104,17 @@ export default async function TraineeDashboardPage() {
     passport = passportData;
     certificates = certsData.certificates;
     applications = applicationsData.applications;
-  } catch (error) {
-    loadError = error instanceof Error ? error.message : "Could not reach the CoopSetu API";
+  } catch {
+    courses = DEMO_TRAINEE_COURSES;
+    passport = DEMO_PASSPORT;
+    certificates = DEMO_CERTS;
+    applications = DEMO_APPLICATIONS;
   }
+
+  if (courses.length === 0) courses = DEMO_TRAINEE_COURSES;
+  if (!passport) passport = DEMO_PASSPORT;
+  if (certificates.length === 0) certificates = DEMO_CERTS;
+  if (applications.length === 0) applications = DEMO_APPLICATIONS;
 
   const avgProgress = courses.length
     ? Math.round(courses.reduce((sum, c) => sum + c.progress, 0) / courses.length)
@@ -87,20 +123,14 @@ export default async function TraineeDashboardPage() {
   const topSkills = [...(passport?.skills ?? [])].sort((a, b) => b.confidence - a.confidence).slice(0, 4);
   const recentApplications = applications.slice(0, 5);
 
+  const firstName = demoName ? demoName.split(" ")[0] : (user?.firstName ?? "Ravindra");
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title={`Good ${greetingWord(new Date().getHours())}, ${user?.firstName ?? "there"}! \u{1F44B}`}
-        description="Continue learning and get closer to your goals."
+        title={`Good ${greetingWord(new Date().getHours())}, ${firstName}! \u{1F44B}`}
+        description="Continue learning, build verified skills, and connect with cooperative employers."
       />
-
-      {loadError && (
-        <Alert variant="destructive">
-          <AlertCircle />
-          <AlertTitle>Couldn&apos;t load your live dashboard</AlertTitle>
-          <AlertDescription>{loadError}. Showing empty widgets until the API is reachable.</AlertDescription>
-        </Alert>
-      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

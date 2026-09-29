@@ -1,4 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+import { AssessmentResultData } from '../features/assessments/assessmentTypes';
 
 // ---------------------------------------------------------------------------
 // Role-based Bottom Tab Param Lists
@@ -75,7 +76,11 @@ export type RootStackParamList = {
   LessonPlayer: { courseId: string; lessonId: string; lang?: string };
   AssessmentIntro: { assessmentId: string };
   AssessmentAttempt: { attemptId: string };
-  AssessmentResult: { attemptId: string };
+  // `result` is the already-graded result from the real submitAttempt() call in
+  // AssessmentAttemptScreen. The backend's submit endpoint is one-shot (it 409s
+  // on a closed attempt), so AssessmentResultScreen must not call it again —
+  // it renders this passed-in result instead of re-fetching.
+  AssessmentResult: { attemptId: string; result?: AssessmentResultData };
   Certificates: undefined;
   CertificateDetail: { code: string };
   Passport: undefined;
@@ -89,7 +94,25 @@ export type RootStackParamList = {
   TraineeDetail: { traineeId: string };
 
   // Institution Stack Routes
-  NominationReview: { nominationId: string };
+  //
+  // `nomination` is the real row from GET /programmes/nominations/list
+  // (NominationInboxScreen), passed through so NominationReviewScreen renders
+  // real data instead of re-deriving it from a mock lookup by id. That list
+  // endpoint only returns these fields — there is no richer nomination-detail
+  // endpoint (designation/contact/society/justification) as of this pass.
+  NominationReview: {
+    nominationId: string;
+    nomination?: {
+      id?: string;
+      programme_id: string;
+      programme_title: string;
+      trainee_id: string;
+      trainee_name: string;
+      status: string;
+      batch_id: string | null;
+      submitted_at: string | null;
+    };
+  };
   BatchDetail: { batchId: string };
   Certification: { batchId: string };
   ScheduleChange: { slotId: string; date: string };

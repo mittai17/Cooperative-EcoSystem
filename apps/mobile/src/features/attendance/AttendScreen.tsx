@@ -142,9 +142,20 @@ export const AttendScreen = () => {
     submitAttendanceToken(demoToken, 'QR Scanner');
   };
 
+  // Dev-only fallback: fabricates a tag string instead of a real NFC read.
+  // Only ever shown/used when real NFC hardware is unsupported/unavailable
+  // on this device (Expo Go, or an emulator/device with no NFC radio) — see
+  // the 'nfc' tab render below, which picks this vs. the real scan based on
+  // `nfc.status`.
   const handleNfcTapSimulate = () => {
     const demoNfcTag = `coopsetu:attend:${selectedSession?.session_id || 'sess-1'}.nfc.019a7`;
-    submitAttendanceToken(demoNfcTag, 'NFC Contactless');
+    submitAttendanceToken(demoNfcTag, 'NFC Contactless (Simulated)');
+  };
+
+  // Real NFC path: waits for an actual tag read via useNfcScan and submits
+  // its literal contents. Only reachable when nfc.status === 'ready'.
+  const handleRealNfcTap = () => {
+    nfc.start((token) => submitAttendanceToken(token, 'NFC Contactless'));
   };
 
   const handleManualPinSubmit = () => {
@@ -290,15 +301,41 @@ export const AttendScreen = () => {
             <View style={styles.nfcRadarCircle}>
               <Radio size={48} color={COLORS.primary} />
             </View>
-            <Text style={styles.nfcTitle}>Ready to Tap Contactless NFC</Text>
+            <Text style={styles.nfcTitle}>
+              {nfc.status === 'ready' ? 'Ready to Tap Contactless NFC' : 'NFC Contactless Check-In'}
+            </Text>
             <Text style={styles.nfcDesc}>
               Hold your smartphone close to the trainer&apos;s NFC terminal or attendance reader at the entrance.
             </Text>
             <Badge label={`NFC Hardware: ${nfc.status.toUpperCase()}`} variant="neutral" />
 
-            <TouchableOpacity style={styles.mockNfcBtn} onPress={handleNfcTapSimulate}>
-              <Text style={styles.mockNfcText}>Simulate NFC Badge Tap</Text>
-            </TouchableOpacity>
+            {nfc.error ? <Text style={styles.nfcErrorText}>{nfc.error.message}</Text> : null}
+
+            {nfc.status === 'ready' ? (
+              // Real hardware is available on this device — use the actual
+              // NFC read from useNfcScan. Never substitute a fake tap here.
+              <Button
+                label={nfc.scanning ? 'Hold near tag…' : 'Tap to Scan (Real NFC)'}
+                icon={<Radio size={ICON.md} color={COLORS.textInverse} />}
+                onPress={handleRealNfcTap}
+                loading={nfc.scanning}
+                disabled={submitting}
+              />
+            ) : nfc.status === 'disabled' ? (
+              <Button
+                label="Turn On NFC in Settings"
+                variant="secondary"
+                onPress={() => nfc.openSettings()}
+              />
+            ) : (
+              // status is 'unsupported' or 'unavailable': no real NFC radio,
+              // or running in Expo Go without the native module. This is the
+              // ONLY case where the dev-only simulate path is shown, and it
+              // is labeled as such rather than passed off as a real tap.
+              <TouchableOpacity style={styles.mockNfcBtn} onPress={handleNfcTapSimulate}>
+                <Text style={styles.mockNfcText}>Simulate (Dev Only) — No NFC Hardware Detected</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : null}
 
@@ -625,6 +662,11 @@ const styles = StyleSheet.create({
   mockNfcText: {
     ...TEXT.captionStrong,
     color: COLORS.primary,
+  },
+  nfcErrorText: {
+    ...TEXT.caption,
+    color: COLORS.danger,
+    textAlign: 'center',
   },
   faceCard: {
     ...CARD,

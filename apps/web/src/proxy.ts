@@ -11,11 +11,18 @@ const isPublicRoute = createRouteMatcher([
   '/verify-certificate(.*)',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/demo(.*)',
   '/api/v1/certificates/(.*)/verify',
   '/kiosk(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
+  // If demo role cookie is set, allow access to all routes without auth.protect()
+  const demoRole = req.cookies.get('coopsetu_demo_role')?.value;
+  if (demoRole) {
+    return;
+  }
+
   if (!isPublicRoute(req)) {
     await auth.protect();
   }

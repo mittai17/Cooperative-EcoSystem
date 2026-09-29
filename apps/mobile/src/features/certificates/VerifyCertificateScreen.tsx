@@ -19,7 +19,7 @@ import { ScrollScreen } from '../../components/ScrollScreen';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
 import { IconChip } from '../../components/IconChip';
-import { certificateApi, VerificationResult } from './certificateApi';
+import { certificateApi, CertificateVerificationError, VerificationResult } from './certificateApi';
 import { formatDate } from '../../services/utils';
 import {
   ShieldCheck,
@@ -35,6 +35,8 @@ import {
   Hash,
   X,
   Lock,
+  RefreshCw,
+  WifiOff,
 } from 'lucide-react-native';
 
 export const VerifyCertificateScreen = () => {
@@ -45,6 +47,8 @@ export const VerifyCertificateScreen = () => {
   const [inputCode, setInputCode] = useState(initialCode);
   const [verifying, setVerifying] = useState(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [lastAttemptedCode, setLastAttemptedCode] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -57,15 +61,27 @@ export const VerifyCertificateScreen = () => {
 
     setVerifying(true);
     setResult(null);
+    setVerifyError(null);
+    setLastAttemptedCode(target);
 
     try {
       const res = await certificateApi.verifyCertificate(target);
       setResult(res);
-    } catch {
-      Alert.alert('Verification Failed', 'Unable to reach the National Certificate Registry. Check connection.');
+    } catch (e) {
+      // Real API failure (network error or non-200) — never fabricate a
+      // result here. Show an honest error state with a retry action.
+      setVerifyError(
+        e instanceof CertificateVerificationError
+          ? e.message
+          : 'Could not verify — check your connection and try again.'
+      );
     } finally {
       setVerifying(false);
     }
+  };
+
+  const handleRetryVerify = () => {
+    if (lastAttemptedCode) handleVerify(lastAttemptedCode);
   };
 
   useEffect(() => {
@@ -173,6 +189,29 @@ export const VerifyCertificateScreen = () => {
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color={COLORS.primary} />
             <Text style={styles.loadingText}>Validating HMAC-SHA256 hash against NCCT registry...</Text>
+          </View>
+        ) : null}
+
+        {verifyError && !verifying ? (
+          <View style={styles.resultContainer}>
+            <View style={[styles.resultCard, styles.errorCard]}>
+              <View style={styles.errorBanner}>
+                <WifiOff size={28} color={COLORS.danger} />
+                <View style={styles.bannerTextCol}>
+                  <Text style={styles.errorBannerTitle}>COULD NOT VERIFY</Text>
+                  <Text style={styles.errorBannerSub}>{verifyError}</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.retryBtn}
+                onPress={handleRetryVerify}
+                accessibilityRole="button"
+                accessibilityLabel="Retry verification"
+              >
+                <RefreshCw size={ICON.sm} color={COLORS.textInverse} />
+                <Text style={styles.retryBtnText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : null}
 
@@ -455,6 +494,40 @@ const styles = StyleSheet.create({
   invalidCard: {
     borderColor: COLORS.danger,
     backgroundColor: COLORS.dangerSurface,
+  },
+  errorCard: {
+    borderColor: COLORS.danger,
+    backgroundColor: COLORS.dangerSurface,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.sm,
+    padding: SPACE.sm,
+    backgroundColor: '#FDECEC',
+    borderRadius: RADII.md,
+  },
+  errorBannerTitle: {
+    ...TEXT.bodyStrong,
+    color: COLORS.danger,
+    fontSize: 13,
+  },
+  errorBannerSub: {
+    ...TEXT.caption,
+    color: COLORS.textSecondary,
+  },
+  retryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACE.xs,
+    backgroundColor: COLORS.danger,
+    borderRadius: RADII.md,
+    paddingVertical: SPACE.md,
+  },
+  retryBtnText: {
+    ...TEXT.bodyStrong,
+    color: COLORS.textInverse,
   },
   verifiedBanner: {
     flexDirection: 'row',

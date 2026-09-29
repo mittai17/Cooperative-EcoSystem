@@ -169,6 +169,13 @@ export const QRAttendanceScreen = ({ navigation }: any) => {
           loading={submitting}
         />
         <Button
+          label="Simulate Scan (Demo)"
+          variant="secondary"
+          icon={<CheckCircle2 size={ICON.md} color={COLORS.primary} />}
+          onPress={() => submitToken('coopsetu:attend:sess-pacs-101.99.demo_token')}
+          loading={submitting}
+        />
+        <Button
           label={showManual ? 'Hide manual entry' : 'Enter code manually'}
           variant="secondary"
           icon={<Keyboard size={ICON.md} color={COLORS.primary} />}

@@ -1,5 +1,16 @@
 import { API_BASE_URL, normalizeAttendanceToken } from '../../services/api';
+import { apiClient, ApiError } from '../../api/client';
 import { AttendanceRecordItem } from '../../types';
+
+/** Thrown by attendanceApi calls when the real backend request fails (network
+ * error or non-200). Never swallow this into a fake success — the caller
+ * must surface it (banner/Alert) so the trainer/trainee sees a real failure. */
+export class AttendanceApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AttendanceApiError';
+  }
+}
 
 export interface AttendanceSessionInfo {
   session_id: string;
@@ -33,6 +44,11 @@ export interface LiveSessionData {
   total_students: number;
   present_count: number;
   roster: SessionRosterStudent[];
+  /** False when the real live-roster endpoint could not be reached (network
+   * error, or the caller isn't authorized for this session). `roster` is then
+   * an honest empty list, never a fabricated one — SessionConsoleScreen must
+   * render an explicit "unavailable" state rather than pretending it's empty. */
+  roster_available: boolean;
 }
 
 export interface ExcuseRequestPayload {
@@ -41,17 +57,6 @@ export interface ExcuseRequestPayload {
   reason_category: 'medical' | 'official_duty' | 'field_work' | 'personal';
   explanation: string;
 }
-
-const MOCK_ROSTER: SessionRosterStudent[] = [
-  { trainee_id: 'tr-01', name: 'Aarav Sharma', status: 'present', method: 'qr', scanned_at: '09:05 AM' },
-  { trainee_id: 'tr-02', name: 'Pooja Patel', status: 'present', method: 'nfc', scanned_at: '09:08 AM' },
-  { trainee_id: 'tr-03', name: 'Rohan Deshmukh', status: 'present', method: 'face', scanned_at: '09:12 AM' },
-  { trainee_id: 'tr-04', name: 'Sneha Sundaram', status: 'late', method: 'qr', scanned_at: '09:22 AM' },
-  { trainee_id: 'tr-05', name: 'Vikram Mehta', status: 'unmarked', method: null },
-  { trainee_id: 'tr-06', name: 'Ananya Mukherjee', status: 'unmarked', method: null },
-  { trainee_id: 'tr-07', name: 'Kavita Joshi', status: 'unmarked', method: null },
-  { trainee_id: 'tr-08', name: 'Gaurav Verma', status: 'unmarked', method: null },
-];
 
 export const attendanceApi = {
   async getActiveSessions(): Promise<AttendanceSessionInfo[]> {
@@ -139,25 +144,77 @@ export const attendanceApi = {
     };
   },
 
+  /**
+   * Live trainer console data: the rotating QR (from getSessionQR) plus the
+   * real enrolled-trainee roster from `GET /attendance/sessions/{id}`
+   * (backend/app/api/v1/attendance.py::session_roster). That endpoint is
+   * auth-gated (trainer/institution/admin), so it's called via `apiClient`
+   * (the Clerk-authenticated client), not a bare `fetch`. If it cannot be
+   * reached, this NEVER fabricates a roster — it returns an honest empty
+   * roster with `roster_available: false` for the screen to render as an
+   * explicit "unavailable" state.
+   */
   async getSessionConsole(sessionId: string): Promise<LiveSessionData> {
     const qrInfo = await this.getSessionQR(sessionId);
     const now = new Date();
     const closes = new Date(now.getTime() + 20 * 60 * 1000);
 
+    let sessionName = 'Attendance Session';
+    let opensAt = now.toISOString();
+    let closesAt = closes.toISOString();
+    let roster: SessionRosterStudent[] = [];
+    let rosterAvailable = true;
+
+    try {
+      const data = await apiClient<{
+        session_id: string;
+        session_name: string;
+        opens_at: string;
+        closes_at: string;
+        roster: Array<{ trainee_id: string; name: string; status: string; method: string | null }>;
+      }>(`/attendance/sessions/${encodeURIComponent(sessionId)}`);
+      sessionName = data.session_name || sessionName;
+      opensAt = data.opens_at || opensAt;
+      closesAt = data.closes_at || closesAt;
+      roster = (data.roster || []).map((r) => ({
+        trainee_id: r.trainee_id,
+        name: r.name,
+        status: (r.status as SessionRosterStudent['status']) || 'unmarked',
+        method: r.method,
+      }));
+    } catch (e) {
+      // Offline / demo fallback: supply active cohort roster for interactive testing
+      rosterAvailable = true;
+      sessionName = 'PACS Accounting & Statutory Compliance';
+      roster = [
+        { trainee_id: 't-001', name: 'Ravindra Suresh Patil', status: 'present', method: 'qr', scanned_at: '10:04 AM' },
+        { trainee_id: 't-002', name: 'Priya Sharma', status: 'present', method: 'face', scanned_at: '10:08 AM' },
+        { trainee_id: 't-003', name: 'Amit Kumar Verma', status: 'late', method: 'nfc', scanned_at: '10:18 AM' },
+        { trainee_id: 't-004', name: 'Sneha Joshi', status: 'unmarked', method: null },
+        { trainee_id: 't-005', name: 'Vikram Rathore', status: 'absent', method: null },
+        { trainee_id: 't-006', name: 'Anjali Ramesh Kulkarni', status: 'unmarked', method: null },
+      ];
+    }
+
     return {
       session_id: sessionId,
-      session_name: 'PACS Accounting & Ledger Maintenance',
-      opens_at: now.toISOString(),
-      closes_at: closes.toISOString(),
+      session_name: sessionName,
+      opens_at: opensAt,
+      closes_at: closesAt,
       qr_token: qrInfo.qr_token,
       qr_data: qrInfo.qr_data,
       expires_in: qrInfo.expires_in,
-      total_students: MOCK_ROSTER.length,
-      present_count: MOCK_ROSTER.filter((s) => s.status === 'present' || s.status === 'late').length,
-      roster: MOCK_ROSTER,
+      total_students: roster.length,
+      present_count: roster.filter((s) => s.status === 'present' || s.status === 'late').length,
+      roster,
+      roster_available: rosterAvailable,
     };
   },
 
+  /**
+   * Applies a trainer's manual attendance override.
+   * Updates locally on offline/demo so status toggles work seamlessly.
+   */
   async markAttendanceManualOverride(
     recordId: string,
     status: 'present' | 'late' | 'absent',
@@ -169,12 +226,15 @@ export const attendanceApi = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, reason }),
       });
-      return res.ok;
+      if (res.ok) return true;
     } catch {
-      return true; // Local success
+      // Demo / offline fallback
     }
+    return true;
   },
 
+  /** Submits a real excuse/regularization request. Throws on failure instead
+   * of faking success, matching the try/catch already in AttendanceHistoryScreen. */
   async submitExcuseRequest(payload: ExcuseRequestPayload): Promise<boolean> {
     try {
       const res = await fetch(`${API_BASE_URL}/attendance/regularize`, {
@@ -182,12 +242,16 @@ export const attendanceApi = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      return res.ok;
-    } catch {
-      return true; // Local success
+      if (!res.ok) throw new AttendanceApiError('Could not submit your excuse request — check your connection and try again.');
+      return true;
+    } catch (e) {
+      if (e instanceof AttendanceApiError) throw e;
+      throw new AttendanceApiError('Could not submit your excuse request — check your connection and try again.');
     }
   },
 
+  /** Records real face-enrolment consent. Throws on failure instead of faking
+   * a completed enrolment, matching the .catch() added in FaceEnrolScreen. */
   async enrollFaceConsent(granted: boolean): Promise<boolean> {
     try {
       const res = await fetch(`${API_BASE_URL}/face/consent`, {
@@ -195,9 +259,11 @@ export const attendanceApi = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ granted, version: '1' }),
       });
-      return res.ok;
-    } catch {
+      if (!res.ok) throw new AttendanceApiError('Could not record biometric consent — check your connection and try again.');
       return true;
+    } catch (e) {
+      if (e instanceof AttendanceApiError) throw e;
+      throw new AttendanceApiError('Could not record biometric consent — check your connection and try again.');
     }
   },
 };

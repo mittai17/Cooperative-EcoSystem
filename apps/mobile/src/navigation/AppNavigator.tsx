@@ -129,6 +129,7 @@ function MainStack() {
     <>
       <ConnectivityBanner />
       <Stack.Navigator
+        key={role ?? 'trainee'}
         initialRouteName={getInitialRoute()}
         screenOptions={{
           headerShown: false,

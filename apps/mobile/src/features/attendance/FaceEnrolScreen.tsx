@@ -72,10 +72,19 @@ export const FaceEnrolScreen = () => {
       if (currentPoseIndex < LIVENESS_STEPS.length - 1) {
         setCurrentPoseIndex((prev) => prev + 1);
       } else {
-        // All 3 frames captured!
-        attendanceApi.enrollFaceConsent(true).then(() => {
-          setCompleted(true);
-        });
+        // All 3 frames captured! A real failure here must be visible, not
+        // silently treated as a completed enrolment.
+        attendanceApi
+          .enrollFaceConsent(true)
+          .then(() => {
+            setCompleted(true);
+          })
+          .catch((e) => {
+            Alert.alert(
+              'Enrolment Failed',
+              e instanceof Error ? e.message : 'Could not record biometric consent. Please try again.'
+            );
+          });
       }
     }, 900);
   };

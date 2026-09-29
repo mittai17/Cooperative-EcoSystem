@@ -9,73 +9,100 @@ import { SearchField } from '../../components/SearchField';
 import { Badge } from '../../components/Badge';
 import { EmptyState, LoadingState } from '../../components/EmptyState';
 import { COLORS, SPACE, TEXT, RADII, CARD, ICON } from '../../constants/theme';
-import { MOCK_USER_NOMINATIONS, NominationRecord } from './mockData';
-import { apiClient } from '../../api/client';
+import { apiClient, ApiError } from '../../api/client';
 import {
-  Calendar,
-  Building,
   ChevronRight,
-  Clock,
-  CheckCircle,
-  AlertCircle,
   FileText,
-  Hourglass,
+  Layers,
 } from 'lucide-react-native';
 
-type NominationFilter = 'all' | 'submitted' | 'under_review' | 'approved' | 'waitlisted';
+/** Shape returned by GET /programmes/nominations/my (backend/app/api/v1/programmes.py:my_nominations). */
+interface MyNominationItem {
+  id: string;
+  programme_id: string;
+  programme_title: string;
+  status: string;
+  batch_id: string | null;
+  decision_note: string | null;
+}
+
+/** Extra, real fields pulled from GET /programmes/{id} to give each card a bit more
+ * context than the bare nomination row has (sector/level/mode). Purely additive —
+ * if this fetch fails for a programme we just render the card without the extras. */
+interface ProgrammeContext {
+  sector: string | null;
+  level: string | null;
+  mode: string | null;
+}
+
+type NominationFilter = 'all' | 'pending' | 'approved' | 'waitlisted' | 'rejected' | 'withdrawn';
 
 const FILTER_TABS: readonly { key: NominationFilter; label: string }[] = [
   { key: 'all', label: 'All Nominations' },
-  { key: 'submitted', label: 'Submitted' },
-  { key: 'under_review', label: 'Under Review' },
+  { key: 'pending', label: 'Pending' },
   { key: 'approved', label: 'Approved' },
   { key: 'waitlisted', label: 'Waitlisted' },
+  { key: 'rejected', label: 'Rejected' },
 ];
+
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case 'approved':
+      return <Badge label="Approved & Enrolled" variant="success" verified />;
+    case 'pending':
+      return <Badge label="Pending Review" variant="primary" />;
+    case 'waitlisted':
+      return <Badge label="Waitlisted" variant="neutral" />;
+    case 'rejected':
+      return <Badge label="Rejected" variant="neutral" />;
+    case 'withdrawn':
+      return <Badge label="Withdrawn" variant="neutral" />;
+    default:
+      return <Badge label={status.toUpperCase()} variant="neutral" />;
+  }
+};
 
 export const MyNominationsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [nominations, setNominations] = useState<NominationRecord[] | null>(null);
+  const [nominations, setNominations] = useState<MyNominationItem[] | null>(null);
+  const [programmeContext, setProgrammeContext] = useState<Record<string, ProgrammeContext>>({});
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<NominationFilter>('all');
   const [refreshing, setRefreshing] = useState(false);
 
   const loadNominations = useCallback(async () => {
+    setError(null);
     try {
-      const data = await apiClient<any[]>('/programmes/nominations/my');
-      if (Array.isArray(data) && data.length > 0) {
-        // Map backend rows into our rich record format
-        const mapped: NominationRecord[] = data.map((item, index) => {
-          const fallback = MOCK_USER_NOMINATIONS[index % MOCK_USER_NOMINATIONS.length];
-          return {
-            id: item.id || `nom-${index}`,
-            programme_id: item.programme_id || fallback.programme_id,
-            programme_title: item.programme_title || fallback.programme_title,
-            institution_name: fallback.institution_name,
-            trainee_id: fallback.trainee_id,
-            trainee_name: fallback.trainee_name,
-            trainee_email: fallback.trainee_email,
-            trainee_phone: fallback.trainee_phone,
-            designation: fallback.designation,
-            nomination_type: fallback.nomination_type,
-            society_name: fallback.society_name,
-            society_registration_no: fallback.society_registration_no,
-            justification: fallback.justification,
-            status: item.status || fallback.status,
-            batch_id: item.batch_id || fallback.batch_id,
-            batch_name: fallback.batch_name,
-            start_date: fallback.start_date,
-            end_date: fallback.end_date,
-            submitted_at: item.submitted_at || fallback.submitted_at,
-            decision_note: item.decision_note || fallback.decision_note,
-            room_allocated: fallback.room_allocated,
-          };
+      const data = await apiClient<MyNominationItem[]>('/programmes/nominations/my');
+      const rows = Array.isArray(data) ? data : [];
+      setNominations(rows);
+
+      // Best-effort enrichment: fetch real sector/level/mode per unique programme.
+      // Never falls back to mock data — a failed fetch just leaves that programme's
+      // context blank and the card renders without those badges.
+      const uniqueIds = Array.from(new Set(rows.map((r) => r.programme_id).filter(Boolean)));
+      if (uniqueIds.length > 0) {
+        const results = await Promise.allSettled(
+          uniqueIds.map((id) => apiClient<any>(`/programmes/${id}`))
+        );
+        const contextMap: Record<string, ProgrammeContext> = {};
+        results.forEach((result, idx) => {
+          if (result.status === 'fulfilled' && result.value) {
+            contextMap[uniqueIds[idx]] = {
+              sector: result.value.sector ?? null,
+              level: result.value.level ?? null,
+              mode: result.value.mode ?? null,
+            };
+          }
         });
-        setNominations(mapped);
+        setProgrammeContext(contextMap);
       } else {
-        setNominations(MOCK_USER_NOMINATIONS);
+        setProgrammeContext({});
       }
-    } catch {
-      setNominations(MOCK_USER_NOMINATIONS);
+    } catch (err) {
+      setNominations(null);
+      setError(err instanceof ApiError ? err.message : 'Could not reach the server.');
     }
   }, []);
 
@@ -92,38 +119,116 @@ export const MyNominationsScreen = () => {
     setRefreshing(false);
   };
 
-  const getStatusBadge = (status: NominationRecord['status']) => {
-    switch (status) {
-      case 'approved':
-        return <Badge label="Approved & Enrolled" variant="success" verified />;
-      case 'under_review':
-        return <Badge label="Under Scrutiny" variant="primary" />;
-      case 'submitted':
-        return <Badge label="Submitted" variant="neutral" />;
-      case 'waitlisted':
-        return <Badge label="Waitlisted" variant="neutral" />;
-      case 'rejected':
-        return <Badge label="Rejected" variant="neutral" />;
-      default:
-        return <Badge label={status.toUpperCase()} variant="neutral" />;
-    }
-  };
-
   const q = search.trim().toLowerCase();
   const filteredList = (nominations ?? []).filter((item) => {
-    if (filter === 'submitted' && item.status !== 'submitted') return false;
-    if (filter === 'under_review' && item.status !== 'under_review') return false;
-    if (filter === 'approved' && item.status !== 'approved') return false;
-    if (filter === 'waitlisted' && item.status !== 'waitlisted') return false;
+    if (filter !== 'all' && item.status !== filter) return false;
 
     if (!q) return true;
     return (
       item.programme_title.toLowerCase().includes(q) ||
-      item.institution_name.toLowerCase().includes(q) ||
-      (item.society_name && item.society_name.toLowerCase().includes(q)) ||
       item.id.toLowerCase().includes(q)
     );
   });
+
+  const renderBody = () => {
+    if (error) {
+      return (
+        <EmptyState
+          title="Couldn't load your nominations"
+          message={error}
+          actionLabel="Retry"
+          onAction={loadNominations}
+        />
+      );
+    }
+
+    if (nominations === null) {
+      return <LoadingState />;
+    }
+
+    if (nominations.length === 0) {
+      return (
+        <EmptyState
+          title="No nominations found"
+          message="You have no nomination applications yet. Your sponsoring society or institution can submit one on your behalf."
+        />
+      );
+    }
+
+    if (filteredList.length === 0) {
+      return (
+        <EmptyState
+          title="No nominations found"
+          message={
+            search
+              ? 'No applications match your search query.'
+              : `You have no ${filter === 'all' ? '' : filter} nomination applications at this time.`
+          }
+          actionLabel="Clear Filters"
+          onAction={() => {
+            setSearch('');
+            setFilter('all');
+          }}
+        />
+      );
+    }
+
+    return (
+      <View style={styles.listContainer}>
+        {filteredList.map((item) => {
+          const isApproved = item.status === 'approved';
+          const context = programmeContext[item.programme_id];
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.nominationCard, isApproved && styles.nominationCardApproved]}
+              onPress={() => navigation.navigate('NominationDetail', { nominationId: item.id })}
+              activeOpacity={0.8}
+            >
+              <View style={styles.cardHeaderRow}>
+                <View style={styles.idChip}>
+                  <FileText size={ICON.sm} color={COLORS.textSecondary} />
+                  <Text style={styles.idText}>{item.id.slice(0, 8).toUpperCase()}</Text>
+                </View>
+                {getStatusBadge(item.status)}
+              </View>
+
+              <Text style={styles.programmeTitle}>{item.programme_title}</Text>
+
+              {context && (context.sector || context.level || context.mode) ? (
+                <View style={styles.contextRow}>
+                  {context.sector ? <Text style={styles.contextPill}>{context.sector}</Text> : null}
+                  {context.level ? <Text style={styles.contextPill}>{context.level}</Text> : null}
+                  {context.mode ? <Text style={styles.contextPill}>{context.mode}</Text> : null}
+                </View>
+              ) : null}
+
+              {item.batch_id ? (
+                <View style={styles.metaRow}>
+                  <Layers size={ICON.sm} color={COLORS.primary} />
+                  <Text style={styles.metaText}>Batch assigned</Text>
+                </View>
+              ) : null}
+
+              {item.decision_note ? (
+                <View style={styles.notePreview}>
+                  <Text style={styles.noteLabel}>Review Note:</Text>
+                  <Text style={styles.noteText} numberOfLines={2}>
+                    {item.decision_note}
+                  </Text>
+                </View>
+              ) : null}
+
+              <View style={styles.cardFooter}>
+                <Text style={styles.detailLinkText}>View Status & Timeline</Text>
+                <ChevronRight size={ICON.sm} color={COLORS.primary} />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
 
   return (
     <ScrollScreen
@@ -136,104 +241,13 @@ export const MyNominationsScreen = () => {
           <SearchField
             value={search}
             onChangeText={setSearch}
-            placeholder="Search by programme, institution or ID"
+            placeholder="Search by programme or ID"
           />
           <PillTabs tabs={FILTER_TABS} active={filter} onChange={setFilter} />
         </>
       }
     >
-      {nominations === null ? (
-        <LoadingState />
-      ) : filteredList.length === 0 ? (
-        <EmptyState
-          title="No nominations found"
-          message={
-            search
-              ? 'No applications match your search query.'
-              : `You have no ${filter === 'all' ? '' : filter} nomination applications at this time.`
-          }
-          actionLabel="Browse Programmes"
-          onAction={() => navigation.navigate('ProgrammeDetail', { programmeId: 'p-cmf-01' })}
-        />
-      ) : (
-        <View style={styles.listContainer}>
-          {filteredList.map((item) => {
-            const isApproved = item.status === 'approved';
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.nominationCard, isApproved && styles.nominationCardApproved]}
-                onPress={() => navigation.navigate('NominationDetail', { nominationId: item.id })}
-                activeOpacity={0.8}
-              >
-                {/* Header row: ID & Status Badge */}
-                <View style={styles.cardHeaderRow}>
-                  <View style={styles.idChip}>
-                    <FileText size={ICON.sm} color={COLORS.textSecondary} />
-                    <Text style={styles.idText}>{item.id.toUpperCase()}</Text>
-                  </View>
-                  {getStatusBadge(item.status)}
-                </View>
-
-                {/* Title */}
-                <Text style={styles.programmeTitle}>{item.programme_title}</Text>
-
-                {/* Institution & Society */}
-                <View style={styles.metaBlock}>
-                  <View style={styles.metaRow}>
-                    <Building size={ICON.sm} color={COLORS.primary} />
-                    <Text style={styles.metaText}>{item.institution_name}</Text>
-                  </View>
-                  {item.society_name ? (
-                    <Text style={styles.societyText}>Sponsoring: {item.society_name}</Text>
-                  ) : null}
-                </View>
-
-                {/* Dates / Batch row */}
-                <View style={styles.datesRow}>
-                  {item.start_date && item.end_date ? (
-                    <View style={styles.dateCol}>
-                      <Calendar size={ICON.sm} color={COLORS.textMuted} />
-                      <Text style={styles.dateText}>
-                        {item.start_date} to {item.end_date}
-                      </Text>
-                    </View>
-                  ) : (
-                    <View style={styles.dateCol}>
-                      <Clock size={ICON.sm} color={COLORS.textMuted} />
-                      <Text style={styles.dateText}>
-                        Applied on {new Date(item.submitted_at).toLocaleDateString()}
-                      </Text>
-                    </View>
-                  )}
-
-                  {item.batch_name && (
-                    <View style={styles.batchPill}>
-                      <Text style={styles.batchText}>{item.batch_name}</Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Decision note preview if exists */}
-                {item.decision_note ? (
-                  <View style={styles.notePreview}>
-                    <Text style={styles.noteLabel}>Review Note:</Text>
-                    <Text style={styles.noteText} numberOfLines={2}>
-                      {item.decision_note}
-                    </Text>
-                  </View>
-                ) : null}
-
-                {/* Bottom link */}
-                <View style={styles.cardFooter}>
-                  <Text style={styles.detailLinkText}>View Status & Timeline</Text>
-                  <ChevronRight size={ICON.sm} color={COLORS.primary} />
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
+      {renderBody()}
     </ScrollScreen>
   );
 };
@@ -276,8 +290,20 @@ const styles = StyleSheet.create({
     color: COLORS.primaryDark,
     lineHeight: 20,
   },
-  metaBlock: {
-    gap: 2,
+  contextRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACE.xs,
+  },
+  contextPill: {
+    ...TEXT.caption,
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACE.xs + 2,
+    paddingVertical: 2,
+    borderRadius: RADII.sm,
+    overflow: 'hidden',
   },
   metaRow: {
     flexDirection: 'row',
@@ -287,39 +313,7 @@ const styles = StyleSheet.create({
   metaText: {
     ...TEXT.captionStrong,
     color: COLORS.primary,
-  },
-  societyText: {
-    ...TEXT.caption,
-    color: COLORS.textSecondary,
-  },
-  datesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
-  },
-  dateCol: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  dateText: {
-    ...TEXT.caption,
-    color: COLORS.textMuted,
-    fontSize: 11,
-  },
-  batchPill: {
-    backgroundColor: COLORS.primarySurface,
-    paddingHorizontal: SPACE.xs + 4,
-    paddingVertical: 2,
-    borderRadius: RADII.pill,
-  },
-  batchText: {
-    ...TEXT.captionStrong,
-    color: COLORS.primary,
-    fontSize: 11,
+    fontSize: 12,
   },
   notePreview: {
     backgroundColor: COLORS.surface,

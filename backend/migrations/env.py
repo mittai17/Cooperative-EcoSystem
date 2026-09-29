@@ -14,18 +14,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.database import Base
-from app.models.user import User, Organisation
-from app.models.programme import Programme, Nomination, Batch, Enrollment, ProgrammeCourse
-from app.models.course import Course, Module, Lesson, CourseEnrollment
-from app.models.assessment import Assessment, AssessmentResult
-from app.models.attendance import AttendanceSession, AttendanceRecord
-from app.models.certificate import Certificate
-from app.models.skill import Skill, TraineeSkill, SkillGap
-from app.models.job import Job, JobMatch, Application, EmployerFeedback
-from app.models.analytics import SkillDemand
-from app.models.timetable import TimetableSlot
-from app.models.hostel import HostelBlock, HostelRoom, HostelWaitlistEntry
-from app.models.logistics import LogisticsTask, VehicleAllocation, LogisticsBudget
+import app.models  # noqa: F401  (registers every table on Base.metadata)
+from app.models.coltypes import Vector
 
 target_metadata = Base.metadata
 
@@ -47,6 +37,8 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
+        # Teach reflection about pgvector's type (silences "Did not recognize type 'vector'").
+        connection.dialect.ischema_names.setdefault("vector", Vector)
         context.configure(
             connection=connection, target_metadata=target_metadata
         )

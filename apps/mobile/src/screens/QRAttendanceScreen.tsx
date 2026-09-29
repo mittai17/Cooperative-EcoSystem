@@ -1,431 +1,370 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SHADOWS } from '../constants/theme';
-import { AppHeader } from '../components/AppHeader';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Linking, BackHandler } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { COLORS, CARD, HIT, ICON, RADII, SPACE, TEXT } from '../constants/theme';
+import { ScrollScreen } from '../components/ScrollScreen';
+import { SectionHeader } from '../components/SectionHeader';
+import { EmptyState } from '../components/EmptyState';
+import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
 import { apiService } from '../services/api';
-import {
-  QrCode,
-  Scan,
-  CheckCircle2,
-  AlertCircle,
-  WifiOff,
-  Clock,
-  History,
-  Camera,
-  RotateCcw,
-} from 'lucide-react-native';
+import { useOnMount } from '../hooks/useOnMount';
+import { localStore, useLocalStore } from '../services/localStore';
+import { formatClock, formatDate } from '../services/utils';
+import { CheckCircle2, WifiOff, AlertCircle, Camera, Keyboard, X } from 'lucide-react-native';
+import { AttendanceRecordItem } from '../types';
+
+type ScanOutcome =
+  | { kind: 'none' }
+  | { kind: 'success'; message: string }
+  | { kind: 'queued' }
+  | { kind: 'error'; title: string; message: string };
+
+const STATUS_LABEL: Record<AttendanceRecordItem['status'], string> = {
+  present: 'Present',
+  late: 'Late',
+  absent: 'Absent',
+};
 
 export const QRAttendanceScreen = ({ navigation }: any) => {
+  const insets = useSafeAreaInsets();
+  const [permission, requestPermission] = useCameraPermissions();
+  const { pendingScans } = useLocalStore();
   const [manualCode, setManualCode] = useState('');
-  const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'success' | 'offline_queued'>('idle');
-  const [lastMessage, setLastMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [historyList, setHistoryList] = useState([
-    { id: '1', title: 'Cooperative Management Fundamentals - Batch B', time: 'Today, 09:42 AM', status: 'Verified' },
-    { id: '2', title: 'Dairy Quality Audit Session', time: 'Yesterday, 02:15 PM', status: 'Verified' },
-  ]);
+  const [showManual, setShowManual] = useState(false);
+  const [outcome, setOutcome] = useState<ScanOutcome>({ kind: 'none' });
+  const [submitting, setSubmitting] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [scanned, setScanned] = useState(false);
+  const [records, setRecords] = useState<AttendanceRecordItem[] | null>(null);
+  const [isLive, setIsLive] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const handleSimulateScan = async (codeToScan?: string) => {
-    const token = codeToScan || manualCode.trim() || 'demo_token_vamnicom_batch_b';
-    setIsSubmitting(true);
-    setScanStatus('scanning');
-
+  const loadRecords = useCallback(async () => {
     try {
-      const res = await apiService.recordAttendanceScan(token);
-      if (res.success) {
-        if (res.isLive) {
-          setScanStatus('success');
-          setLastMessage(res.message);
-        } else {
-          setScanStatus('offline_queued');
-          setLastMessage('Saved locally in offline encrypted vault. Will sync automatically upon network connection.');
-        }
-        setHistoryList((prev) => [
-          {
-            id: Date.now().toString(),
-            title: 'Verified Session: ' + token,
-            time: 'Just now',
-            status: res.isLive ? 'Verified (Server)' : 'Queued (Offline)',
-          },
-          ...prev,
-        ]);
-        setManualCode('');
-      } else {
-        Alert.alert('Attendance Error', res.message);
-        setScanStatus('idle');
-      }
-    } catch (_err) {
-      setScanStatus('offline_queued');
-      setLastMessage('Network unreachable. Attendance token stored safely offline.');
-    } finally {
-      setIsSubmitting(false);
+      const res = await apiService.getAttendanceRecords();
+      setRecords(res.records);
+      setIsLive(res.isLive);
+    } catch {
+      setRecords((prev) => prev ?? []);
+      setIsLive(false);
     }
+  }, []);
+
+  useOnMount(loadRecords);
+
+  // Hardware back closes the camera overlay first instead of leaving the screen.
+  useEffect(() => {
+    if (!cameraOpen) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setCameraOpen(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [cameraOpen]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadRecords();
+    setRefreshing(false);
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader
-        title="QR Attendance"
-        subtitle="VAMNICOM & NCCT Verified"
-        showBack
-        onBack={() => navigation.goBack()}
-      />
+  const submitToken = async (token: string) => {
+    if (submitting) return;
+    setSubmitting(true);
+    setOutcome({ kind: 'none' });
+    const res = await apiService.recordAttendanceScan(token);
+    if (!res.isLive) {
+      // Server unreachable: keep the token and sync it from Offline learning.
+      localStore.enqueueScan(token);
+      setOutcome({ kind: 'queued' });
+      setManualCode('');
+    } else if (res.success) {
+      setOutcome({ kind: 'success', message: res.message });
+      setManualCode('');
+      loadRecords();
+    } else {
+      setOutcome({ kind: 'error', title: 'Could not record attendance', message: res.message });
+    }
+    setSubmitting(false);
+  };
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        {/* Scanner Simulation Window */}
-        <View style={styles.scannerCard}>
-          <View style={styles.viewfinder}>
-            {/* Viewfinder corner brackets */}
+  const handleBarcode = ({ data }: { data: string }) => {
+    if (scanned) return;
+    setScanned(true);
+    setCameraOpen(false);
+    submitToken(data);
+  };
+
+  const openCamera = async () => {
+    let granted = permission?.granted ?? false;
+    if (!granted) {
+      granted = (await requestPermission()).granted;
+    }
+    if (!granted) {
+      setOutcome({
+        kind: 'error',
+        title: 'Camera unavailable',
+        message: 'Camera access is off. Allow it in system settings, or enter the code manually.',
+      });
+      return;
+    }
+    setScanned(false);
+    setOutcome({ kind: 'none' });
+    setCameraOpen(true);
+  };
+
+  if (cameraOpen) {
+    return (
+      <View style={styles.camera}>
+        <StatusBar style="light" />
+        <CameraView
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+          onBarcodeScanned={scanned ? undefined : handleBarcode}
+        />
+        <View style={[styles.cameraTop, { paddingTop: insets.top + SPACE.sm }]}>
+          <TouchableOpacity
+            onPress={() => setCameraOpen(false)}
+            style={styles.closeBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Close camera"
+          >
+            <X size={ICON.md} color={COLORS.textInverse} />
+            <Text style={styles.closeText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={[styles.frameArea, { paddingBottom: insets.bottom + SPACE.xl }]} pointerEvents="none">
+          <View style={styles.frame}>
             <View style={[styles.corner, styles.topLeft]} />
             <View style={[styles.corner, styles.topRight]} />
             <View style={[styles.corner, styles.bottomLeft]} />
             <View style={[styles.corner, styles.bottomRight]} />
-
-            <Camera size={44} color="#94A3B8" />
-            <Text style={styles.viewfinderInstructions}>
-              Align Trainer's QR code within the frame to verify presence
-            </Text>
-
-            <View style={styles.laserScanLine} />
           </View>
-
-          <View style={styles.scannerControls}>
-            <TouchableOpacity
-              style={styles.scanTriggerBtn}
-              onPress={() => handleSimulateScan('coopsetu:attend:session_auto_tok_921')}
-              disabled={isSubmitting}
-            >
-              <Scan size={18} color="#FFFFFF" />
-              <Text style={styles.scanTriggerText}>
-                {isSubmitting ? 'Verifying...' : 'Simulate Camera QR Scan'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.frameLabel}>Point the camera at the session QR code</Text>
         </View>
+      </View>
+    );
+  }
 
-        {/* Scan Status Feedback */}
-        {scanStatus === 'success' && (
-          <View style={[styles.statusBanner, styles.successBanner]}>
-            <CheckCircle2 size={24} color={COLORS.success} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.statusBannerTitle}>Attendance Confirmed!</Text>
-              <Text style={styles.statusBannerDesc}>{lastMessage}</Text>
-            </View>
-          </View>
-        )}
+  const recent = (records ?? []).slice(0, 10);
 
-        {scanStatus === 'offline_queued' && (
-          <View style={[styles.statusBanner, styles.offlineBanner]}>
-            <WifiOff size={24} color={COLORS.warning} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.statusBannerTitle}>Attendance Saved Offline</Text>
-              <Text style={styles.statusBannerDesc}>{lastMessage}</Text>
-            </View>
-          </View>
-        )}
+  return (
+    <ScrollScreen
+      title="QR attendance"
+      onBack={() => navigation.goBack()}
+      isLive={isLive}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      avoidKeyboard
+    >
+      <View style={styles.actions}>
+        <Button
+          label="Scan QR code"
+          icon={<Camera size={ICON.md} color={COLORS.textInverse} />}
+          onPress={openCamera}
+          loading={submitting}
+        />
+        <Button
+          label={showManual ? 'Hide manual entry' : 'Enter code manually'}
+          variant="secondary"
+          icon={<Keyboard size={ICON.md} color={COLORS.primary} />}
+          onPress={() => setShowManual((v) => !v)}
+        />
+      </View>
 
-        {/* Manual Code Entry */}
-        <View style={styles.manualEntryCard}>
-          <Text style={styles.cardHeaderTitle}>Manual Token Entry</Text>
-          <Text style={styles.cardHeaderDesc}>
-            If camera permissions or projector glare prevents scanning, enter the 6-character session token displayed by the trainer.
-          </Text>
-
+      {showManual ? (
+        <View style={styles.manualCard}>
+          <Text style={styles.bodyStrong}>Session code</Text>
           <View style={styles.inputRow}>
             <TextInput
-              style={styles.textInput}
-              placeholder="e.g. CST-9042"
-              placeholderTextColor={COLORS.textMuted}
+              style={styles.input}
               value={manualCode}
               onChangeText={setManualCode}
-              autoCapitalize="characters"
+              placeholder="Paste or type the code"
+              placeholderTextColor={COLORS.textMuted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={() => manualCode.trim() && submitToken(manualCode)}
+              accessibilityLabel="Session code"
             />
             <TouchableOpacity
-              style={[styles.submitCodeBtn, !manualCode.trim() && styles.disabledBtn]}
-              disabled={!manualCode.trim() || isSubmitting}
-              onPress={() => handleSimulateScan(manualCode)}
+              style={[styles.verifyBtn, (!manualCode.trim() || submitting) && styles.verifyBtnDisabled]}
+              disabled={!manualCode.trim() || submitting}
+              onPress={() => submitToken(manualCode)}
+              accessibilityRole="button"
+              accessibilityLabel="Submit session code"
             >
-              <Text style={styles.submitCodeBtnText}>Verify</Text>
+              <Text style={styles.verifyText}>{submitting ? 'Sending' : 'Submit'}</Text>
             </TouchableOpacity>
           </View>
         </View>
+      ) : null}
 
-        {/* Offline Sync State Card */}
-        <View style={styles.offlineNoticeCard}>
-          <View style={styles.offlineNoticeHeader}>
-            <WifiOff size={16} color={COLORS.primary} />
-            <Text style={styles.offlineNoticeTitle}>Remote & Offline Resilient</Text>
+      {outcome.kind === 'success' ? (
+        <View style={[styles.banner, styles.bannerSuccess]} accessibilityRole="alert">
+          <CheckCircle2 size={ICON.lg} color={COLORS.success} />
+          <View style={styles.flex}>
+            <Text style={styles.bodyStrong}>Attendance recorded</Text>
+            <Text style={styles.caption}>{outcome.message}</Text>
           </View>
-          <Text style={styles.offlineNoticeText}>
-            Our edge biometric & cryptographic token stamp enables attendance marking without cellular reception. Tokens sync upon reconnecting to WiFi/cellular.
-          </Text>
         </View>
+      ) : null}
 
-        {/* Recent Attendance Log */}
-        <View style={styles.historySection}>
-          <View style={styles.historyHeader}>
-            <History size={16} color={COLORS.primaryDark} />
-            <Text style={styles.historyTitle}>Recent Session Records</Text>
+      {outcome.kind === 'queued' ? (
+        <View style={[styles.banner, styles.bannerNeutral]} accessibilityRole="alert">
+          <WifiOff size={ICON.lg} color={COLORS.textSecondary} />
+          <View style={styles.flex}>
+            <Text style={styles.bodyStrong}>Saved on this device</Text>
+            <Text style={styles.caption}>
+              No connection. Sync it from Offline learning once you are back online.
+            </Text>
           </View>
+        </View>
+      ) : null}
 
-          {historyList.map((item) => (
-            <View key={item.id} style={styles.historyItem}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.historyItemTitle}>{item.title}</Text>
-                <Text style={styles.historyItemTime}>{item.time}</Text>
+      {outcome.kind === 'error' ? (
+        <View style={[styles.banner, styles.bannerError]} accessibilityRole="alert">
+          <AlertCircle size={ICON.lg} color={COLORS.danger} />
+          <View style={styles.flex}>
+            <Text style={styles.bodyStrong}>{outcome.title}</Text>
+            <Text style={styles.caption}>{outcome.message}</Text>
+          </View>
+          {!permission?.granted && permission?.canAskAgain === false ? (
+            <TouchableOpacity
+              style={styles.settingsBtn}
+              onPress={() => Linking.openSettings()}
+              accessibilityRole="button"
+              accessibilityLabel="Open system settings"
+            >
+              <Text style={styles.settingsText}>Settings</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      ) : null}
+
+      <View>
+        <SectionHeader title="Recent attendance" />
+        <View style={styles.list}>
+          {pendingScans.map((scan) => (
+            <View key={scan.id} style={styles.item}>
+              <View style={styles.flex}>
+                <Text style={styles.bodyStrong}>Check-in waiting to sync</Text>
+                <Text style={styles.caption}>Today, {formatClock(new Date(scan.queuedAt))}</Text>
               </View>
-              <Badge
-                label={item.status}
-                variant={item.status.includes('Offline') ? 'warning' : 'success'}
-              />
+              <Badge label="Queued" />
+            </View>
+          ))}
+          {records !== null && recent.length === 0 && pendingScans.length === 0 ? (
+            <EmptyState title="No attendance yet" message="Scan a session QR code to record your first check-in." />
+          ) : null}
+          {recent.map((item, i) => (
+            <View key={`${item.date}-${item.session}-${i}`} style={styles.item}>
+              <View style={styles.flex}>
+                <Text style={styles.bodyStrong}>{item.session}</Text>
+                <Text style={styles.caption}>{formatDate(item.date)}</Text>
+              </View>
+              <Badge label={STATUS_LABEL[item.status] ?? item.status} variant={item.status === 'present' ? 'success' : 'neutral'} />
             </View>
           ))}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </ScrollScreen>
   );
 };
 
+const CORNER = 28;
+
 const styles = StyleSheet.create({
-  safeArea: {
+  flex: { flex: 1 },
+  caption: { ...TEXT.caption },
+  bodyStrong: { ...TEXT.bodyStrong },
+  actions: { gap: SPACE.sm },
+
+  // Manual entry
+  manualCard: { ...CARD, padding: SPACE.md, gap: SPACE.sm },
+  inputRow: { flexDirection: 'row', gap: SPACE.sm },
+  input: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flex: 1,
+    height: HIT + 4,
     backgroundColor: COLORS.surface,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  scannerCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
-    alignItems: 'center',
-    gap: 16,
-    ...SHADOWS.sm,
+    borderRadius: RADII.md,
+    paddingHorizontal: SPACE.md - SPACE.xs,
+    ...TEXT.body,
   },
-  viewfinder: {
-    width: '100%',
-    height: 220,
-    backgroundColor: '#0F172A',
-    borderRadius: 12,
-    position: 'relative',
+  verifyBtn: {
+    minWidth: 88,
+    height: HIT + 4,
+    backgroundColor: COLORS.primary,
+    borderRadius: RADII.md,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    paddingHorizontal: SPACE.md,
   },
-  viewfinderInstructions: {
-    color: '#94A3B8',
-    fontSize: 12,
+  verifyBtnDisabled: { backgroundColor: COLORS.primaryBorder },
+  verifyText: { ...TEXT.bodyStrong, color: COLORS.textInverse },
+
+  // Status banners
+  banner: {
+    borderRadius: RADII.md,
+    padding: SPACE.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.md - SPACE.xs,
+    borderWidth: 1,
+  },
+  bannerSuccess: { backgroundColor: COLORS.successSurface, borderColor: COLORS.success },
+  bannerNeutral: { backgroundColor: COLORS.card, borderColor: COLORS.border },
+  bannerError: { backgroundColor: COLORS.dangerSurface, borderColor: COLORS.danger },
+  settingsBtn: { minHeight: HIT, justifyContent: 'center', paddingHorizontal: SPACE.sm },
+  settingsText: { ...TEXT.bodyStrong, color: COLORS.primary },
+
+  // History
+  list: { gap: SPACE.sm },
+  item: {
+    ...CARD,
+    padding: SPACE.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.sm,
+  },
+
+  // Camera overlay
+  camera: { flex: 1, backgroundColor: COLORS.media },
+  cameraTop: { position: 'absolute', top: 0, left: 0, right: 0, paddingHorizontal: SPACE.md },
+  closeBtn: {
+    minHeight: HIT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.sm,
+    backgroundColor: COLORS.scrim,
+    paddingHorizontal: SPACE.md,
+    borderRadius: RADII.pill,
+    alignSelf: 'flex-start',
+  },
+  closeText: { ...TEXT.bodyStrong, color: COLORS.textInverse },
+  frameArea: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  frame: { width: 240, height: 240 },
+  frameLabel: {
+    ...TEXT.body,
+    color: COLORS.textInverse,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: SPACE.md,
+    paddingHorizontal: SPACE.lg,
   },
-  laserScanLine: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-    height: 2,
-    backgroundColor: '#38BDF8',
-    shadowColor: '#38BDF8',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-  },
-  corner: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderColor: '#38BDF8',
-  },
-  topLeft: {
-    top: 16,
-    left: 16,
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-  },
-  topRight: {
-    top: 16,
-    right: 16,
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-  },
-  bottomLeft: {
-    bottom: 16,
-    left: 16,
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-  },
-  bottomRight: {
-    bottom: 16,
-    right: 16,
-    borderBottomWidth: 3,
-    borderRightWidth: 3,
-  },
-  scannerControls: {
-    width: '100%',
-  },
-  scanTriggerBtn: {
-    backgroundColor: COLORS.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 10,
-  },
-  scanTriggerText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  statusBanner: {
-    borderRadius: 12,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-  },
-  successBanner: {
-    backgroundColor: COLORS.successSurface,
-    borderColor: COLORS.success,
-  },
-  offlineBanner: {
-    backgroundColor: COLORS.warningSurface,
-    borderColor: COLORS.warning,
-  },
-  statusBannerTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  statusBannerDesc: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  manualEntryCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 10,
-    ...SHADOWS.sm,
-  },
-  cardHeaderTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  cardHeaderDesc: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    lineHeight: 16,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 6,
-  },
-  textInput: {
-    flex: 1,
-    height: 46,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primaryDark,
-  },
-  submitCodeBtn: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabledBtn: {
-    backgroundColor: COLORS.border,
-  },
-  submitCodeBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  offlineNoticeCard: {
-    backgroundColor: COLORS.primarySurface,
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    gap: 6,
-  },
-  offlineNoticeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  offlineNoticeTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  offlineNoticeText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    lineHeight: 16,
-  },
-  historySection: {
-    gap: 10,
-  },
-  historyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  historyTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  historyItem: {
-    backgroundColor: COLORS.card,
-    borderRadius: 10,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    ...SHADOWS.sm,
-  },
-  historyItemTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  historyItemTime: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    marginTop: 2,
-  },
+  corner: { position: 'absolute', width: CORNER, height: CORNER, borderColor: COLORS.textInverse },
+  topLeft: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3 },
+  topRight: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3 },
+  bottomLeft: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3 },
+  bottomRight: { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3 },
 });

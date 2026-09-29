@@ -5,11 +5,13 @@ export interface Course {
   level: string;
   duration_hours: number;
   instructor: string;
-  rating: number;
-  enrolled: number;
+  rating?: number | null;
+  enrolled?: number;
   skills: string[];
   thumbnail?: string;
   progress?: number;
+  /** true when the signed-in trainee has an enrollment (backend `enrolled_by_me`) */
+  enrolled_by_me?: boolean;
   modules?: CourseModule[];
 }
 
@@ -31,9 +33,11 @@ export interface JobMatch {
   type: string;
   salary: string;
   skills_required: string[];
-  openings: number;
-  posted_days_ago: number;
+  openings?: number;
+  posted_days_ago?: number;
   match_percentage?: number;
+  /** true when the signed-in trainee already applied */
+  applied?: boolean;
 }
 
 export interface SkillPassportItem {
@@ -42,11 +46,11 @@ export interface SkillPassportItem {
   confidence: number;
   verified: boolean;
   category: string;
-  evidence: Array<{
+  evidence: {
     type: string;
     title: string;
     date: string;
-  }>;
+  }[];
 }
 
 export interface SkillPassportData {
@@ -79,30 +83,23 @@ export interface AttendanceRecordItem {
   timestamp?: string;
 }
 
-export interface OfflineCourseItem {
-  id: string;
-  title: string;
-  size_mb: number;
-  modules_count: number;
-  last_synced: string;
-  download_status: 'downloaded' | 'syncing' | 'pending';
-}
-
 export interface CareerChatMessage {
   id: string;
   sender: 'user' | 'ai';
   text: string;
   timestamp: string;
-  suggested_actions?: Array<{
+  /** system note (network/backend failure), not advisor content */
+  error?: boolean;
+  suggested_actions?: {
     label: string;
     actionKey: string;
-  }>;
+  }[];
 }
 
 export interface CareerPlanStep {
   step: number;
   title: string;
-  status: 'completed' | 'current' | 'next' | 'future';
+  status: 'completed' | 'current' | 'next' | 'target' | 'future';
   timeline?: string;
 }
 
@@ -113,4 +110,40 @@ export interface CareerRecommendation {
   reason: string;
   duration: string;
   impact: string;
+}
+
+export interface OfflinePackage {
+  course_id: string;
+  title: string;
+  version?: string | number;
+  size_kb?: number;
+  lesson_count?: number;
+  downloaded: boolean;
+  downloaded_at?: string | null;
+  /** full course incl. modules, stored locally when downloaded */
+  course: Course;
+}
+
+export type AppRole = 'trainee' | 'trainer' | 'institution' | 'employer' | 'admin' | 'ncct_admin' | string;
+
+/** trainee block of GET /auth/me */
+export interface TraineeProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  enrolled_institution: string;
+  programme: string;
+  avatar_initials: string;
+}
+
+/** Signed-in local identity resolved by GET /auth/me (backend user row). */
+export interface AuthUser {
+  id: string;
+  clerkUserId: string;
+  email: string;
+  fullName: string;
+  role: AppRole;
+  organisation: { id: string; name: string; type: string } | null;
+  trainee: TraineeProfile | null;
 }

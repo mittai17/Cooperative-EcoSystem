@@ -1,181 +1,144 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+"""Authenticated offline outbox receipts with server checked action semantics."""
 from datetime import datetime, timezone
-import uuid
-import logging
+from typing import Any, Literal
+from uuid import UUID, uuid4
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.attendance import AttendanceSession, AttendanceRecord
+from app.deps import require_roles
+from app.models.attendance import AttendanceRecord, AttendanceSession
+from app.models.course import Module, Lesson
+from app.models.content import LessonProgress
+from app.models.infra import SyncReceipt
+from app.models.user import User
+from app.services.mobile import set_module_completion
 
-logger = logging.getLogger("offline_sync")
 router = APIRouter()
 
+
 class OfflineSyncItem(BaseModel):
-    id: str
-    action: str
-    payload: Dict[str, Any]
-    client_timestamp: Optional[str] = None
+    id: str = Field(min_length=1, max_length=64)
+    action: Literal['MARK_LESSON_COMPLETE', 'RECORD_ATTENDANCE']
+    payload: dict[str, Any]
+    client_timestamp: datetime | None = None
+
 
 class OfflineSyncBatchRequest(BaseModel):
-    items: List[OfflineSyncItem]
+    items: list[OfflineSyncItem] = Field(max_length=100)
 
-class OfflineSyncResultItem(BaseModel):
-    id: str
-    action: str
-    status: str  # "success" | "duplicate" | "error"
-    message: Optional[str] = None
 
-class OfflineSyncBatchResponse(BaseModel):
-    processed_count: int
-    results: List[OfflineSyncResultItem]
-    synced_at: str
+def _time(value):
+    if value is None:
+        return None
+    return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
 
-@router.get("/status")
+
+def _uuid(value):
+    try:
+        return UUID(str(value))
+    except (TypeError, ValueError):
+        raise ValueError('Invalid identifier')
+
+
+async def _lesson(db: AsyncSession, user: User, payload: dict):
+    identifier = _uuid(payload.get('lesson_id') or payload.get('module_id'))
+    lesson = (await db.execute(select(Lesson).where(Lesson.id == identifier))).scalar_one_or_none()
+    if lesson is not None:
+        row = (await db.execute(select(LessonProgress).where(
+            LessonProgress.trainee_id == user.id, LessonProgress.lesson_id == lesson.id
+        ).with_for_update())).scalar_one_or_none()
+        if row is None:
+            db.add(LessonProgress(id=uuid4(), trainee_id=user.id, lesson_id=lesson.id,
+                                  status='completed', completed_at=datetime.now(timezone.utc)))
+        elif row.status != 'completed':
+            row.status = 'completed'
+            row.completed_at = datetime.now(timezone.utc)
+        return {'lesson_id': str(lesson.id)}
+    module = (await db.execute(select(Module).where(Module.id == identifier))).scalar_one_or_none()
+    if module is None:
+        raise ValueError('Lesson or module not found')
+    await set_module_completion(db, user.id, module.id, True)
+    return {'module_id': str(module.id)}
+
+
+async def _attendance(db: AsyncSession, user: User, payload: dict, captured_at: datetime | None):
+    raw = str(payload.get('qr_token', '')).strip()
+    token = raw.removeprefix('coopsetu:attend:')
+    session = (await db.execute(select(AttendanceSession).where(AttendanceSession.qr_token == token))).scalar_one_or_none()
+    if session is None:
+        raise ValueError('Attendance session not found')
+    now = datetime.now(timezone.utc)
+    if captured_at is None:
+        raise ValueError('Capture time is required for offline attendance')
+    captured_at = _time(captured_at)
+    # Device clocks are untrusted. Future timestamps and stale uploads are held for review.
+    if captured_at > now:
+        raise ValueError('Capture time is in the future')
+    opens = _time(session.opens_at or session.created_at)
+    closes = _time(session.closes_at)
+    if closes is None and opens is not None:
+        from datetime import timedelta
+        closes = opens + timedelta(minutes=session.valid_minutes or 30)
+    if opens is None or closes is None or not (opens <= captured_at <= closes):
+        raise ValueError('Scan was outside the attendance window')
+    duplicate = (await db.execute(select(AttendanceRecord).where(
+        AttendanceRecord.session_id == session.id, AttendanceRecord.trainee_id == user.id
+    ))).scalar_one_or_none()
+    if duplicate is not None:
+        return {'session_id': str(session.id), 'already_recorded': True}
+    db.add(AttendanceRecord(id=uuid4(), session_id=session.id, trainee_id=user.id,
+                            marked_at=now, method='offline_sync_qr', status='present',
+                            offline=True, needs_review=True, captured_at=captured_at))
+    return {'session_id': str(session.id), 'needs_review': True}
+
+
+@router.get('/status')
 async def sync_status():
-    """Health check for offline sync agent to test server connectivity."""
-    return {
-        "status": "online",
-        "server_time": datetime.now(timezone.utc).isoformat(),
-        "sync_supported": True,
-        "supported_actions": [
-            "MARK_LESSON_COMPLETE",
-            "RECORD_ATTENDANCE",
-            "SUBMIT_ASSESSMENT",
-        ],
-    }
+    return {'status': 'online', 'server_time': datetime.now(timezone.utc).isoformat(),
+            'sync_supported': True,
+            'supported_actions': ['MARK_LESSON_COMPLETE', 'RECORD_ATTENDANCE']}
 
-@router.post("/batch", response_model=OfflineSyncBatchResponse)
-async def process_batch_sync(
-    request: OfflineSyncBatchRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Batch processes offline-queued actions from the client.
-    Supports MARK_LESSON_COMPLETE, RECORD_ATTENDANCE, and SUBMIT_ASSESSMENT.
-    """
-    results: List[OfflineSyncResultItem] = []
-    processed_count = 0
 
+@router.post('/batch')
+async def process_batch_sync(request: OfflineSyncBatchRequest,
+                             user: User = Depends(require_roles('trainee', 'admin')),
+                             db: AsyncSession = Depends(get_db)):
+    results = []
+    actor_id = user.id
     for item in request.items:
-        action = item.action.upper()
-        payload = item.payload or {}
-
-        try:
-            if action == "MARK_LESSON_COMPLETE":
-                course_id = payload.get("course_id", "unknown")
-                lesson_id = payload.get("lesson_id", "unknown")
-                completed_at = payload.get("completed_at", datetime.now(timezone.utc).isoformat())
-
-                logger.info(f"[OfflineSync] Lesson completed: {lesson_id} for course {course_id} at {completed_at}")
-                results.append(OfflineSyncResultItem(
-                    id=item.id,
-                    action=item.action,
-                    status="success",
-                    message=f"Lesson {lesson_id} marked as complete.",
-                ))
-                processed_count += 1
-
-            elif action == "RECORD_ATTENDANCE":
-                qr_token = payload.get("qr_token", "")
-                trainee_id_str = payload.get("trainee_id")
-                scanned_at_str = payload.get("scanned_at")
-
-                # Try resolving active session from database if matching QR token exists
-                session_result = await db.execute(
-                    select(AttendanceSession).where(AttendanceSession.qr_token == qr_token)
-                )
-                session = session_result.scalar_one_or_none()
-
-                trainee_uuid: Optional[uuid.UUID] = None
-                if trainee_id_str:
-                    try:
-                        trainee_uuid = uuid.UUID(trainee_id_str)
-                    except ValueError:
-                        trainee_uuid = None
-
-                if session and trainee_uuid is not None:
-                    # Check for duplicate
-                    dup_check = await db.execute(
-                        select(AttendanceRecord).where(
-                            AttendanceRecord.session_id == session.id,
-                            AttendanceRecord.trainee_id == trainee_uuid,
-                        )
-                    )
-                    if dup_check.scalar_one_or_none():
-                        results.append(OfflineSyncResultItem(
-                            id=item.id,
-                            action=item.action,
-                            status="duplicate",
-                            message="Attendance was already recorded for this session.",
-                        ))
-                        processed_count += 1
-                        continue
-
-                    # Record attendance
-                    record = AttendanceRecord(
-                        id=uuid.uuid4(),
-                        session_id=session.id,
-                        trainee_id=trainee_uuid,
-                        marked_at=datetime.now(timezone.utc),
-                        method="offline_sync_qr",
-                        status="present",
-                    )
-                    db.add(record)
-                    await db.commit()
-
-                    results.append(OfflineSyncResultItem(
-                        id=item.id,
-                        action=item.action,
-                        status="success",
-                        message=f"Attendance confirmed for {session.session_name or 'session'}.",
-                    ))
-                    processed_count += 1
-                else:
-                    # In simulated or demo environments, QR session might be generated client-side
-                    results.append(OfflineSyncResultItem(
-                        id=item.id,
-                        action=item.action,
-                        status="success",
-                        message=f"Offline attendance recorded for token {qr_token[:12]}...",
-                    ))
-                    processed_count += 1
-
-            elif action == "SUBMIT_ASSESSMENT":
-                assessment_id = payload.get("assessment_id", "unknown")
-                score = payload.get("score", 100)
-                submitted_at = payload.get("submitted_at", datetime.now(timezone.utc).isoformat())
-
-                logger.info(f"[OfflineSync] Assessment {assessment_id} submitted with score {score}% at {submitted_at}")
-                results.append(OfflineSyncResultItem(
-                    id=item.id,
-                    action=item.action,
-                    status="success",
-                    message=f"Assessment {assessment_id} recorded with score {score}%.",
-                ))
-                processed_count += 1
-
+        receipt = (await db.execute(select(SyncReceipt).where(SyncReceipt.client_id == item.id))).scalar_one_or_none()
+        if receipt is not None:
+            if receipt.user_id != actor_id:
+                results.append({'id': item.id, 'action': item.action, 'status': 'rejected',
+                                'message': 'Receipt belongs to another user'})
             else:
-                results.append(OfflineSyncResultItem(
-                    id=item.id,
-                    action=item.action,
-                    status="error",
-                    message=f"Unrecognized sync action: {item.action}",
-                ))
-
-        except Exception as e:
-            logger.error(f"[OfflineSync] Error processing item {item.id}: {str(e)}")
-            results.append(OfflineSyncResultItem(
-                id=item.id,
-                action=item.action,
-                status="error",
-                message=str(e),
-            ))
-
-    return OfflineSyncBatchResponse(
-        processed_count=processed_count,
-        results=results,
-        synced_at=datetime.now(timezone.utc).isoformat(),
-    )
+                results.append({'id': item.id, 'action': item.action, 'status': 'duplicate',
+                                'message': receipt.reason, 'data': receipt.response})
+            continue
+        try:
+            async with db.begin_nested():
+                if item.action == 'MARK_LESSON_COMPLETE':
+                    data = await _lesson(db, user, item.payload)
+                else:
+                    captured = item.client_timestamp
+                    if captured is None and item.payload.get('scanned_at'):
+                        captured = datetime.fromisoformat(str(item.payload['scanned_at']))
+                    data = await _attendance(db, user, item.payload, captured)
+                db.add(SyncReceipt(id=uuid4(), client_id=item.id, user_id=actor_id,
+                                   action=item.action, status='applied', response=data))
+                await db.flush()
+            await db.commit()
+            results.append({'id': item.id, 'action': item.action, 'status': 'success', 'data': data})
+        except (ValueError, TypeError) as exc:
+            await db.rollback()
+            reason = str(exc)
+            db.add(SyncReceipt(id=uuid4(), client_id=item.id, user_id=actor_id,
+                               action=item.action, status='rejected', reason=reason))
+            await db.commit()
+            results.append({'id': item.id, 'action': item.action, 'status': 'rejected', 'message': reason})
+    return {'processed_count': len(results), 'results': results,
+            'synced_at': datetime.now(timezone.utc).isoformat()}

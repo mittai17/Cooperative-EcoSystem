@@ -32,9 +32,10 @@ async def test_skill_roles():
     assert response.status_code == 200
 
 @pytest.mark.asyncio
-async def test_analytics_overview():
+async def test_analytics_overview(token_factory):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get("/api/v1/analytics/overview")
+        admin = await token_factory(ac, "admin")
+        response = await ac.get("/api/v1/analytics/overview", headers=admin["headers"])
     assert response.status_code == 200
 
 @pytest.mark.asyncio
@@ -43,21 +44,23 @@ async def test_certificate_verify():
         response = await ac.get("/api/v1/certificates/verify/CST-2026-DAI-00842")
     assert response.status_code == 200
     data = response.json()
-    assert data["valid"] == True
+    assert data["valid"] is False
 
 @pytest.mark.asyncio
-async def test_skill_gap_analysis():
+async def test_skill_gap_analysis(token_factory):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/api/v1/skills/gap-analysis", json={"target_role": "Cooperative Development Officer"})
+        trainee = await token_factory(ac)
+        response = await ac.post("/api/v1/skills/gap-analysis", headers=trainee["headers"], json={"target_role": "Cooperative Development Officer"})
     assert response.status_code == 200
     data = response.json()
     assert "match_score" in data
     assert "gaps" in data
 
 @pytest.mark.asyncio
-async def test_career_chat():
+async def test_career_chat(token_factory):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/api/v1/career/chat", json={"message": "What jobs can I get?"})
+        trainee = await token_factory(ac)
+        response = await ac.post("/api/v1/career/chat", headers=trainee["headers"], json={"message": "What jobs can I get?"})
     assert response.status_code == 200
     data = response.json()
     assert "response" in data

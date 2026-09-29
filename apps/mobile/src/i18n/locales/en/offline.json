@@ -1,0 +1,11 @@
+{
+  "offlineTitle": "Offline Storage & Sync",
+  "pendingActions": "Pending Outbox Actions",
+  "downloadedCourses": "Downloaded Courses",
+  "freeSpace": "Storage Available",
+  "syncNow": "Sync Now",
+  "download": "Download for Offline",
+  "deleteDownload": "Remove Download",
+  "statusOffline": "You are currently offline. Changes will sync when reconnected.",
+  "statusSynced": "All offline changes synced successfully."
+}

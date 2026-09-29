@@ -17,7 +17,8 @@ class GenerateQRResponse(BaseModel):
 
 class ScanQRRequest(BaseModel):
     qr_token: str
-    trainee_id: str
+    # Optional: derived from the verified Clerk token when one is sent.
+    trainee_id: Optional[str] = None
 
 
 class ScanQRResponse(BaseModel):
@@ -32,6 +33,7 @@ class AttendanceRecordEntry(BaseModel):
     session: str
     status: str
     method: str
+    timestamp: Optional[str] = None
 
 
 class AttendanceSummaryResponse(BaseModel):

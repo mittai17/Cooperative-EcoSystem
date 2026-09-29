@@ -1,0 +1,15 @@
+{
+  "attendance": "હાજરી",
+  "qrScan": "ડાયનેમિક ક્યૂઆર સ્કેન કરો",
+  "nfcTap": "એનએફસી ટેગ ટેપ કરો",
+  "faceVerify": "ચહેરો ચકાસણી",
+  "history": "હાજરી ઇતિહાસ",
+  "startSession": "હાજરી સત્ર શરૂ કરો",
+  "sessionConsole": "સત્ર કન્સોલ",
+  "enrolFace": "નિરીક્ષિત ચહેરો નોંધણી",
+  "faceConsent": "ચહેરાની ઓળખ સંમતિ",
+  "percentage": "હાજરી ટકાવારી",
+  "present": "હાજર",
+  "absent": "ગેરહાજર",
+  "offlineRecorded": "ઑફલાઇન નોંધાયેલ (સિંક બાકી)"
+}

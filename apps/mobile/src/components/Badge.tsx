@@ -1,41 +1,26 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../constants/theme';
-import { CheckCircle2, AlertCircle } from 'lucide-react-native';
+import { COLORS, ICON, SPACE, TEXT } from '../constants/theme';
+import { CheckCircle2 } from 'lucide-react-native';
 
 interface BadgeProps {
   label: string;
-  variant?: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
+  variant?: 'primary' | 'success' | 'neutral';
+  /** shows a check icon (verified state) */
   verified?: boolean;
 }
 
+const VARIANTS = {
+  primary: { bg: COLORS.primarySurface, text: COLORS.primary, border: COLORS.primaryBorder },
+  success: { bg: COLORS.successSurface, text: COLORS.success, border: COLORS.successSurface },
+  neutral: { bg: COLORS.badgeBg, text: COLORS.textSecondary, border: COLORS.badgeBorder },
+};
+
 export const Badge: React.FC<BadgeProps> = ({ label, variant = 'neutral', verified }) => {
-  const getColors = () => {
-    switch (variant) {
-      case 'primary':
-        return { bg: COLORS.primarySurface, text: COLORS.primary, border: COLORS.primaryLight };
-      case 'success':
-        return { bg: COLORS.successSurface, text: COLORS.success, border: COLORS.success };
-      case 'warning':
-        return { bg: COLORS.warningSurface, text: COLORS.warning, border: COLORS.warning };
-      case 'danger':
-        return { bg: COLORS.dangerSurface, text: COLORS.danger, border: COLORS.danger };
-      default:
-        return { bg: COLORS.badgeBg, text: COLORS.textSecondary, border: COLORS.badgeBorder };
-    }
-  };
-
-  const c = getColors();
-
+  const c = VARIANTS[variant];
   return (
     <View style={[styles.badge, { backgroundColor: c.bg, borderColor: c.border }]}>
-      {verified !== undefined && (
-        verified ? (
-          <CheckCircle2 size={12} color={COLORS.success} style={styles.icon} />
-        ) : (
-          <AlertCircle size={12} color={COLORS.warning} style={styles.icon} />
-        )
-      )}
+      {verified ? <CheckCircle2 size={ICON.sm} color={COLORS.success} /> : null}
       <Text style={[styles.text, { color: c.text }]}>{label}</Text>
     </View>
   );
@@ -45,16 +30,14 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    gap: SPACE.xs,
+    paddingHorizontal: SPACE.sm,
+    paddingVertical: 2,
+    borderRadius: 999,
     borderWidth: 1,
-  },
-  icon: {
-    marginRight: 4,
+    alignSelf: 'flex-start',
   },
   text: {
-    fontSize: 11,
-    fontWeight: '600',
+    ...TEXT.captionStrong,
   },
 });

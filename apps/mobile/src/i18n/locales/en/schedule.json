@@ -1,0 +1,13 @@
+{
+  "timetable": "Timetable",
+  "mySchedule": "My Schedule",
+  "today": "Today's Sessions",
+  "hostel": "Hostel & Accommodation",
+  "myRoom": "My Room Allocation",
+  "hostelRequest": "Request Room",
+  "logistics": "Travel & Logistics",
+  "myLogistics": "My Travel Plan",
+  "inbox": "Notifications",
+  "operations": "Operations",
+  "noClasses": "No classes scheduled for today"
+}

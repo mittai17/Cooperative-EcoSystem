@@ -1,0 +1,16 @@
+{
+  "profile": "प्रोफ़ाइल",
+  "editProfile": "प्रोफ़ाइल संपादित करें",
+  "fullName": "पूरा नाम",
+  "email": "ईमेल",
+  "phone": "फ़ोन नंबर",
+  "cooperative": "सहकारी समिति",
+  "state": "राज्य",
+  "district": "ज़िला",
+  "pincode": "पिन कोड",
+  "language": "पसंदीदा भाषा",
+  "visibleToEmployers": "सत्यापित नियोक्ताओं को प्रोफ़ाइल देखने की अनुमति दें",
+  "completeness": "प्रोफ़ाइल पूर्णता",
+  "logout": "लॉग आउट",
+  "traineeDetail": "प्रशिक्षु विवरण"
+}

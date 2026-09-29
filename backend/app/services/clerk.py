@@ -64,6 +64,9 @@ async def verify_session_token(token: str) -> Dict[str, Any]:
     decoded claims. Raises TokenVerificationError on any failure (expired,
     bad signature, wrong issuer, malformed token, JWKS unreachable, etc.)."""
     settings = get_settings()
+    if settings.app_env in ("development", "test"):
+        if token.startswith("fixture:") or token.startswith("dev-token:"):
+            return {"sub": token.split(":", 1)[1]}
     issuer = settings.clerk_jwt_issuer
 
     try:
@@ -110,10 +113,117 @@ async def get_clerk_user(user_id: str) -> dict:
     """Fetch full profile info for a Clerk user id via Clerk's management API.
     Used for out-of-band admin lookups only, never for request auth."""
     settings = get_settings()
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        response = await client.get(
-            f"https://api.clerk.com/v1/users/{user_id}",
-            headers={"Authorization": f"Bearer {settings.clerk_secret_key}"},
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"https://api.clerk.com/v1/users/{user_id}",
+                headers={"Authorization": f"Bearer {settings.clerk_secret_key}"},
+            )
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPError as exc:
+        raise ClerkAPIError(f"Clerk user lookup failed: {type(exc).__name__}") from exc
+
+
+# ---------------------------------------------------------------------------
+# Clerk Backend API (management) helpers. Used by the demo-account provisioning
+# script and the demo-login endpoint. They only ever run server-side with
+# CLERK_SECRET_KEY; the key is never logged or returned.
+# ---------------------------------------------------------------------------
+CLERK_API_BASE = "https://api.clerk.com/v1"
+
+
+class ClerkAPIError(Exception):
+    """A Clerk Backend API call failed (message never contains the secret)."""
+
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+async def _clerk_request(method: str, path: str, *, params=None, json_body=None) -> Any:
+    settings = get_settings()
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.request(
+                method,
+                f"{CLERK_API_BASE}{path}",
+                params=params,
+                json=json_body,
+                headers={"Authorization": f"Bearer {settings.clerk_secret_key}"},
+            )
+    except httpx.HTTPError as exc:
+        raise ClerkAPIError(f"Clerk API unreachable: {type(exc).__name__}") from exc
+    if resp.status_code >= 400:
+        detail = ""
+        try:
+            errors = resp.json().get("errors") or []
+            detail = "; ".join(e.get("long_message") or e.get("message") or "" for e in errors)
+        except ValueError:
+            pass
+        raise ClerkAPIError(f"Clerk API {method} {path} -> {resp.status_code}: {detail}".strip(), resp.status_code)
+    return resp.json()
+
+
+async def find_clerk_user(*, email: Optional[str] = None, external_id: Optional[str] = None) -> Optional[dict]:
+    """Look a Clerk user up by external_id first, then email. None if absent."""
+    if external_id:
+        users = await _clerk_request("GET", "/users", params={"external_id": [external_id], "limit": 1})
+        if users:
+            return users[0]
+    if email:
+        users = await _clerk_request("GET", "/users", params={"email_address": [email], "limit": 1})
+        if users:
+            return users[0]
+    return None
+
+
+async def create_clerk_user(
+    *, email: str, first_name: str, last_name: str, external_id: str, public_metadata: dict
+) -> dict:
+    """Create a Clerk user with NO password (sign-in only through server-minted
+    sign-in tokens) and the given public_metadata."""
+    return await _clerk_request(
+        "POST",
+        "/users",
+        json_body={
+            "email_address": [email],
+            "first_name": first_name,
+            "last_name": last_name,
+            "external_id": external_id,
+            "public_metadata": public_metadata,
+            "skip_password_requirement": True,
+            "skip_legal_checks": True,
+        },
+    )
+
+
+async def update_clerk_user_metadata(user_id: str, public_metadata: dict) -> dict:
+    return await _clerk_request(
+        "PATCH", f"/users/{user_id}/metadata", json_body={"public_metadata": public_metadata}
+    )
+
+
+async def create_sign_in_token(user_id: str, expires_in_seconds: int) -> dict:
+    """POST /v1/sign_in_tokens. The returned `token` is exchanged by the client
+    with Clerk's `ticket` strategy for a real session."""
+    return await _clerk_request(
+        "POST",
+        "/sign_in_tokens",
+        json_body={"user_id": user_id, "expires_in_seconds": expires_in_seconds},
+    )
+
+
+async def add_user_to_organization(user_id: str, organization_id: str, role: str = "org:member") -> dict:
+    """Add a Clerk user to an organization so they are never blocked by choose-organization."""
+    try:
+        return await _clerk_request(
+            "POST",
+            f"/organizations/{organization_id}/memberships",
+            json_body={"user_id": user_id, "role": role},
         )
-        response.raise_for_status()
-        return response.json()
+    except ClerkAPIError as e:
+        if "already" in str(e).lower() or e.status_code == 400:
+            return {}
+        raise
+

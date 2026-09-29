@@ -1,0 +1,19 @@
+{
+  "assessments": "મૂલ્યાંકન",
+  "myAssessments": "મારી પરીક્ષાઓ",
+  "startAttempt": "મૂલ્યાંકન શરૂ કરો",
+  "submitAttempt": "મૂલ્યાંકન સબમિટ કરો",
+  "timeRemaining": "બાકી સમય",
+  "score": "ગુણ",
+  "passed": "ઉત્તીર્ણ",
+  "failed": "અનુત્તીર્ણ",
+  "topicBreakdown": "વિષયવાર વિગત",
+  "certificates": "પ્રમાણપત્રો",
+  "myCertificates": "મારા પ્રમાણપત્રો",
+  "verifyCertificate": "પ્રમાણપત્ર ચકાસો",
+  "certificateCode": "પ્રમાણપત્ર કોડ",
+  "tamperEvident": "ચેડાં-પ્રતિરોધક અને ક્રિપ્ટોગ્રાફિકલી હસ્તાક્ષરિત",
+  "scanQrToVerify": "પ્રમાણિકતા ચકાસવા માટે ક્યૂઆર સ્કેન કરો",
+  "verifiedValid": "પ્રમાણપત્રની પ્રમાણિકતા ચકાસાયેલ છે",
+  "share": "પ્રમાણપત્ર શેર કરો"
+}

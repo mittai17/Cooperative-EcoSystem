@@ -1,0 +1,15 @@
+{
+  "attendance": "Attendance",
+  "qrScan": "Scan Dynamic QR",
+  "nfcTap": "Tap NFC Tag",
+  "faceVerify": "Face Verification",
+  "history": "Attendance History",
+  "startSession": "Start Attendance Session",
+  "sessionConsole": "Session Console",
+  "enrolFace": "Supervised Face Enrolment",
+  "faceConsent": "Face Recognition Consent",
+  "percentage": "Attendance Rate",
+  "present": "Present",
+  "absent": "Absent",
+  "offlineRecorded": "Recorded Offline (Pending Sync)"
+}

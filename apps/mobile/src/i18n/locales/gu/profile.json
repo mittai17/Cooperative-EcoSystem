@@ -1,0 +1,16 @@
+{
+  "profile": "પ્રોફાઇલ",
+  "editProfile": "પ્રોફાઇલ સંપાદિત કરો",
+  "fullName": "પૂરું નામ",
+  "email": "ઇમેઇલ",
+  "phone": "ફોન નંબર",
+  "cooperative": "સહકારી મંડળી",
+  "state": "રાજ્ય",
+  "district": "જિલ્લો",
+  "pincode": "પિનકોડ",
+  "language": "પસંદગીની ભાષા",
+  "visibleToEmployers": "ચકાસાયેલ નોકરીદાતાઓને પ્રોફાઇલ જોવાની મંજૂરી આપો",
+  "completeness": "પ્રોફાઇલ પૂર્ણતા",
+  "logout": "લૉગ આઉટ",
+  "traineeDetail": "તાલીમાર્થી વિગતો"
+}

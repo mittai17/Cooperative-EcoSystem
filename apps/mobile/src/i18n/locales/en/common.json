@@ -1,0 +1,20 @@
+{
+  "appName": "CoopSetu AI",
+  "loading": "Loading...",
+  "save": "Save",
+  "cancel": "Cancel",
+  "retry": "Try again",
+  "error": "An error occurred",
+  "back": "Back",
+  "next": "Next",
+  "submit": "Submit",
+  "search": "Search",
+  "filter": "Filter",
+  "noData": "No data available",
+  "offline": "Offline Mode",
+  "online": "Online",
+  "sync": "Sync",
+  "home": "Home",
+  "me": "Me",
+  "overview": "Overview"
+}

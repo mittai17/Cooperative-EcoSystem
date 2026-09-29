@@ -1,0 +1,19 @@
+{
+  "assessments": "मूल्यांकन",
+  "myAssessments": "मेरे परीक्षण",
+  "startAttempt": "मूल्यांकन शुरू करें",
+  "submitAttempt": "मूल्यांकन जमा करें",
+  "timeRemaining": "शेष समय",
+  "score": "अंक",
+  "passed": "उत्तीर्ण",
+  "failed": "अनुत्तीर्ण",
+  "topicBreakdown": "विषयवार विवरण",
+  "certificates": "प्रमाणपत्र",
+  "myCertificates": "मेरे प्रमाणपत्र",
+  "verifyCertificate": "प्रमाणपत्र सत्यापित करें",
+  "certificateCode": "प्रमाणपत्र कोड",
+  "tamperEvident": "छेड़छाड़-रोधी और क्रिप्टोग्राफ़िक रूप से हस्ताक्षरित",
+  "scanQrToVerify": "प्रामाणिकता सत्यापित करने के लिए क्यूआर स्कैन करें",
+  "verifiedValid": "प्रमाणपत्र की प्रामाणिकता सत्यापित",
+  "share": "प्रमाणपत्र साझा करें"
+}

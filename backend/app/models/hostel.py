@@ -50,3 +50,30 @@ class HostelWaitlistEntry(Base):
     applied_on = Column(Date, nullable=False)
     preference = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class HostelRequest(Base):
+    """A trainee's own request for a hostel stay. Approval flows through the
+    existing waitlist/allocate mechanics; `waitlist_entry_id` / `room_id` link
+    the request to them. status: pending|waitlisted|allocated|cancelled|rejected."""
+
+    __tablename__ = "hostel_requests"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organisation_id = Column(UUID(as_uuid=True), ForeignKey("organisations.id"), nullable=True, index=True)
+    trainee_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    programme_id = Column(UUID(as_uuid=True), ForeignKey("programmes.id", ondelete="SET NULL"), nullable=True)
+    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="SET NULL"), nullable=True)
+    from_date = Column(Date, nullable=True)
+    to_date = Column(Date, nullable=True)
+    preference = Column(Text, nullable=True)
+    status = Column(String(20), nullable=False, server_default="pending")
+    waitlist_entry_id = Column(UUID(as_uuid=True), ForeignKey("hostel_waitlist_entries.id", ondelete="SET NULL"), nullable=True)
+    room_id = Column(UUID(as_uuid=True), ForeignKey("hostel_rooms.id", ondelete="SET NULL"), nullable=True)
+    decided_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    decision_note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )

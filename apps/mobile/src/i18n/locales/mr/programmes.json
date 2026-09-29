@@ -1,0 +1,15 @@
+{
+  "catalog": "प्रशिक्षण कार्यक्रम",
+  "detail": "कार्यक्रम तपशील",
+  "nomination": "नोंदणी",
+  "myNominations": "माझ्या नोंदण्या",
+  "inbox": "नोंदणी इनबॉक्स",
+  "review": "नोंदणी पुनरावलोकन",
+  "apply": "कार्यक्रमासाठी अर्ज करा",
+  "statusSubmitted": "सादर केले",
+  "statusApproved": "मंजूर",
+  "statusRejected": "नाकारले",
+  "statusEnrolled": "प्रवेश घेतला",
+  "seatsAvailable": "उपलब्ध जागा",
+  "withdraw": "अर्ज मागे घ्या"
+}

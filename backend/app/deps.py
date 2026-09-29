@@ -6,6 +6,7 @@ from fastapi import HTTPException, Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.config import get_settings
 from app.database import get_db
 from app.models.user import User
 from app.services.clerk import verify_session_token, TokenVerificationError
@@ -71,12 +72,92 @@ def require_role(*roles: str):
 
     async def _checker(identity: AuthenticatedIdentity = Depends(get_current_identity)) -> AuthenticatedIdentity:
         if identity.db_user is None:
-            raise HTTPException(status_code=403, detail="User not provisioned locally; call /api/v1/auth/sync first")
+            raise HTTPException(status_code=403, detail="User not provisioned locally; call /api/v1/auth/provision first")
         if identity.role not in roles:
             raise HTTPException(status_code=403, detail=f"Requires one of roles: {', '.join(roles)}")
         return identity
 
     return _checker
+
+
+# Roles with platform-wide (cross-organisation) reach. `admin` may read and
+# write everywhere; `ncct_admin` is the national read-only view: it passes
+# org_scope() (no org filter) but must still be listed explicitly in
+# require_roles() to be allowed on any endpoint.
+GLOBAL_ROLES = ("admin", "ncct_admin")
+KNOWN_ROLES = ("trainee", "trainer", "institution", "employer", "admin", "ncct_admin")
+
+
+async def require_user(
+    identity: AuthenticatedIdentity = Depends(get_current_identity),
+) -> User:
+    """Authenticated + provisioned + active local user. 401 without a valid
+    token (from get_current_claims), 403 if the token is valid but the user
+    has no local row yet (call POST /auth/provision) or is deactivated.
+    Returns the `User` row. New endpoints must use this (or require_roles),
+    never the anonymous fallback."""
+    if identity.db_user is None:
+        raise HTTPException(status_code=403, detail="User not provisioned locally; call /api/v1/auth/provision first")
+    if identity.db_user.is_active is False:
+        raise HTTPException(status_code=403, detail="Account is deactivated")
+    return identity.db_user
+
+
+def require_roles(*roles: str):
+    """Dependency factory: like require_user but 403s unless the user's role is
+    one of `roles` (list `admin` explicitly when it should pass). Returns the
+    `User` row."""
+    if not roles:
+        raise ValueError("require_roles needs at least one role")
+
+    async def _checker(user: User = Depends(require_user)) -> User:
+        if user.role not in roles:
+            raise HTTPException(status_code=403, detail=f"Requires one of roles: {', '.join(roles)}")
+        return user
+
+    return _checker
+
+
+def org_scope(user: User) -> Optional[uuid.UUID]:
+    """The organisation a user's org-scoped queries must be limited to.
+
+    Returns None for platform-wide roles (admin, ncct_admin): apply no org
+    filter. Otherwise returns `user.organisation_id`; a non-global user with no
+    organisation gets 403 (fail closed - never fall back to "everything")."""
+    if user.role in GLOBAL_ROLES:
+        return None
+    if user.organisation_id is None:
+        raise HTTPException(status_code=403, detail="Your account is not linked to an organisation")
+    return user.organisation_id
+
+
+def assert_org_access(user: User, organisation_id: Optional[uuid.UUID]) -> None:
+    """403 unless `user` may act on a resource owned by `organisation_id`.
+    A resource with no owning organisation is only reachable by global roles."""
+    scope = org_scope(user)
+    if scope is None:
+        return
+    if organisation_id is None or organisation_id != scope:
+        raise HTTPException(status_code=403, detail="Resource belongs to a different organisation")
+
+
+def anonymous_actor_uuid(explicit_id: Optional[str], *, raise_if_disabled: bool = True) -> Optional[uuid.UUID]:
+    """Client-supplied actor id for unauthenticated callers (scripts, tests).
+
+    Gated by settings.ALLOWED_ANONYMOUS_ACTOR (`allow_anonymous_actor`, default
+    on only when APP_ENV=development). When disabled and an id is supplied this
+    raises 401 (or returns None with raise_if_disabled=False). Returns None for
+    a missing/invalid id."""
+    if not explicit_id:
+        return None
+    if not get_settings().anonymous_actor_allowed:
+        if raise_if_disabled:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        return None
+    try:
+        return uuid.UUID(str(explicit_id))
+    except (ValueError, TypeError):
+        return None
 
 
 async def get_optional_claims(authorization: Optional[str] = Header(None)) -> Optional[dict]:
@@ -112,7 +193,9 @@ def resolve_actor_id(
     allowed_roles: Optional[tuple] = None,
 ) -> Optional[uuid.UUID]:
     """Derives actor UUID from verified Clerk identity if authenticated,
-    falling back to explicit_id when unauthenticated.
+    falling back to explicit_id when unauthenticated *and* the anonymous-actor
+    fallback is enabled (ALLOW_ANONYMOUS_ACTOR; default on only in development;
+    otherwise an explicit id without a token is a 401).
     If authenticated, enforces role permission if allowed_roles is specified."""
     if identity is not None:
         if allowed_roles and identity.role not in allowed_roles:
@@ -122,12 +205,6 @@ def resolve_actor_id(
             )
         if identity.db_user is not None:
             return identity.db_user.id
-        raise HTTPException(status_code=403, detail="User not provisioned locally; call /api/v1/auth/sync first")
+        raise HTTPException(status_code=403, detail="User not provisioned locally; call /api/v1/auth/provision first")
 
-    if explicit_id:
-        try:
-            return uuid.UUID(explicit_id)
-        except (ValueError, TypeError):
-            return None
-    return None
-
+    return anonymous_actor_uuid(explicit_id)

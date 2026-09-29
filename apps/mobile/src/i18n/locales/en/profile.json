@@ -1,0 +1,16 @@
+{
+  "profile": "Profile",
+  "editProfile": "Edit Profile",
+  "fullName": "Full Name",
+  "email": "Email",
+  "phone": "Phone Number",
+  "cooperative": "Cooperative Society",
+  "state": "State",
+  "district": "District",
+  "pincode": "Pincode",
+  "language": "Preferred Language",
+  "visibleToEmployers": "Allow Verified Employers to View Profile",
+  "completeness": "Profile Completeness",
+  "logout": "Log out",
+  "traineeDetail": "Trainee Details"
+}

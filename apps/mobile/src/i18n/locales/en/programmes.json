@@ -1,0 +1,15 @@
+{
+  "catalog": "Training Programmes",
+  "detail": "Programme Details",
+  "nomination": "Nomination",
+  "myNominations": "My Nominations",
+  "inbox": "Nomination Inbox",
+  "review": "Review Nomination",
+  "apply": "Apply for Programme",
+  "statusSubmitted": "Submitted",
+  "statusApproved": "Approved",
+  "statusRejected": "Rejected",
+  "statusEnrolled": "Enrolled",
+  "seatsAvailable": "Seats available",
+  "withdraw": "Withdraw Application"
+}

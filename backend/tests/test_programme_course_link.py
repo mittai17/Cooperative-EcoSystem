@@ -5,11 +5,13 @@ from app.main import app
 
 
 @pytest.mark.asyncio
-async def test_link_course_to_programme():
+async def test_link_course_to_programme(token_factory):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        admin = await token_factory(ac, role="admin")
         # Create a new programme
         prog_resp = await ac.post(
             "/api/v1/programmes/",
+            headers=admin["headers"],
             json={"title": f"Link Test Prog {uuid.uuid4().hex[:6]}", "sector": "Cooperative"},
         )
         assert prog_resp.status_code == 200
@@ -25,6 +27,7 @@ async def test_link_course_to_programme():
         # Link course to programme via JSON body
         link_resp = await ac.post(
             f"/api/v1/programmes/{prog_id}/courses",
+            headers=admin["headers"],
             json={
                 "course_id": course_id,
                 "sequence_order": 1,
@@ -41,11 +44,13 @@ async def test_link_course_to_programme():
 
 
 @pytest.mark.asyncio
-async def test_list_programme_courses_in_sequence():
+async def test_list_programme_courses_in_sequence(token_factory):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        admin = await token_factory(ac, role="admin")
         # Create a new programme
         prog_resp = await ac.post(
             "/api/v1/programmes/",
+            headers=admin["headers"],
             json={"title": f"Sequence Test Prog {uuid.uuid4().hex[:6]}", "sector": "Technology"},
         )
         assert prog_resp.status_code == 200
@@ -63,12 +68,14 @@ async def test_list_programme_courses_in_sequence():
         # Link course_1 as sequence 2, course_2 as sequence 1 (deliberately out of order)
         link1 = await ac.post(
             f"/api/v1/programmes/{prog_id}/courses",
+            headers=admin["headers"],
             json={"course_id": course_1_id, "sequence_order": 2, "is_mandatory": False},
         )
         assert link1.status_code == 200
 
         link2 = await ac.post(
             f"/api/v1/programmes/{prog_id}/courses",
+            headers=admin["headers"],
             json={"course_id": course_2_id, "sequence_order": 1, "is_mandatory": True},
         )
         assert link2.status_code == 200
@@ -92,15 +99,18 @@ async def test_list_programme_courses_in_sequence():
 
 
 @pytest.mark.asyncio
-async def test_get_programmes_for_course():
+async def test_get_programmes_for_course(token_factory):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        admin = await token_factory(ac, role="admin")
         # Create two distinct programmes
         p1_resp = await ac.post(
             "/api/v1/programmes/",
+            headers=admin["headers"],
             json={"title": f"Parent Prog 1 {uuid.uuid4().hex[:6]}", "sector": "Dairy"},
         )
         p2_resp = await ac.post(
             "/api/v1/programmes/",
+            headers=admin["headers"],
             json={"title": f"Parent Prog 2 {uuid.uuid4().hex[:6]}", "sector": "Banking"},
         )
         p1_id = p1_resp.json()["id"]
@@ -111,8 +121,16 @@ async def test_get_programmes_for_course():
         course_id = courses_resp.json()["courses"][0]["id"]
 
         # Link course to both programmes
-        await ac.post(f"/api/v1/programmes/{p1_id}/courses", json={"course_id": course_id, "sequence_order": 1})
-        await ac.post(f"/api/v1/programmes/{p2_id}/courses", json={"course_id": course_id, "sequence_order": 1})
+        await ac.post(
+            f"/api/v1/programmes/{p1_id}/courses",
+            headers=admin["headers"],
+            json={"course_id": course_id, "sequence_order": 1},
+        )
+        await ac.post(
+            f"/api/v1/programmes/{p2_id}/courses",
+            headers=admin["headers"],
+            json={"course_id": course_id, "sequence_order": 1},
+        )
 
         # Query programmes for the course
         prog_for_course_resp = await ac.get(f"/api/v1/courses/{course_id}/programmes")
@@ -126,13 +144,15 @@ async def test_get_programmes_for_course():
 
 
 @pytest.mark.asyncio
-async def test_link_validation_errors():
+async def test_link_validation_errors(token_factory):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        admin = await token_factory(ac, role="admin")
         fake_uuid = str(uuid.uuid4())
 
         # Linking with non-existent programme
         resp = await ac.post(
             f"/api/v1/programmes/{fake_uuid}/courses",
+            headers=admin["headers"],
             json={"course_id": fake_uuid, "sequence_order": 1},
         )
         assert resp.status_code == 404
@@ -140,12 +160,14 @@ async def test_link_validation_errors():
         # Non-existent course on existing programme
         prog_resp = await ac.post(
             "/api/v1/programmes/",
+            headers=admin["headers"],
             json={"title": f"Prog {uuid.uuid4().hex[:6]}", "sector": "General"},
         )
         prog_id = prog_resp.json()["id"]
 
         resp_bad_course = await ac.post(
             f"/api/v1/programmes/{prog_id}/courses",
+            headers=admin["headers"],
             json={"course_id": fake_uuid, "sequence_order": 1},
         )
         assert resp_bad_course.status_code == 404

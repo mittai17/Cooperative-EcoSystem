@@ -1,0 +1,19 @@
+{
+  "assessments": "मूल्यमापन",
+  "myAssessments": "माझ्या चाचण्या",
+  "startAttempt": "मूल्यमापन सुरू करा",
+  "submitAttempt": "मूल्यमापन सादर करा",
+  "timeRemaining": "उर्वरित वेळ",
+  "score": "गुण",
+  "passed": "उत्तीर्ण",
+  "failed": "अनुत्तीर्ण",
+  "topicBreakdown": "विषयवार विभाजन",
+  "certificates": "प्रमाणपत्रे",
+  "myCertificates": "माझी प्रमाणपत्रे",
+  "verifyCertificate": "प्रमाणपत्र पडताळा",
+  "certificateCode": "प्रमाणपत्र कोड",
+  "tamperEvident": "छेडछाड-संरक्षित आणि क्रिप्टोग्राफिक स्वाक्षरीकृत",
+  "scanQrToVerify": "सत्यता पडताळण्यासाठी क्यूआर स्कॅन करा",
+  "verifiedValid": "प्रमाणपत्राची सत्यता प्रमाणित",
+  "share": "प्रमाणपत्र शेअर करा"
+}

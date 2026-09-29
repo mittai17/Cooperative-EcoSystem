@@ -1,558 +1,299 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SHADOWS } from '../constants/theme';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { COLORS, ICON, CARD, SPACE, TEXT } from '../constants/theme';
 import { apiService } from '../services/api';
-import { AppHeader } from '../components/AppHeader';
+import { useOnMount } from '../hooks/useOnMount';
+import { courseProgress, useLocalStore } from '../services/localStore';
+import { ScrollScreen } from '../components/ScrollScreen';
+import { SectionHeader } from '../components/SectionHeader';
+import { EmptyState, LoadingState } from '../components/EmptyState';
 import { Badge } from '../components/Badge';
-import {
-  BookOpen,
-  CalendarCheck2,
-  Award,
-  Briefcase,
-  PlayCircle,
-  ArrowRight,
-  TrendingUp,
-  Sparkles,
-  QrCode,
-  Download,
-} from 'lucide-react-native';
+import { IconChip } from '../components/IconChip';
+import { ProgressBar } from '../components/ProgressBar';
+import { CourseThumb } from '../components/CourseThumb';
+import { QrCode, Award, GraduationCap, Download, MapPin, ChevronRight } from 'lucide-react-native';
 import { Course, JobMatch } from '../types';
+import { useAuthContext } from '../navigation/AuthContext';
+
+const greetingForHour = (hour: number) => {
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+};
+
+const QUICK_ACTIONS = [
+  { label: 'QR attendance', Icon: QrCode, route: 'QRScan' },
+  { label: 'Skill passport', Icon: Award, route: 'Passport' },
+  { label: 'Certificates', Icon: GraduationCap, route: 'Certificates' },
+  { label: 'Offline', Icon: Download, route: 'Offline' },
+] as const;
+
+interface DashboardData {
+  courses: Course[];
+  jobs: JobMatch[];
+  skillStrength: number | null;
+  verifiedSkills: number | null;
+  attendance: number | null;
+  isLive: boolean;
+}
 
 export const DashboardScreen = ({ navigation }: any) => {
+  const [data, setData] = useState<DashboardData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [jobs, setJobs] = useState<JobMatch[]>([]);
-  const [isLive, setIsLive] = useState(true);
-  const [trainee, setTrainee] = useState(apiService.getTraineeProfile());
+  const { completed } = useLocalStore();
+  const { user } = useAuthContext();
 
-  const loadData = async () => {
-    setRefreshing(true);
+  const load = useCallback(async () => {
     try {
-      const [coursesRes, jobsRes, traineeRes] = await Promise.all([
+      const [coursesRes, jobsRes, passportRes, attendanceRes] = await Promise.all([
         apiService.getCourses(),
         apiService.getJobs(),
-        apiService.getTraineeProfileLive(),
+        apiService.getSkillPassport(),
+        apiService.getAttendanceRecords(),
       ]);
-      setCourses(coursesRes.courses);
-      setJobs(jobsRes.jobs);
-      setTrainee(traineeRes.trainee);
-      setIsLive(coursesRes.isLive);
+      const summary = passportRes.passport.summary;
+      setData({
+        courses: coursesRes.courses,
+        jobs: jobsRes.jobs,
+        skillStrength: passportRes.isLive && summary ? Math.round(summary.avg_confidence) : null,
+        verifiedSkills: passportRes.isLive && summary ? summary.verified_count : null,
+        attendance: attendanceRes.percentage === null ? null : Math.round(attendanceRes.percentage),
+        isLive:
+          coursesRes.isLive &&
+          jobsRes.isLive &&
+          passportRes.isLive &&
+          attendanceRes.isLive,
+      });
     } catch {
-      setIsLive(false);
-    } finally {
-      setRefreshing(false);
+      setData((prev) => (prev ? { ...prev, isLive: false } : prev));
     }
-  };
-
-  useEffect(() => {
-    loadData();
   }, []);
 
-  const continueCourse = courses.find((c) => (c.progress || 0) > 0 && (c.progress || 0) < 100) || courses[0];
+  useOnMount(load);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  };
+
+  if (!data) {
+    return (
+      <ScrollScreen tab brand title="CoopSetu AI">
+        <LoadingState />
+      </ScrollScreen>
+    );
+  }
+
+  const { courses, jobs } = data;
+  const trainee = user?.trainee ?? null;
+  const withProgress = courses.map((c) => ({ course: c, progress: courseProgress(c, completed) }));
+  const continueItem =
+    withProgress.find((c) => c.progress > 0 && c.progress < 100) ??
+    withProgress.find((c) => c.progress < 100);
+  const firstName = ((trainee?.name || user?.fullName || user?.email || '').split(/[\s@]/)[0]) ?? '';
+
+  const stats = [
+    { label: 'Attendance', value: data.attendance === null ? '-' : `${data.attendance}%` },
+    { label: 'Skill strength', value: data.skillStrength === null ? '-' : `${data.skillStrength}%` },
+    { label: 'Verified skills', value: data.verifiedSkills === null ? '-' : `${data.verifiedSkills}` },
+  ];
+
+  const continueCourse = continueItem?.course;
+  const continueProgress = continueItem?.progress ?? 0;
+  const modulesDone = continueCourse?.modules
+    ? continueCourse.modules.filter((m) => completed[continueCourse.id]?.[m.id] ?? m.completed).length
+    : 0;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader
-        title="CoopSetu AI"
-        subtitle="National Cooperative Skilling"
-        isLive={isLive}
-      />
+    <ScrollScreen
+      tab
+      brand
+      title="CoopSetu AI"
+      isLive={data.isLive}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+    >
+      <View style={styles.greetingBlock}>
+        <Text style={styles.greetingName}>
+          {greetingForHour(new Date().getHours())}{firstName ? `, ${firstName}` : ''}
+        </Text>
+        <Text style={styles.greetingSub} numberOfLines={1}>
+          {trainee?.enrolled_institution ?? user?.organisation?.name ?? ''}
+        </Text>
+      </View>
 
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} colors={[COLORS.primary]} />}
-      >
-        {/* Welcome Greeting Banner */}
-        <View style={styles.greetingCard}>
-          <View style={styles.greetingHeader}>
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarText}>{trainee.avatar_initials}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.greetingName}>Namaste, {trainee.name} 👋</Text>
-              <Text style={styles.greetingSub}>{trainee.programme}</Text>
-              <Text style={styles.institutionName}>{trainee.enrolled_institution}</Text>
-            </View>
-          </View>
-
-          {/* Quick Actions Row */}
-          <View style={styles.quickActionRow}>
-            <TouchableOpacity
-              style={styles.quickActionBtn}
-              onPress={() => navigation.navigate('QRScan')}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.quickActionIconWrap, { backgroundColor: '#EFF6FF' }]}>
-                <QrCode size={18} color={COLORS.primary} />
-              </View>
-              <Text style={styles.quickActionLabel}>QR Attendance</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickActionBtn}
-              onPress={() => navigation.navigate('CareerAI')}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.quickActionIconWrap, { backgroundColor: '#FDF2F8' }]}>
-                <Sparkles size={18} color="#BE185D" />
-              </View>
-              <Text style={styles.quickActionLabel}>Career AI</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickActionBtn}
-              onPress={() => navigation.navigate('Offline')}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.quickActionIconWrap, { backgroundColor: '#ECFDF5' }]}>
-                <Download size={18} color={COLORS.success} />
-              </View>
-              <Text style={styles.quickActionLabel}>Offline</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Stats Metrics Grid */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statBox}>
-            <View style={styles.statIconRow}>
-              <CalendarCheck2 size={16} color={COLORS.primary} />
-              <Text style={styles.statLabel}>Attendance</Text>
-            </View>
-            <Text style={styles.statValue}>{trainee.attendance_percentage}%</Text>
-            <Text style={styles.statSub}>Compliant (Min 75%)</Text>
-          </View>
-
-          <View style={styles.statBox}>
-            <View style={styles.statIconRow}>
-              <Award size={16} color={COLORS.success} />
-              <Text style={styles.statLabel}>Skill Strength</Text>
-            </View>
-            <Text style={styles.statValue}>72%</Text>
-            <Text style={styles.statSub}>{trainee.skills_verified_count} Verified Skills</Text>
-          </View>
-
-          <View style={styles.statBox}>
-            <View style={styles.statIconRow}>
-              <TrendingUp size={16} color="#7C3AED" />
-              <Text style={styles.statLabel}>Learning</Text>
-            </View>
-            <Text style={styles.statValue}>{trainee.hours_completed}h</Text>
-            <Text style={styles.statSub}>4 modules left</Text>
-          </View>
-        </View>
-
-        {/* Continue Learning Section */}
-        {continueCourse && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Continue Learning</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('CoursesTab')}>
-                <Text style={styles.sectionLink}>View All</Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={styles.continueCard}
-              activeOpacity={0.9}
-              onPress={() => navigation.navigate('CoursePlayer', { course: continueCourse })}
-            >
-              <View style={styles.continueCardTop}>
-                <View style={styles.playIconContainer}>
-                  <PlayCircle size={32} color={COLORS.primary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Badge label={continueCourse.category} variant="primary" />
-                  <Text style={styles.continueTitle} numberOfLines={2}>
-                    {continueCourse.title}
-                  </Text>
-                  <Text style={styles.continueInstructor}>Instructor: {continueCourse.instructor}</Text>
-                </View>
-              </View>
-
-              {/* Progress bar */}
-              <View style={styles.progressContainer}>
-                <View style={styles.progressBarTrack}>
-                  <View style={[styles.progressBarFill, { width: `${continueCourse.progress || 25}%` }]} />
-                </View>
-                <View style={styles.progressInfo}>
-                  <Text style={styles.progressText}>{continueCourse.progress || 25}% Completed</Text>
-                  <Text style={styles.resumeAction}>Resume Lesson ›</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Top Cooperative Job Opportunities */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Briefcase size={18} color={COLORS.primary} />
-              <Text style={styles.sectionTitle}>High-Match Cooperative Vacancies</Text>
-            </View>
-            <TouchableOpacity onPress={() => navigation.navigate('JobsTab')}>
-              <Text style={styles.sectionLink}>See All</Text>
-            </TouchableOpacity>
-          </View>
-
-          {jobs.slice(0, 2).map((job) => (
-            <TouchableOpacity
-              key={job.id}
-              style={styles.jobCard}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate('JobsTab')}
-            >
-              <View style={styles.jobHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.jobTitle}>{job.title}</Text>
-                  <Text style={styles.jobEmployer}>{job.employer}</Text>
-                </View>
-                <View style={styles.matchBadge}>
-                  <Text style={styles.matchPercent}>{job.match_percentage || 85}%</Text>
-                  <Text style={styles.matchSub}>Match</Text>
-                </View>
-              </View>
-
-              <View style={styles.jobMetaRow}>
-                <Text style={styles.jobMetaText}>📍 {job.location}</Text>
-                <Text style={styles.jobMetaText}>💰 {job.salary}</Text>
-              </View>
-
-              <View style={styles.jobFooter}>
-                <View style={styles.jobTagsRow}>
-                  {job.skills_required.slice(0, 2).map((skill, i) => (
-                    <Badge key={i} label={skill} variant="neutral" />
-                  ))}
-                </View>
-                <View style={styles.applyBtnTextWrap}>
-                  <Text style={styles.applyBtnText}>View Details</Text>
-                  <ArrowRight size={14} color={COLORS.primary} />
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Skill Passport Summary Banner */}
-        <TouchableOpacity
-          style={styles.passportPromoBanner}
-          activeOpacity={0.85}
-          onPress={() => navigation.navigate('PassportTab')}
-        >
-          <View style={{ flex: 1 }}>
-            <Badge label="VERIFIED CREDENTIALS" variant="success" verified />
-            <Text style={styles.promoTitle}>Cooperative Skill Passport</Text>
-            <Text style={styles.promoDesc}>
-              Tamper-evident blockchain-ready skilling passport accepted across 8.5 lakh PACS & Cooperatives.
+      <View style={styles.statsRow}>
+        {stats.map((s) => (
+          <View key={s.label} style={styles.statBox} accessible accessibilityLabel={`${s.label}: ${s.value}`}>
+            <Text style={styles.statValue}>{s.value}</Text>
+            <Text style={styles.statLabel} numberOfLines={1}>
+              {s.label}
             </Text>
           </View>
-          <ArrowRight size={20} color={COLORS.primary} />
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+        ))}
+      </View>
+
+      <View style={styles.quickRow}>
+        {QUICK_ACTIONS.map(({ label, Icon, route }) => (
+          <TouchableOpacity
+            key={route}
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate(route)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+          >
+            <IconChip>
+              <Icon size={ICON.md} color={COLORS.primary} />
+            </IconChip>
+            <Text style={styles.quickLabel} numberOfLines={1}>
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {continueCourse ? (
+        <View>
+          <SectionHeader
+            title={continueProgress > 0 ? 'Continue learning' : 'Start learning'}
+            actionLabel="View all"
+            onAction={() => navigation.navigate('CoursesTab')}
+          />
+          <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('CoursePlayer', { course: continueCourse })}
+            accessibilityRole="button"
+            accessibilityLabel={`Open course ${continueCourse.title}, ${continueProgress}% complete`}
+          >
+            <CourseThumb category={continueCourse.category} />
+            <View style={styles.cardBody}>
+              <Text style={styles.cardTitle} numberOfLines={2}>
+                {continueCourse.title}
+              </Text>
+              {continueCourse.modules && continueCourse.modules.length > 0 ? (
+                <Text style={styles.cardMeta}>
+                  {modulesDone} of {continueCourse.modules.length} lessons
+                </Text>
+              ) : (
+                <Text style={styles.cardMeta}>{continueCourse.instructor}</Text>
+              )}
+              <View style={styles.progressRow}>
+                <View style={styles.flex}>
+                  <ProgressBar value={continueProgress} />
+                </View>
+                <Text style={styles.progressText}>{continueProgress}%</Text>
+              </View>
+            </View>
+            <ChevronRight size={ICON.md} color={COLORS.textMuted} />
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      <View>
+        <SectionHeader
+          title="Top job matches"
+          actionLabel="See all"
+          onAction={() => navigation.navigate('JobsTab')}
+        />
+        {jobs.length === 0 ? (
+          <EmptyState title="No jobs available" message="Pull down to refresh." />
+        ) : (
+          <View style={styles.list}>
+            {jobs.slice(0, 2).map((job) => (
+              <TouchableOpacity
+                key={job.id}
+                style={styles.jobCard}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('JobsTab')}
+                accessibilityRole="button"
+                accessibilityLabel={`${job.title}, ${job.employer}. Open jobs.`}
+              >
+                <View style={styles.jobHeader}>
+                  <View style={styles.flex}>
+                    <Text style={styles.cardTitle} numberOfLines={2}>
+                      {job.title}
+                    </Text>
+                    <Text style={styles.cardMeta} numberOfLines={2}>
+                      {job.employer}
+                    </Text>
+                  </View>
+                  {job.match_percentage !== undefined ? (
+                    <Text style={styles.matchPercent}>{job.match_percentage}% match</Text>
+                  ) : null}
+                </View>
+                {job.location ? (
+                  <View style={styles.metaRow}>
+                    <MapPin size={ICON.sm} color={COLORS.textMuted} />
+                    <Text style={styles.cardMeta} numberOfLines={1}>
+                      {job.location}
+                    </Text>
+                  </View>
+                ) : null}
+                {job.skills_required.length > 0 ? (
+                  <View style={styles.tagsRow}>
+                    {job.skills_required.slice(0, 2).map((skill) => (
+                      <Badge key={skill} label={skill} />
+                    ))}
+                  </View>
+                ) : null}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    </ScrollScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 18,
-  },
-  greetingCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.sm,
-  },
-  greetingHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: COLORS.textInverse,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  greetingName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  greetingSub: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  institutionName: {
-    fontSize: 11,
-    color: COLORS.primaryLight,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  quickActionRow: {
-    flexDirection: 'row',
-    gap: 10,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
-    paddingTop: 12,
-  },
-  quickActionBtn: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 6,
-  },
-  quickActionIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quickActionLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: 10,
-  },
+  flex: { flex: 1 },
+  greetingBlock: { gap: 2 },
+  greetingName: { ...TEXT.title },
+  greetingSub: { ...TEXT.caption },
+  statsRow: { flexDirection: 'row', gap: SPACE.sm },
   statBox: {
+    ...CARD,
     flex: 1,
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.sm,
+    paddingVertical: SPACE.md,
+    paddingHorizontal: SPACE.sm,
+    alignItems: 'center',
+    gap: SPACE.xs,
   },
-  statIconRow: {
+  statValue: { ...TEXT.title },
+  statLabel: { ...TEXT.caption },
+  quickRow: {
+    ...CARD,
+    flexDirection: 'row',
+    paddingVertical: SPACE.sm,
+    paddingHorizontal: SPACE.xs,
+  },
+  quickBtn: {
+    flex: 1,
+    alignItems: 'center',
+    gap: SPACE.xs,
+    paddingVertical: SPACE.sm,
+    minHeight: 44,
+  },
+  quickLabel: { ...TEXT.captionStrong, color: COLORS.textPrimary },
+  list: { gap: SPACE.sm },
+  card: {
+    ...CARD,
+    padding: SPACE.md - SPACE.xs,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginBottom: 6,
+    gap: SPACE.md - SPACE.xs,
   },
-  statLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.primaryDark,
-  },
-  statSub: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-    marginTop: 2,
-  },
-  section: {
-    gap: 10,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  sectionLink: {
-    fontSize: 13,
-    color: COLORS.primaryLight,
-    fontWeight: '600',
-  },
-  continueCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 12,
-    ...SHADOWS.sm,
-  },
-  continueCardTop: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-start',
-  },
-  playIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: COLORS.primarySurface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continueTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginTop: 4,
-  },
-  continueInstructor: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: 2,
-  },
-  progressContainer: {
-    gap: 6,
-  },
-  progressBarTrack: {
-    height: 6,
-    backgroundColor: COLORS.borderLight,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 3,
-  },
-  progressInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  resumeAction: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  jobCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 8,
-    ...SHADOWS.sm,
-  },
-  jobHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  jobTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  jobEmployer: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  matchBadge: {
-    backgroundColor: COLORS.successSurface,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  matchPercent: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.success,
-  },
-  matchSub: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: COLORS.success,
-  },
-  jobMetaRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  jobMetaText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-  jobFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
-    paddingTop: 8,
-  },
-  jobTagsRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  applyBtnTextWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  applyBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  passportPromoBanner: {
-    backgroundColor: COLORS.primarySurface,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    borderRadius: 14,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  promoTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-    marginTop: 4,
-  },
-  promoDesc: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-    lineHeight: 16,
-  },
+  cardBody: { flex: 1, gap: SPACE.xs },
+  cardTitle: { ...TEXT.bodyStrong },
+  cardMeta: { ...TEXT.caption },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm },
+  progressText: { ...TEXT.captionStrong, color: COLORS.primary },
+  jobCard: { ...CARD, padding: SPACE.md, gap: SPACE.sm },
+  jobHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: SPACE.sm },
+  matchPercent: { ...TEXT.bodyStrong, color: COLORS.primary },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: SPACE.xs },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
 });

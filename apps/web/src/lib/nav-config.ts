@@ -63,6 +63,7 @@ export const roleNav: Record<UserRole, RoleMeta> = {
       { label: "Dashboard", href: "/institution/dashboard", icon: LayoutDashboard },
       { label: "Programmes", href: "/institution/programmes", icon: GraduationCap },
       { label: "Trainees", href: "/institution/trainees", icon: Users },
+      { label: "Trainers", href: "/institution/trainers", icon: UserCheck },
       { label: "Attendance", href: "/institution/attendance", icon: ClipboardCheck },
       { label: "Timetable", href: "/institution/timetable", icon: ClipboardList },
       { label: "Certificates", href: "/institution/certificates", icon: FileCheck2 },

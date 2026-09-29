@@ -1,17 +1,21 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "CoopSetu AI",
+    "slug": "coopsetu-ai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "coopsetu",
+    "description": "AI-powered Skill Passport, LMS & Cooperative Employment Ecosystem — Smart India Hackathon 2026",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.coopsetu.app"
     },
     "android": {
+      "package": "com.coopsetu.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#D8232A",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -19,7 +23,47 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "name": "CoopSetu AI"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow CoopSetu to access your camera for QR attendance scanning."
+        }
+      ],
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "Allow CoopSetu to read NFC attendance tags."
+        }
+      ],
+      "./plugins/withNfcOptional",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#D8232A"
+        }
+      ],
+      "expo-sqlite",
+      "expo-video",
+      "expo-audio",
+      "expo-sharing",
+      "expo-localization",
+      "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow CoopSetu to access photos for your profile picture."
+        }
+      ],
+      "expo-notifications"
+    ]
   }
 }

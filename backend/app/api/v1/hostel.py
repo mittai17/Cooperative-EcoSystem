@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
+from app.deps import require_roles, org_scope, assert_org_access
+from app.models.user import User
 from app.models.hostel import HostelBlock, HostelRoom, HostelWaitlistEntry
 from app.schemas.hostel import AllocateRequest
 
@@ -54,7 +56,7 @@ def _waitlist_dict(w: HostelWaitlistEntry) -> dict:
     }
 
 
-async def _get_room(db: AsyncSession, room_id: str) -> HostelRoom:
+async def _get_room(db: AsyncSession, room_id: str, user: User) -> HostelRoom:
     try:
         rid = uuid.UUID(room_id)
     except (ValueError, TypeError):
@@ -63,19 +65,31 @@ async def _get_room(db: AsyncSession, room_id: str) -> HostelRoom:
     room = result.scalar_one_or_none()
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
+    block = await db.get(HostelBlock, room.block_id)
+    if block is None:
+        raise HTTPException(status_code=404, detail="Block not found")
+    assert_org_access(user, block.organisation_id)
     return room
 
 
 @router.get("/")
-async def get_hostel(db: AsyncSession = Depends(get_db)):
-    blocks_result = await db.execute(select(HostelBlock).order_by(HostelBlock.code))
+async def get_hostel(db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
+    scope = org_scope(user)
+    blocks_query = select(HostelBlock)
+    rooms_query = select(HostelRoom).join(HostelBlock, HostelRoom.block_id == HostelBlock.id)
+    waitlist_query = select(HostelWaitlistEntry)
+    if scope is not None:
+        blocks_query = blocks_query.where(HostelBlock.organisation_id == scope)
+        rooms_query = rooms_query.where(HostelBlock.organisation_id == scope)
+        waitlist_query = waitlist_query.where(HostelWaitlistEntry.organisation_id == scope)
+    blocks_result = await db.execute(blocks_query.order_by(HostelBlock.code))
     blocks = blocks_result.scalars().all()
 
-    rooms_result = await db.execute(select(HostelRoom).order_by(HostelRoom.code))
+    rooms_result = await db.execute(rooms_query.order_by(HostelRoom.code))
     rooms = rooms_result.scalars().all()
 
     waitlist_result = await db.execute(
-        select(HostelWaitlistEntry).order_by(HostelWaitlistEntry.applied_on)
+        waitlist_query.order_by(HostelWaitlistEntry.applied_on)
     )
     waitlist = waitlist_result.scalars().all()
 
@@ -87,8 +101,8 @@ async def get_hostel(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/rooms/{room_id}/check-out")
-async def check_out_room(room_id: str, db: AsyncSession = Depends(get_db)):
-    room = await _get_room(db, room_id)
+async def check_out_room(room_id: str, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
+    room = await _get_room(db, room_id, user)
     if room.status != "occupied":
         raise HTTPException(status_code=409, detail="Room is not occupied")
 
@@ -106,8 +120,8 @@ async def check_out_room(room_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/rooms/{room_id}/maintenance")
-async def mark_maintenance(room_id: str, db: AsyncSession = Depends(get_db)):
-    room = await _get_room(db, room_id)
+async def mark_maintenance(room_id: str, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
+    room = await _get_room(db, room_id, user)
 
     if room.occupant_name:
         block_result = await db.execute(select(HostelBlock).where(HostelBlock.id == room.block_id))
@@ -138,8 +152,8 @@ async def mark_maintenance(room_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/rooms/{room_id}/return-to-service")
-async def return_to_service(room_id: str, db: AsyncSession = Depends(get_db)):
-    room = await _get_room(db, room_id)
+async def return_to_service(room_id: str, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
+    room = await _get_room(db, room_id, user)
     room.status = "vacant"
     room.note = None
     room.updated_at = datetime.now(timezone.utc)
@@ -149,8 +163,8 @@ async def return_to_service(room_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/allocate")
-async def allocate_room(data: AllocateRequest, db: AsyncSession = Depends(get_db)):
-    room = await _get_room(db, data.room_id)
+async def allocate_room(data: AllocateRequest, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
+    room = await _get_room(db, data.room_id, user)
     if room.status != "vacant":
         raise HTTPException(status_code=409, detail="Room is not vacant")
 
@@ -163,6 +177,11 @@ async def allocate_room(data: AllocateRequest, db: AsyncSession = Depends(get_db
     entry = result.scalar_one_or_none()
     if not entry:
         raise HTTPException(status_code=404, detail="Waitlist entry not found")
+
+    assert_org_access(user, entry.organisation_id)
+    block = await db.get(HostelBlock, room.block_id)
+    if entry.organisation_id != block.organisation_id:
+        raise HTTPException(status_code=409, detail="Room and waitlist entry must belong to the same organisation")
 
     room.status = "occupied"
     room.occupant_trainee_id = entry.trainee_id

@@ -1,0 +1,19 @@
+{
+  "assessments": "Assessments",
+  "myAssessments": "My Tests",
+  "startAttempt": "Start Assessment",
+  "submitAttempt": "Submit Assessment",
+  "timeRemaining": "Time Remaining",
+  "score": "Score",
+  "passed": "Passed",
+  "failed": "Failed",
+  "topicBreakdown": "Topic Breakdown",
+  "certificates": "Certificates",
+  "myCertificates": "My Certificates",
+  "verifyCertificate": "Verify Certificate",
+  "certificateCode": "Certificate Code",
+  "tamperEvident": "Tamper-Evident & Cryptographically Signed",
+  "scanQrToVerify": "Scan QR to verify authenticity",
+  "verifiedValid": "Certificate Authenticity Verified",
+  "share": "Share Certificate"
+}

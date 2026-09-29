@@ -1,111 +1,142 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS } from '../constants/theme';
-import { ShieldCheck, ArrowLeft, Wifi, WifiOff } from 'lucide-react-native';
+import { COLORS, HIT, ICON, RADII, SPACE, TEXT } from '../constants/theme';
+import { ArrowLeft, GraduationCap, WifiOff } from 'lucide-react-native';
 
 interface AppHeaderProps {
   title: string;
   subtitle?: string;
-  showBack?: boolean;
   onBack?: () => void;
+  /** false shows the offline indicator (the server could not be reached) */
   isLive?: boolean;
   rightAction?: React.ReactNode;
+  brand?: boolean;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   title,
   subtitle,
-  showBack = false,
   onBack,
   isLive = true,
   rightAction,
-}) => {
-  return (
-    <View style={styles.container}>
-      <View style={styles.topRow}>
-        <View style={styles.titleArea}>
-          {showBack && (
-            <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
-              <ArrowLeft size={22} color={COLORS.primaryDark} />
-            </TouchableOpacity>
-          )}
-          <View>
-            <Text style={styles.title}>{title}</Text>
-            {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-          </View>
+  brand = false,
+}) => (
+  <View style={styles.container}>
+    <View style={styles.titleArea}>
+      {onBack ? (
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.iconBtn}
+          activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <ArrowLeft size={ICON.lg} color={COLORS.primaryDark} />
+        </TouchableOpacity>
+      ) : null}
+      {brand ? (
+        <View style={styles.brandMark}>
+          <GraduationCap size={ICON.md} color={COLORS.textInverse} />
         </View>
-
-        <View style={styles.rightArea}>
-          <View style={[styles.networkBadge, isLive ? styles.liveBadge : styles.offlineBadge]}>
-            {isLive ? <Wifi size={13} color={COLORS.success} /> : <WifiOff size={13} color={COLORS.warning} />}
-            <Text style={[styles.networkText, { color: isLive ? COLORS.success : COLORS.warning }]}>
-              {isLive ? 'Online' : 'Offline Mode'}
-            </Text>
-          </View>
-          {rightAction}
-        </View>
+      ) : null}
+      <View style={styles.titleText}>
+        <Text style={styles.title} numberOfLines={1} accessibilityRole="header">
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
     </View>
-  );
-};
+
+    <View style={styles.rightArea}>
+      {!isLive && (
+        <View style={styles.offlineBadge} accessibilityLabel="Offline. Could not reach the server.">
+          <WifiOff size={ICON.sm} color={COLORS.textSecondary} />
+          <Text style={styles.offlineText}>Offline</Text>
+        </View>
+      )}
+      {rightAction}
+    </View>
+  </View>
+);
+
+/** 44dp icon button for header right slot. */
+export const HeaderIconButton: React.FC<{
+  onPress: () => void;
+  label: string;
+  children: React.ReactNode;
+}> = ({ onPress, label, children }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={styles.iconBtn}
+    activeOpacity={0.6}
+    accessibilityRole="button"
+    accessibilityLabel={label}
+  >
+    {children}
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.background,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  topRow: {
+    paddingHorizontal: SPACE.md,
+    minHeight: 56,
+    paddingVertical: SPACE.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   titleArea: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: SPACE.sm,
     flex: 1,
   },
-  backBtn: {
-    padding: 6,
-    borderRadius: 8,
-    backgroundColor: COLORS.surface,
+  iconBtn: {
+    width: HIT,
+    height: HIT,
+    marginLeft: -SPACE.sm - SPACE.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandMark: {
+    width: 32,
+    height: 32,
+    borderRadius: RADII.sm,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
+    flexShrink: 1,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-    letterSpacing: -0.3,
+    ...TEXT.title,
   },
   subtitle: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
+    ...TEXT.caption,
   },
   rightArea: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  networkBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  liveBadge: {
-    backgroundColor: COLORS.successSurface,
+    gap: SPACE.sm,
   },
   offlineBadge: {
-    backgroundColor: COLORS.warningSurface,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.xs,
+    paddingHorizontal: SPACE.sm,
+    height: 28,
+    borderRadius: RADII.pill,
+    backgroundColor: COLORS.badgeBg,
   },
-  networkText: {
-    fontSize: 11,
-    fontWeight: '600',
+  offlineText: {
+    ...TEXT.captionStrong,
   },
 });

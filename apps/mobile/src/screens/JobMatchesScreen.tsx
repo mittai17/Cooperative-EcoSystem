@@ -1,404 +1,229 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  RefreshControl,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SHADOWS } from '../constants/theme';
-import { AppHeader } from '../components/AppHeader';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { COLORS, CARD, HIT, ICON, SPACE, TEXT } from '../constants/theme';
+import { ScrollScreen } from '../components/ScrollScreen';
 import { Badge } from '../components/Badge';
+import { Button } from '../components/Button';
+import { PillTabs } from '../components/PillTabs';
+import { SearchField } from '../components/SearchField';
+import { EmptyState, LoadingState } from '../components/EmptyState';
+import { IconChip } from '../components/IconChip';
 import { apiService } from '../services/api';
-import {
-  Briefcase,
-  Search,
-  MapPin,
-  Building,
-  CheckCircle2,
-  Send,
-  SlidersHorizontal,
-} from 'lucide-react-native';
+import { useOnMount } from '../hooks/useOnMount';
+import { plural } from '../services/utils';
+import { Briefcase, MapPin, CheckCircle2, Send, Heart } from 'lucide-react-native';
 import { JobMatch } from '../types';
 
-export const JobMatchesScreen = ({ navigation }: any) => {
-  const [jobs, setJobs] = useState<JobMatch[]>([]);
-  const [filterQuery, setFilterQuery] = useState('');
+type JobFilter = 'all' | 'best' | 'saved';
+
+const FILTER_TABS: readonly { key: JobFilter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'best', label: 'Best match' },
+  { key: 'saved', label: 'Saved' },
+];
+
+const BEST_MATCH_MIN = 80;
+
+export const JobMatchesScreen = () => {
+  const [jobs, setJobs] = useState<JobMatch[] | null>(null);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<JobFilter>('all');
+  const [saved, setSaved] = useState<Record<string, boolean>>({});
+  const [applied, setApplied] = useState<Record<string, boolean>>({});
+  const [applying, setApplying] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [refreshing, setRefreshing] = useState(false);
-  const [appliedJobs, setAppliedJobs] = useState<{ [id: string]: boolean }>({});
   const [isLive, setIsLive] = useState(true);
 
-  const loadJobs = async () => {
-    setRefreshing(true);
+  const load = useCallback(async () => {
     try {
       const res = await apiService.getJobs();
       setJobs(res.jobs);
       setIsLive(res.isLive);
     } catch {
+      setJobs((prev) => prev ?? []);
       setIsLive(false);
-    } finally {
-      setRefreshing(false);
+    }
+  }, []);
+
+  useOnMount(load);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  };
+
+  const submitApplication = async (job: JobMatch) => {
+    setApplying(job.id);
+    setErrors((prev) => ({ ...prev, [job.id]: '' }));
+    const res = await apiService.applyToJob(job.id);
+    setApplying(null);
+    if (res.success) {
+      setApplied((prev) => ({ ...prev, [job.id]: true }));
+    } else {
+      setErrors((prev) => ({ ...prev, [job.id]: res.message }));
     }
   };
 
-  useEffect(() => {
-    loadJobs();
-  }, []);
-
-  const handleApply = (job: JobMatch) => {
-    Alert.alert(
-      'Apply with Skill Passport',
-      `Submit your verified credentials to ${job.employer} for "${job.title}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Submit Application',
-          onPress: () => {
-            setAppliedJobs((prev) => ({ ...prev, [job.id]: true }));
-            Alert.alert('Application Submitted', 'Your verified Skill Passport and diploma transcript have been shared.');
-          },
-        },
-      ]
-    );
+  const confirmApply = (job: JobMatch) => {
+    Alert.alert('Apply', `Send your application for "${job.title}" to ${job.employer}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Apply', onPress: () => submitApplication(job) },
+    ]);
   };
 
-  const filtered = jobs.filter(
-    (j) =>
-      j.title.toLowerCase().includes(filterQuery.toLowerCase()) ||
-      j.employer.toLowerCase().includes(filterQuery.toLowerCase()) ||
-      j.location.toLowerCase().includes(filterQuery.toLowerCase()) ||
-      j.skills_required.some((s) => s.toLowerCase().includes(filterQuery.toLowerCase()))
-  );
+  const toggleSaved = (id: string) => setSaved((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const q = query.trim().toLowerCase();
+  const filtered = (jobs ?? []).filter((j) => {
+    if (filter === 'best' && (j.match_percentage ?? 0) < BEST_MATCH_MIN) return false;
+    if (filter === 'saved' && !saved[j.id]) return false;
+    return (
+      !q ||
+      j.title.toLowerCase().includes(q) ||
+      j.employer.toLowerCase().includes(q) ||
+      j.location.toLowerCase().includes(q) ||
+      j.skills_required.some((s) => s.toLowerCase().includes(q))
+    );
+  });
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader
-        title="Job Matches"
-        subtitle="AI-Matched Cooperative Vacancies"
-        isLive={isLive}
-      />
+    <ScrollScreen
+      tab
+      title="Jobs"
+      isLive={isLive}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      sticky={
+        <>
+          <SearchField value={query} onChangeText={setQuery} placeholder="Search role, employer or skill" />
+          <PillTabs tabs={FILTER_TABS} active={filter} onChange={setFilter} />
+        </>
+      }
+    >
+      {jobs === null ? <LoadingState /> : null}
 
-      <View style={styles.searchBarContainer}>
-        <View style={styles.searchBox}>
-          <Search size={18} color={COLORS.textMuted} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by role, cooperative, or skill..."
-            placeholderTextColor={COLORS.textMuted}
-            value={filterQuery}
-            onChangeText={setFilterQuery}
-          />
-        </View>
-      </View>
+      {jobs !== null && filtered.length === 0 ? (
+        <EmptyState
+          title="No jobs found"
+          message={
+            filter === 'saved' && !q
+              ? 'Tap the heart on a job to save it.'
+              : filter === 'best' && !q
+                ? `No jobs match your skills at ${BEST_MATCH_MIN}% or more.`
+                : 'Try a different filter or search term.'
+          }
+        />
+      ) : null}
 
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadJobs} colors={[COLORS.primary]} />}
-      >
-        {/* Match Overview Banner */}
-        <View style={styles.overviewCard}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.overviewTitle}>Placement Pipeline Active</Text>
-            <Text style={styles.overviewDesc}>
-              Matches are computed against your verified VAMNICOM / NCCT Skill Passport competencies.
-            </Text>
-          </View>
-          <View style={styles.activeJobsCountBadge}>
-            <Text style={styles.activeJobsCountText}>{filtered.length}</Text>
-            <Text style={styles.activeJobsCountSub}>Roles</Text>
-          </View>
-        </View>
-
-        {filtered.map((job) => {
-          const hasApplied = appliedJobs[job.id];
-          const matchPercent = job.match_percentage || 80;
-
-          return (
-            <View key={job.id} style={styles.jobCard}>
-              {/* Card Header */}
-              <View style={styles.cardTop}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.jobTitle}>{job.title}</Text>
-                  <View style={styles.employerRow}>
-                    <Building size={14} color={COLORS.textSecondary} />
-                    <Text style={styles.jobEmployer}>{job.employer}</Text>
-                  </View>
-                </View>
-
-                {/* Match percentage gauge */}
-                <View
-                  style={[
-                    styles.matchScoreBadge,
-                    matchPercent >= 80 ? styles.highMatch : styles.medMatch,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.matchScoreText,
-                      matchPercent >= 80 ? styles.highMatchText : styles.medMatchText,
-                    ]}
-                  >
-                    {matchPercent}%
-                  </Text>
-                  <Text
-                    style={[
-                      styles.matchScoreLabel,
-                      matchPercent >= 80 ? styles.highMatchText : styles.medMatchText,
-                    ]}
-                  >
-                    Match
-                  </Text>
-                </View>
+      {filtered.map((job) => {
+        const hasApplied = applied[job.id] ?? !!job.applied;
+        const isSaved = !!saved[job.id];
+        const isBusy = applying === job.id;
+        const facts = [job.salary, typeof job.openings === 'number' ? plural(job.openings, 'opening') : '']
+          .filter(Boolean)
+          .join(' · ');
+        return (
+          <View key={job.id} style={styles.card}>
+            <View style={styles.top}>
+              <IconChip size={40}>
+                <Briefcase size={ICON.md} color={COLORS.primary} />
+              </IconChip>
+              <View style={styles.flex}>
+                <Text style={styles.title} numberOfLines={2}>
+                  {job.title}
+                </Text>
+                <Text style={styles.caption} numberOfLines={2}>
+                  {job.employer}
+                </Text>
               </View>
-
-              {/* Meta details */}
-              <View style={styles.metaRow}>
-                <View style={styles.metaItem}>
-                  <MapPin size={13} color={COLORS.textMuted} />
-                  <Text style={styles.metaText}>{job.location}</Text>
-                </View>
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaText}>💰 {job.salary}</Text>
-                </View>
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaText}>👥 {job.openings} openings</Text>
-                </View>
-              </View>
-
-              {/* Required Skills Badges */}
-              <View style={styles.skillsSection}>
-                <Text style={styles.skillsSectionLabel}>Required Skills:</Text>
-                <View style={styles.skillsChipsWrap}>
-                  {job.skills_required.map((skill, idx) => (
-                    <Badge key={idx} label={skill} variant="neutral" />
-                  ))}
-                </View>
-              </View>
-
-              {/* Action Button */}
-              <View style={styles.cardActions}>
-                <TouchableOpacity
-                  style={[styles.applyButton, hasApplied && styles.appliedButton]}
-                  onPress={() => !hasApplied && handleApply(job)}
-                  disabled={hasApplied}
-                  activeOpacity={0.8}
-                >
-                  {hasApplied ? (
-                    <>
-                      <CheckCircle2 size={16} color={COLORS.success} />
-                      <Text style={styles.appliedButtonText}>Application Submitted</Text>
-                    </>
-                  ) : (
-                    <>
-                      <Send size={16} color="#FFFFFF" />
-                      <Text style={styles.applyButtonText}>One-Click Apply (Passport)</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                onPress={() => toggleSaved(job.id)}
+                style={styles.saveBtn}
+                accessibilityRole="button"
+                accessibilityLabel={isSaved ? `Remove ${job.title} from saved` : `Save ${job.title}`}
+                accessibilityState={{ selected: isSaved }}
+              >
+                <Heart
+                  size={ICON.md}
+                  color={isSaved ? COLORS.primary : COLORS.textMuted}
+                  fill={isSaved ? COLORS.primary : 'transparent'}
+                />
+              </TouchableOpacity>
             </View>
-          );
-        })}
-      </ScrollView>
-    </SafeAreaView>
+
+            {job.location ? (
+              <View style={styles.metaRow}>
+                <MapPin size={ICON.sm} color={COLORS.textMuted} />
+                <Text style={styles.caption}>{job.location}</Text>
+              </View>
+            ) : null}
+            {facts ? <Text style={styles.caption}>{facts}</Text> : null}
+
+            {job.match_percentage !== undefined || job.skills_required.length > 0 ? (
+              <View style={styles.tags}>
+                {job.match_percentage !== undefined ? (
+                  <Badge
+                    label={`${job.match_percentage}% match`}
+                    variant={job.match_percentage >= BEST_MATCH_MIN ? 'primary' : 'neutral'}
+                  />
+                ) : null}
+                {job.skills_required.slice(0, 3).map((skill) => (
+                  <Badge key={skill} label={skill} />
+                ))}
+              </View>
+            ) : null}
+
+            {hasApplied ? (
+              <View style={styles.appliedRow}>
+                <CheckCircle2 size={ICON.md} color={COLORS.success} />
+                <Text style={styles.appliedText}>Application submitted</Text>
+              </View>
+            ) : (
+              <Button
+                label="Apply"
+                icon={<Send size={ICON.md} color={COLORS.textInverse} />}
+                loading={isBusy}
+                onPress={() => confirmApply(job)}
+                accessibilityLabel={`Apply for ${job.title}`}
+              />
+            )}
+            {errors[job.id] ? (
+              <Text style={styles.error} accessibilityRole="alert">
+                {errors[job.id]}
+              </Text>
+            ) : null}
+          </View>
+        );
+      })}
+    </ScrollScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  searchBarContainer: {
-    backgroundColor: COLORS.background,
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  searchBox: {
-    flexDirection: 'row',
+  flex: { flex: 1 },
+  card: { ...CARD, padding: SPACE.md, gap: SPACE.sm },
+  top: { flexDirection: 'row', alignItems: 'flex-start', gap: SPACE.md - SPACE.xs },
+  title: { ...TEXT.bodyStrong },
+  caption: { ...TEXT.caption },
+  saveBtn: {
+    width: HIT,
+    height: HIT,
+    marginTop: -SPACE.sm - SPACE.xs,
+    marginRight: -SPACE.sm - SPACE.xs,
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 42,
-    gap: 8,
+    justifyContent: 'center',
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 13,
-    color: COLORS.primaryDark,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 14,
-  },
-  overviewCard: {
-    backgroundColor: COLORS.primarySurface,
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  overviewTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  overviewDesc: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-    lineHeight: 15,
-  },
-  activeJobsCountBadge: {
-    backgroundColor: COLORS.card,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-  },
-  activeJobsCountText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  activeJobsCountSub: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-  },
-  jobCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 12,
-    ...SHADOWS.sm,
-  },
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  jobTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  employerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  jobEmployer: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  matchScoreBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  highMatch: {
-    backgroundColor: COLORS.successSurface,
-  },
-  medMatch: {
-    backgroundColor: COLORS.warningSurface,
-  },
-  highMatchText: {
-    color: COLORS.success,
-  },
-  medMatchText: {
-    color: COLORS.warning,
-  },
-  matchScoreText: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  matchScoreLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-  skillsSection: {
-    gap: 6,
-  },
-  skillsSectionLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-  },
-  skillsChipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  cardActions: {
-    borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
-    paddingTop: 12,
-    marginTop: 2,
-  },
-  applyButton: {
-    backgroundColor: COLORS.primary,
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: SPACE.xs },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
+  appliedRow: {
+    minHeight: HIT,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 10,
+    gap: SPACE.sm,
   },
-  appliedButton: {
-    backgroundColor: COLORS.successSurface,
-    borderWidth: 1,
-    borderColor: COLORS.success,
-  },
-  applyButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  appliedButtonText: {
-    color: COLORS.success,
-    fontWeight: '700',
-    fontSize: 13,
-  },
+  appliedText: { ...TEXT.bodyStrong, color: COLORS.success },
+  error: { ...TEXT.caption, color: COLORS.danger },
 });

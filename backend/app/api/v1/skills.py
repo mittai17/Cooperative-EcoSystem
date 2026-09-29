@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
+from app.deps import require_user
+from app.models.user import User
 from app.models.skill import TraineeSkill, Skill, SkillGap
 from app.models.analytics import SkillDemand
 from app.services.skill_engine import calculate_skill_gap, ROLE_REQUIREMENTS
@@ -11,17 +13,6 @@ import uuid
 from datetime import datetime, timezone
 
 router = APIRouter()
-
-_DEMO_PASSPORT = {
-    "skills": [
-        {"name": "Cooperative Management", "level": "Proficient", "confidence": 92, "verified": True, "category": "Management", "evidence": [{"type": "Course", "title": "Cooperative Management Fundamentals", "date": "2026-08-15"}]},
-        {"name": "Communication & Facilitation", "level": "Proficient", "confidence": 85, "verified": True, "category": "Soft Skills", "evidence": [{"type": "Assessment", "title": "Communication Skills Test", "date": "2026-08-20"}]},
-        {"name": "Rural Development", "level": "Foundational", "confidence": 60, "verified": False, "category": "Domain", "evidence": [{"type": "Course", "title": "Rural Development Basics", "date": "2026-09-01"}]},
-        {"name": "Data Analysis", "level": "Foundational", "confidence": 45, "verified": False, "category": "Technical", "evidence": []},
-        {"name": "Cooperative Governance", "level": "Intermediate", "confidence": 78, "verified": True, "category": "Management", "evidence": [{"type": "Assessment", "title": "Governance Test", "date": "2026-09-10"}]},
-    ],
-    "summary": {"total_skills": 5, "verified_count": 3, "avg_confidence": 72},
-}
 
 _COURSE_RECOMMENDATION_MAP = {
     "Data Analysis": {"title": "Data Analytics for Cooperatives", "duration": "6 weeks"},
@@ -62,77 +53,37 @@ async def _load_trainee_skills_from_db(db: AsyncSession, trainee_id: uuid.UUID) 
 
 
 @router.get("/my-passport")
-async def my_skill_passport(trainee_id: Optional[str] = None, db: AsyncSession = Depends(get_db)):
-    """Skill Passport aggregated from DB evidence (course completion,
-    assessments, certificates, attendance) when `trainee_id` is given;
-    falls back to rich demo data otherwise (used by unauthenticated
-    dashboard widgets / this environment's smoke checks)."""
-    if trainee_id:
-        try:
-            uid = uuid.UUID(trainee_id)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid trainee_id")
-        skills = await _load_trainee_skills_from_db(db, uid)
-        if skills:
-            verified_count = sum(1 for s in skills if s["verified"])
-            avg_confidence = round(sum(s["confidence"] for s in skills) / len(skills), 1)
-            return {
-                "skills": skills,
-                "summary": {"total_skills": len(skills), "verified_count": verified_count, "avg_confidence": avg_confidence},
-            }
-        return {"skills": [], "summary": {"total_skills": 0, "verified_count": 0, "avg_confidence": 0}}
-
-    return _DEMO_PASSPORT
+async def my_skill_passport(user: User = Depends(require_user), db: AsyncSession = Depends(get_db)):
+    skills = await _load_trainee_skills_from_db(db, user.id)
+    return {"skills": skills, "summary": {
+        "total_skills": len(skills),
+        "verified_count": sum(bool(s["verified"]) for s in skills),
+        "avg_confidence": round(sum(s["confidence"] or 0 for s in skills) / len(skills), 1) if skills else 0,
+    }}
 
 
 @router.post("/gap-analysis")
-async def skill_gap_analysis(req: GapAnalysisRequest, db: AsyncSession = Depends(get_db)):
-    """Run deterministic skill gap analysis (see app/services/skill_engine.py)
-    against either explicitly-provided skills, DB-backed skills for a given
-    trainee, or a representative demo profile."""
-    trainee_skills = req.trainee_skills
-    trainee_uuid: Optional[uuid.UUID] = None
-    if trainee_skills is None and req.trainee_id:
-        try:
-            trainee_uuid = uuid.UUID(req.trainee_id)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid trainee_id")
-        trainee_skills = await _load_trainee_skills_from_db(db, trainee_uuid)
-        trainee_skills = [{"skill": s["name"], "level": s["level"], "confidence": s["confidence"]} for s in trainee_skills]
-
-    if not trainee_skills:
-        trainee_skills = [
-            {"skill": "Cooperative Management", "level": "Proficient", "confidence": 92},
-            {"skill": "Communication & Facilitation", "level": "Proficient", "confidence": 85},
-            {"skill": "Rural Development", "level": "Foundational", "confidence": 60},
-            {"skill": "Cooperative Governance", "level": "Intermediate", "confidence": 78},
-        ]
-
-    result = calculate_skill_gap(trainee_skills, req.target_role)
-
-    recommendations = []
-    for gap in result.get("gaps", []):
-        skill_name = gap.get("skill", "")
-        if skill_name in _COURSE_RECOMMENDATION_MAP:
-            recommendations.append({**_COURSE_RECOMMENDATION_MAP[skill_name], "fills_gap": skill_name})
-    result["recommendations"] = recommendations
-
-    # Persist a lightweight audit trail so NCCT-level analytics can later
-    # answer "which roles are trainees being evaluated against and how far
-    # off are they" without re-running the calculation.
-    if "error" not in result:
-        db.add(
-            SkillGap(
-                id=uuid.uuid4(),
-                trainee_id=trainee_uuid,
-                target_role=req.target_role,
-                match_score=result.get("match_score"),
-                gaps=result.get("gaps", []),
-                created_at=datetime.now(timezone.utc),
-            )
-        )
-        await db.commit()
-
+async def skill_gap_analysis(req: GapAnalysisRequest, user: User = Depends(require_user), db: AsyncSession = Depends(get_db)):
+    """Use only the caller's persisted evidence; client skill overrides are rejected."""
+    if req.trainee_id and req.trainee_id != str(user.id):
+        raise HTTPException(status_code=403, detail="Skill analysis is limited to your own profile")
+    if req.trainee_skills is not None:
+        raise HTTPException(status_code=422, detail="Skills are read from your verified profile")
+    skills = await _load_trainee_skills_from_db(db, user.id)
+    result = calculate_skill_gap([
+        {"skill": s["name"], "level": s["level"], "confidence": s["confidence"]}
+        for s in skills
+    ], req.target_role)
+    if "error" in result:
+        raise HTTPException(status_code=422, detail=result["error"])
+    result["recommendations"] = [
+        {**_COURSE_RECOMMENDATION_MAP[g["skill"]], "fills_gap": g["skill"]}
+        for g in result.get("gaps", []) if g.get("skill") in _COURSE_RECOMMENDATION_MAP
+    ]
+    db.add(SkillGap(id=uuid.uuid4(), trainee_id=user.id, target_role=req.target_role,
+                    match_score=result.get("match_score"), gaps=result.get("gaps", []),
+                    created_at=datetime.now(timezone.utc)))
+    await db.commit()
     return result
 
 
@@ -167,14 +118,4 @@ async def skill_demand(db: AsyncSession = Depends(get_db)):
             ]
         }
 
-    return {
-        "skill_demand": [
-            {"skill": "Digital Marketing", "employer_demand": 1240, "trained_supply": 640, "gap": 600, "trend": "rising"},
-            {"skill": "Dairy Operations", "employer_demand": 980, "trained_supply": 820, "gap": 160, "trend": "stable"},
-            {"skill": "Credit Appraisal", "employer_demand": 870, "trained_supply": 320, "gap": 550, "trend": "rising"},
-            {"skill": "Data Analysis", "employer_demand": 740, "trained_supply": 280, "gap": 460, "trend": "rising"},
-            {"skill": "Cooperative Governance", "employer_demand": 650, "trained_supply": 590, "gap": 60, "trend": "stable"},
-            {"skill": "Bookkeeping", "employer_demand": 540, "trained_supply": 480, "gap": 60, "trend": "declining"},
-            {"skill": "Rural Development", "employer_demand": 420, "trained_supply": 380, "gap": 40, "trend": "stable"},
-        ]
-    }
+    return {"skill_demand": []}

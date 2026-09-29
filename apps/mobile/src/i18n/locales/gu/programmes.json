@@ -1,0 +1,15 @@
+{
+  "catalog": "તાલીમ કાર્યક્રમો",
+  "detail": "કાર્યક્રમ વિગતો",
+  "nomination": "નોમિનેશન",
+  "myNominations": "મારા નોમિનેશન",
+  "inbox": "નોમિનેશન ઇનબૉક્સ",
+  "review": "નોમિનેશન સમીક્ષા",
+  "apply": "કાર્યક્રમ માટે અરજી કરો",
+  "statusSubmitted": "સબમિટ કરેલ",
+  "statusApproved": "મંજૂર",
+  "statusRejected": "નકારવામાં આવેલ",
+  "statusEnrolled": "પ્રવેશ મેળવેલ",
+  "seatsAvailable": "ઉપલબ્ધ બેઠકો",
+  "withdraw": "અરજી પાછી ખેંચો"
+}

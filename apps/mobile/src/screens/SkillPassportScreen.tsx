@@ -1,452 +1,236 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  Share,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SHADOWS } from '../constants/theme';
-import { AppHeader } from '../components/AppHeader';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Share, Alert } from 'react-native';
+import { COLORS, CARD, HIT, ICON, SPACE, TEXT } from '../constants/theme';
+import { ScrollScreen } from '../components/ScrollScreen';
+import { HeaderIconButton } from '../components/AppHeader';
+import { SectionHeader } from '../components/SectionHeader';
+import { EmptyState, LoadingState } from '../components/EmptyState';
 import { Badge } from '../components/Badge';
+import { ProgressRing } from '../components/ProgressRing';
+import { ProgressBar } from '../components/ProgressBar';
 import { apiService } from '../services/api';
-import {
-  Award,
-  CheckCircle,
-  Share2,
-  ExternalLink,
-  ShieldCheck,
-  ChevronDown,
-  ChevronUp,
-  FileCheck,
-} from 'lucide-react-native';
+import { useOnMount } from '../hooks/useOnMount';
+import { formatDate } from '../services/utils';
+import { Award, Share2, ChevronRight, ChevronDown, ChevronUp, FileCheck } from 'lucide-react-native';
 import { SkillPassportData, SkillPassportItem } from '../types';
-import { MOCK_SKILL_PASSPORT } from '../services/mockData';
 
 export const SkillPassportScreen = ({ navigation }: any) => {
-  const [passportData, setPassportData] = useState<SkillPassportData>(MOCK_SKILL_PASSPORT);
+  const [passport, setPassport] = useState<SkillPassportData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(true);
 
-  const loadData = async () => {
-    setRefreshing(true);
+  const load = useCallback(async () => {
     try {
       const res = await apiService.getSkillPassport();
-      setPassportData(res.passport);
+      setPassport(res.passport);
       setIsLive(res.isLive);
     } catch {
       setIsLive(false);
-    } finally {
-      setRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    loadData();
   }, []);
 
-  const handleSharePassport = async () => {
+  useOnMount(load);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  };
+
+  const skills = passport?.skills ?? [];
+  const verified = skills.filter((s) => s.verified);
+  const summary = passport?.summary ?? {
+    total_skills: skills.length,
+    verified_count: verified.length,
+    avg_confidence: skills.length ? skills.reduce((a, s) => a + s.confidence, 0) / skills.length : 0,
+  };
+  const evidenceCount = skills.reduce((acc, s) => acc + (s.evidence?.length || 0), 0);
+
+  const handleShare = async () => {
+    const lines = skills.map((s) => `${s.name} (${s.level}${s.verified ? ', verified' : ''})`);
     try {
       await Share.share({
-        message: 'View Ravindra Patil\'s Cooperative Skill Passport verified by NCCT / VAMNICOM: https://coopsetu.gov.in/passport/RP-9921',
         title: 'Cooperative Skill Passport',
+        message: `Cooperative Skill Passport: ${summary.verified_count} of ${summary.total_skills} skills verified.\n${lines.join('\n')}`,
       });
     } catch {
-      Alert.alert('Share', 'Share link copied to clipboard.');
+      Alert.alert('Share', 'Unable to open the share sheet.');
     }
-  };
-
-  const toggleExpand = (name: string) => {
-    setExpandedSkill((prev) => (prev === name ? null : name));
-  };
-
-  const summary = passportData.summary || {
-    total_skills: passportData.skills.length,
-    verified_count: passportData.skills.filter((s) => s.verified).length,
-    avg_confidence: 72,
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader
-        title="Skill Passport"
-        subtitle="Cryptographically Verified Competencies"
-        isLive={isLive}
-        rightAction={
-          <TouchableOpacity onPress={handleSharePassport} style={styles.shareBtn}>
-            <Share2 size={18} color={COLORS.primary} />
-          </TouchableOpacity>
-        }
-      />
+    <ScrollScreen
+      title="Skill passport"
+      onBack={() => navigation.goBack()}
+      isLive={isLive}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      rightAction={
+        skills.length > 0 ? (
+          <HeaderIconButton onPress={handleShare} label="Share skill passport">
+            <Share2 size={ICON.lg} color={COLORS.primary} />
+          </HeaderIconButton>
+        ) : undefined
+      }
+    >
+      {passport === null ? <LoadingState /> : null}
 
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} colors={[COLORS.primary]} />}
-      >
-        {/* Overall Skill Strength Gauge Banner */}
-        <View style={styles.gaugeCard}>
-          <View style={styles.gaugeCircle}>
-            <Text style={styles.gaugeNumber}>{summary.avg_confidence}%</Text>
-            <Text style={styles.gaugeLabel}>Overall Strength</Text>
-          </View>
+      {passport !== null && skills.length === 0 ? (
+        <EmptyState
+          title="No skills recorded yet"
+          message="Skills appear here after you complete courses and assessments."
+        />
+      ) : null}
 
-          <View style={styles.gaugeInfo}>
-            <View style={styles.verifiedHeader}>
-              <ShieldCheck size={18} color={COLORS.success} />
-              <Text style={styles.verifiedTag}>NCCT / VAMNICOM Endorsed</Text>
-            </View>
-            <Text style={styles.gaugeTitle}>Cooperative Readiness Index</Text>
-            <Text style={styles.gaugeSub}>
-              {summary.verified_count} of {summary.total_skills} skills verified via proctored institutional assessments.
-            </Text>
-          </View>
-        </View>
-
-        {/* Skill Passport Summary Bar */}
-        <View style={styles.metricsBar}>
-          <View style={styles.metricItem}>
-            <Text style={styles.metricVal}>{summary.total_skills}</Text>
-            <Text style={styles.metricLabel}>Total Skills</Text>
-          </View>
-          <View style={styles.metricDivider} />
-          <View style={styles.metricItem}>
-            <Text style={[styles.metricVal, { color: COLORS.success }]}>{summary.verified_count}</Text>
-            <Text style={styles.metricLabel}>Verified (CST)</Text>
-          </View>
-          <View style={styles.metricDivider} />
-          <View style={styles.metricItem}>
-            <Text style={[styles.metricVal, { color: COLORS.primary }]}>Tier 1</Text>
-            <Text style={styles.metricLabel}>Eligibility</Text>
-          </View>
-        </View>
-
-        {/* Skills List with Confidence and Evidence */}
-        <View style={styles.skillsSection}>
-          <Text style={styles.sectionTitle}>Top Skills & Evidence Ledger</Text>
-
-          {passportData.skills.map((skill: SkillPassportItem) => {
-            const isExpanded = expandedSkill === skill.name;
-
-            return (
-              <View key={skill.name} style={styles.skillCard}>
-                <TouchableOpacity
-                  style={styles.skillCardHeader}
-                  onPress={() => toggleExpand(skill.name)}
-                  activeOpacity={0.7}
-                >
-                  <View style={{ flex: 1 }}>
-                    <View style={styles.skillNameRow}>
-                      <Text style={styles.skillName}>{skill.name}</Text>
-                      {skill.verified ? (
-                        <Badge label="Verified" variant="success" verified />
-                      ) : (
-                        <Badge label="Self Assessed" variant="warning" />
-                      )}
-                    </View>
-                    <Text style={styles.skillCategory}>{skill.category} • {skill.level}</Text>
-                  </View>
-
-                  <View style={styles.headerRightArea}>
-                    <View style={styles.confidenceScoreWrap}>
-                      <Text style={styles.confidenceScoreVal}>{skill.confidence}%</Text>
-                      <Text style={styles.confidenceScoreLabel}>Proficiency</Text>
-                    </View>
-                    {isExpanded ? (
-                      <ChevronUp size={20} color={COLORS.textSecondary} />
-                    ) : (
-                      <ChevronDown size={20} color={COLORS.textSecondary} />
-                    )}
-                  </View>
-                </TouchableOpacity>
-
-                {/* Progress bar */}
-                <View style={styles.confidenceTrack}>
-                  <View
-                    style={[
-                      styles.confidenceFill,
-                      {
-                        width: `${skill.confidence}%`,
-                        backgroundColor: skill.confidence >= 80 ? COLORS.success : COLORS.primaryLight,
-                      },
-                    ]}
-                  />
-                </View>
-
-                {/* Expanded Evidence List */}
-                {isExpanded && (
-                  <View style={styles.evidenceContainer}>
-                    <Text style={styles.evidenceTitle}>Verification Evidence:</Text>
-
-                    {skill.evidence && skill.evidence.length > 0 ? (
-                      skill.evidence.map((ev, i) => (
-                        <View key={i} style={styles.evidenceRow}>
-                          <FileCheck size={16} color={COLORS.primary} />
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.evidenceText}>{ev.title}</Text>
-                            <Text style={styles.evidenceSub}>
-                              {ev.type} • Verified on {ev.date}
-                            </Text>
-                          </View>
-                        </View>
-                      ))
-                    ) : (
-                      <Text style={styles.noEvidenceText}>
-                        No formal assessment linked yet. Complete an assessment to certify.
-                      </Text>
-                    )}
-                  </View>
-                )}
+      {passport !== null && skills.length > 0 ? (
+        <>
+          <View style={styles.summaryCard}>
+            <ProgressRing value={summary.avg_confidence} size={112} strokeWidth={10} label="Strength" />
+            <View style={styles.metrics}>
+              <View style={styles.metric}>
+                <Text style={styles.metricVal}>{summary.total_skills}</Text>
+                <Text style={styles.caption}>Skills</Text>
               </View>
-            );
-          })}
-        </View>
-
-        {/* Certificate shortcut */}
-        <TouchableOpacity
-          style={styles.certBanner}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('Certificates')}
-        >
-          <Award size={20} color={COLORS.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.certBannerTitle}>View Issued Certificates</Text>
-            <Text style={styles.certBannerSub}>2 certificates issued with verification QR codes</Text>
+              <View style={styles.metric}>
+                <Text style={styles.metricVal}>{summary.verified_count}</Text>
+                <Text style={styles.caption}>Verified</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricVal}>{evidenceCount}</Text>
+                <Text style={styles.caption}>Evidence</Text>
+              </View>
+            </View>
           </View>
-          <ExternalLink size={16} color={COLORS.primary} />
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+
+          <View>
+            <SectionHeader title="Skills" />
+            <View style={styles.list}>
+              {skills.map((skill: SkillPassportItem) => {
+                const isOpen = expanded === skill.name;
+                return (
+                  <View key={skill.name} style={styles.skillCard}>
+                    <TouchableOpacity
+                      style={styles.skillHeader}
+                      onPress={() => setExpanded(isOpen ? null : skill.name)}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: isOpen }}
+                      accessibilityLabel={`${skill.name}, ${skill.level}, ${Math.round(skill.confidence)}%, ${
+                        skill.verified ? 'verified' : 'self assessed'
+                      }`}
+                    >
+                      <View style={styles.flex}>
+                        <Text style={styles.bodyStrong}>{skill.name}</Text>
+                        <Text style={styles.caption}>
+                          {skill.category} · {skill.level}
+                        </Text>
+                        <View style={styles.badgeRow}>
+                          {skill.verified ? (
+                            <Badge label="Verified" variant="success" verified />
+                          ) : (
+                            <Badge label="Self assessed" />
+                          )}
+                        </View>
+                      </View>
+                      <Text style={styles.confidence}>{Math.round(skill.confidence)}%</Text>
+                      {isOpen ? (
+                        <ChevronUp size={ICON.md} color={COLORS.textSecondary} />
+                      ) : (
+                        <ChevronDown size={ICON.md} color={COLORS.textSecondary} />
+                      )}
+                    </TouchableOpacity>
+
+                    <View style={styles.barWrap}>
+                      <ProgressBar value={skill.confidence} />
+                    </View>
+
+                    {isOpen ? (
+                      <View style={styles.evidence}>
+                        <Text style={styles.captionStrong}>Evidence</Text>
+                        {skill.evidence && skill.evidence.length > 0 ? (
+                          skill.evidence.map((ev, i) => (
+                            <View key={`${ev.title}-${i}`} style={styles.evidenceRow}>
+                              <FileCheck size={ICON.sm} color={COLORS.primary} />
+                              <View style={styles.flex}>
+                                <Text style={styles.body}>{ev.title}</Text>
+                                <Text style={styles.caption}>
+                                  {ev.type} · {formatDate(ev.date)}
+                                </Text>
+                              </View>
+                            </View>
+                          ))
+                        ) : (
+                          <Text style={styles.caption}>No evidence linked yet.</Text>
+                        )}
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.linkCard}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Certificates')}
+            accessibilityRole="button"
+            accessibilityLabel="Open certificates"
+          >
+            <Award size={ICON.md} color={COLORS.primary} />
+            <Text style={styles.linkTitle}>Certificates</Text>
+            <ChevronRight size={ICON.md} color={COLORS.textMuted} />
+          </TouchableOpacity>
+        </>
+      ) : null}
+    </ScrollScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  shareBtn: {
-    padding: 6,
-    borderRadius: 8,
-    backgroundColor: COLORS.surface,
-  },
-  gaugeCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  flex: { flex: 1 },
+  caption: { ...TEXT.caption },
+  captionStrong: { ...TEXT.captionStrong },
+  body: { ...TEXT.body },
+  bodyStrong: { ...TEXT.bodyStrong },
+  summaryCard: {
+    ...CARD,
+    padding: SPACE.md,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    ...SHADOWS.sm,
+    gap: SPACE.md,
   },
-  gaugeCircle: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 5,
-    borderColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.primarySurface,
-  },
-  gaugeNumber: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  gaugeLabel: {
-    fontSize: 8,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-  },
-  gaugeInfo: {
-    flex: 1,
-  },
-  verifiedHeader: {
+  metrics: { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
+  metric: { alignItems: 'center', gap: 2 },
+  metricVal: { ...TEXT.title },
+  list: { gap: SPACE.sm },
+  skillCard: { ...CARD, overflow: 'hidden' },
+  skillHeader: {
+    minHeight: HIT,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: SPACE.sm,
+    padding: SPACE.md,
+    paddingBottom: SPACE.sm,
   },
-  verifiedTag: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.success,
+  badgeRow: { flexDirection: 'row', marginTop: SPACE.xs },
+  confidence: { ...TEXT.bodyStrong, color: COLORS.primary },
+  barWrap: { paddingHorizontal: SPACE.md, paddingBottom: SPACE.md },
+  evidence: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderLight,
+    padding: SPACE.md,
+    gap: SPACE.sm,
   },
-  gaugeTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-    marginTop: 4,
-  },
-  gaugeSub: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-    lineHeight: 15,
-  },
-  metricsBar: {
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  evidenceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: SPACE.sm },
+  linkCard: {
+    ...CARD,
+    minHeight: HIT + SPACE.md,
+    paddingHorizontal: SPACE.md,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    ...SHADOWS.sm,
+    gap: SPACE.md - SPACE.xs,
   },
-  metricItem: {
-    alignItems: 'center',
-  },
-  metricVal: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.primaryDark,
-  },
-  metricLabel: {
-    fontSize: 10,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  metricDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: COLORS.border,
-  },
-  skillsSection: {
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  skillCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 8,
-    ...SHADOWS.sm,
-  },
-  skillCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  skillNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  skillName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  skillCategory: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  headerRightArea: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  confidenceScoreWrap: {
-    alignItems: 'flex-end',
-  },
-  confidenceScoreVal: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.primaryDark,
-  },
-  confidenceScoreLabel: {
-    fontSize: 9,
-    color: COLORS.textMuted,
-  },
-  confidenceTrack: {
-    height: 6,
-    backgroundColor: COLORS.borderLight,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  confidenceFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  evidenceContainer: {
-    backgroundColor: COLORS.surface,
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 6,
-    gap: 6,
-  },
-  evidenceTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  evidenceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 4,
-  },
-  evidenceText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  evidenceSub: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-  },
-  noEvidenceText: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    fontStyle: 'italic',
-  },
-  certBanner: {
-    backgroundColor: COLORS.primarySurface,
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  certBannerTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  certBannerSub: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
+  linkTitle: { flex: 1, ...TEXT.bodyStrong },
 });

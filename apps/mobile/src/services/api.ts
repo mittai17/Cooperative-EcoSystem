@@ -1,40 +1,81 @@
-import {
-  MOCK_COURSES,
-  MOCK_JOBS,
-  MOCK_SKILL_PASSPORT,
-  MOCK_CERTIFICATES,
-  MOCK_ATTENDANCE,
-  MOCK_OFFLINE_COURSES,
-  MOCK_CAREER_RECOMMENDATIONS,
-  MOCK_CAREER_STEPS,
-  MOCK_TRAINEE,
-} from './mockData';
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 import {
   Course,
   JobMatch,
   SkillPassportData,
   CertificateItem,
   AttendanceRecordItem,
-  OfflineCourseItem,
   CareerRecommendation,
   CareerPlanStep,
+  OfflinePackage,
+  TraineeProfile,
 } from '../types';
+
+const API_PORT = 8000;
+
+/**
+ * Host of the Metro dev server that served this bundle. Physical devices and
+ * emulators reach the dev machine on that address, so the backend (same
+ * machine, port 8000) is reachable there too. Read from the RN SourceCode
+ * module because expo-constants is not resolvable from this package (it is
+ * nested under expo/node_modules). Returns null in release builds, where the
+ * script URL is a file/asset path.
+ */
+function devServerHost(): string | null {
+  const scriptURL: string | undefined = NativeModules.SourceCode?.scriptURL;
+  const match = scriptURL ? /^https?:\/\/([^/:]+)/.exec(scriptURL) : null;
+  return match ? match[1] : null;
+}
+
+/**
+ * Backend origin resolution (native):
+ *   1. EXPO_PUBLIC_API_BASE_URL (e.g. https://api.example.com or http://192.168.1.5:8000)
+ *   2. the Metro dev server host on port 8000 (Expo Go / dev builds)
+ *   3. Android emulator alias for the host machine (10.0.2.2), else localhost
+ */
+function resolveNativeApiBase(): string {
+  const override = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
+  if (override) {
+    return `${override.replace(/\/+$/, '').replace(/\/api\/v1$/, '')}/api/v1`;
+  }
+  const host = devServerHost() ?? (Platform.OS === 'android' ? '10.0.2.2' : 'localhost');
+  return `http://${host}:${API_PORT}/api/v1`;
+}
 
 // On web, go through the Metro dev server's same-origin /api-proxy (see
 // metro.config.js) to avoid the real backend's CORS allowlist, which only
-// permits http://localhost:3000 and http://localhost:8000. Native builds
-// call the backend directly since CORS is a browser-only mechanism.
-export const API_BASE_URL =
-  Platform.OS === 'web' ? '/api-proxy/api/v1' : 'http://localhost:8000/api/v1';
+// permits http://localhost:3000 and http://localhost:8000.
+export const API_BASE_URL = Platform.OS === 'web' ? '/api-proxy/api/v1' : resolveNativeApiBase();
 
-// Pragmatic stand-in for real mobile auth (no Clerk/JWT wiring on-device yet).
-// The backend's write/read endpoints accept an optional trainee_id query param
-// or body field for exactly this reason. This id is a real seeded trainee
-// ("Ravindra Suresh Patil") in the Neon DB used by the backend, so calls made
-// with it return genuine DB-backed rows instead of the backend's anonymous
-// demo dataset.
-export const DEMO_TRAINEE_ID = '8fd67121-3c5e-4127-8d48-103efbde3d67';
+// The hosted database answers in 1-2 s; anything slower than this is treated as offline.
+const REQUEST_TIMEOUT_MS = 8000;
+
+// ---------------------------------------------------------------------------
+// Auth wiring. Identity is the Clerk session JWT: the backend derives the
+// trainee from the verified token, so the client never sends a trainee id.
+// ---------------------------------------------------------------------------
+
+export type TokenGetter = (options?: { skipCache?: boolean }) => Promise<string | null>;
+
+let tokenGetter: TokenGetter | null = null;
+let unauthorizedHandler: (() => void) | null = null;
+
+/** Called by AuthProvider once Clerk is ready; pass nulls on teardown. */
+export function configureAuthClient(config: { getToken: TokenGetter | null; onUnauthorized: (() => void) | null }) {
+  tokenGetter = config.getToken;
+  unauthorizedHandler = config.onUnauthorized;
+}
+
+/** Non-2xx answer from the backend (network failures are plain TypeErrors / AbortErrors). */
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 
 function extractErrorMessage(err: any, fallback: string): string {
   if (!err) return fallback;
@@ -49,181 +90,300 @@ function extractErrorMessage(err: any, fallback: string): string {
   return fallback;
 }
 
-async function fetchWithFallback<T>(url: string, fallback: T, options?: RequestInit): Promise<{ data: T; isLive: boolean }> {
+/** fetch() that aborts after `timeoutMs` so requests never hang the UI. */
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = REQUEST_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {}),
-      },
-    });
-
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
     clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      return { data: fallback, isLive: false };
-    }
-
-    const data = await response.json();
-    return { data, isLive: true };
-  } catch (_error) {
-    return { data: fallback, isLive: false };
   }
 }
 
-export const apiService = {
-  getTraineeProfile() {
-    return MOCK_TRAINEE;
+function buildInit(init: RequestInit | undefined, token: string | null): RequestInit {
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (init?.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return { ...init, headers: { ...headers, ...((init?.headers as Record<string, string>) || {}) } };
+}
+
+/**
+ * Backend call with the Clerk session token. The token is requested per call
+ * (Clerk caches it and refreshes it before expiry). On 401 the token is force
+ * refreshed and the call retried once; a second 401 signs the user out.
+ */
+async function authedFetch(path: string, init?: RequestInit, timeoutMs?: number): Promise<Response> {
+  const url = `${API_BASE_URL}${path}`;
+  const send = async (skipCache: boolean) => {
+    const token = tokenGetter ? await tokenGetter({ skipCache }) : null;
+    return fetchWithTimeout(url, buildInit(init, token), timeoutMs);
+  };
+  let res = await send(false);
+  if (res.status === 401 && tokenGetter) {
+    res = await send(true);
+    if (res.status === 401) unauthorizedHandler?.();
+  }
+  return res;
+}
+
+async function readJson(res: Response): Promise<any> {
+  return res.json().catch(() => ({}));
+}
+
+async function throwApiError(res: Response, fallback: string): Promise<never> {
+  throw new ApiError(res.status, extractErrorMessage(await readJson(res), fallback));
+}
+
+/**
+ * GET-style read. On any failure (offline, timeout, non-2xx) it returns the
+ * caller's empty value with isLive=false; screens show the Offline badge.
+ * There is no sample-data fallback.
+ */
+async function readLive<T>(path: string, empty: T): Promise<{ data: T; isLive: boolean }> {
+  try {
+    const res = await authedFetch(path);
+    if (!res.ok) return { data: empty, isLive: false };
+    return { data: (await res.json()) as T, isLive: true };
+  } catch {
+    return { data: empty, isLive: false };
+  }
+}
+
+const QR_PREFIX = 'coopsetu:attend:';
+
+/** The generate endpoint returns 'coopsetu:attend:<token>'; the scan endpoint accepts both forms. */
+export function normalizeAttendanceToken(raw: string): string {
+  const trimmed = raw.trim();
+  return trimmed.toLowerCase().startsWith(QR_PREFIX) ? trimmed.slice(QR_PREFIX.length).trim() : trimmed;
+}
+
+const EMPTY_PASSPORT: SkillPassportData = {
+  skills: [],
+  summary: { total_skills: 0, verified_count: 0, avg_confidence: 0 },
+};
+
+// ---------------------------------------------------------------------------
+// Identity endpoints
+// ---------------------------------------------------------------------------
+
+export interface MeResponse {
+  id?: string;
+  clerk_user_id: string;
+  email?: string;
+  full_name?: string;
+  role: string;
+  synced: boolean;
+  message?: string;
+  organisation?: { id: string; name: string; type: string } | null;
+  trainee?: TraineeProfile | null;
+}
+
+export interface DemoAccount {
+  role: string;
+  email: string;
+  name: string;
+}
+
+export const authApi = {
+  /** GET /auth/me. Throws ApiError (non-2xx) or a network error. */
+  async me(): Promise<MeResponse> {
+    const res = await authedFetch('/auth/me');
+    if (!res.ok) return throwApiError(res, 'Could not load your account');
+    return (await res.json()) as MeResponse;
   },
 
-  // Async variant that fetches the real seeded user record from the backend
-  // (GET /users/{id}) and overlays it onto the mock profile shape, so screens
-  // get a real name/email/role from the Neon DB while still having sane
-  // defaults for fields the backend user record doesn't carry (programme,
-  // institution, avatar initials, attendance %, etc).
-  async getTraineeProfileLive(): Promise<{ trainee: typeof MOCK_TRAINEE; isLive: boolean }> {
-    const res = await fetchWithFallback<Partial<typeof MOCK_TRAINEE>>(
-      `${API_BASE_URL}/users/${DEMO_TRAINEE_ID}`,
-      MOCK_TRAINEE
-    );
-    if (!res.isLive) {
-      return { trainee: MOCK_TRAINEE, isLive: false };
+  /** POST /auth/provision: creates the local row from the Clerk profile (idempotent). */
+  async provision(): Promise<void> {
+    const res = await authedFetch('/auth/provision', { method: 'POST' });
+    if (!res.ok) await throwApiError(res, 'Could not set up your account');
+  },
+
+  /** POST /auth/sync: sync user details including role and name to local DB */
+  async syncUser(payload: {
+    clerk_user_id: string;
+    email: string;
+    full_name?: string;
+    role?: string;
+  }): Promise<void> {
+    try {
+      await authedFetch('/auth/sync', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      console.warn('Sync failed:', e);
     }
-    const live = res.data as any;
-    return {
-      trainee: {
-        ...MOCK_TRAINEE,
-        id: live.id || MOCK_TRAINEE.id,
-        name: live.full_name || MOCK_TRAINEE.name,
-        email: live.email || MOCK_TRAINEE.email,
-        role: live.role ? live.role.charAt(0).toUpperCase() + live.role.slice(1) : MOCK_TRAINEE.role,
-        avatar_initials: live.full_name
-          ? live.full_name
-              .split(' ')
-              .filter(Boolean)
-              .slice(0, 2)
-              .map((p: string) => p[0])
-              .join('')
-              .toUpperCase()
-          : MOCK_TRAINEE.avatar_initials,
-      },
-      isLive: true,
-    };
   },
 
-  async getCourses(): Promise<{ courses: Course[]; isLive: boolean }> {
-    const res = await fetchWithFallback<{ courses: Course[] }>(
-      `${API_BASE_URL}/courses/`,
-      { courses: MOCK_COURSES }
-    );
-    // Enrich with modules if backend returns basic list
-    const enrichedCourses = res.data.courses.map((c) => {
-      const mock = MOCK_COURSES.find((m) => m.id === c.id);
+  /** GET /auth/demo-accounts (public). Any failure means the demo section stays hidden. */
+  async demoAccounts(): Promise<{ enabled: boolean; accounts: DemoAccount[] }> {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/auth/demo-accounts`, buildInit(undefined, null));
+      if (!res.ok) return { enabled: false, accounts: [] };
+      const data = await res.json();
       return {
-        ...mock,
-        ...c,
-        progress: mock?.progress ?? 35,
-        modules: mock?.modules ?? [
-          { id: 'm1', title: '1. Course Overview & Introduction', duration: '20 min', completed: true },
-          { id: 'm2', title: '2. Core Principles & Case Studies', duration: '35 min', completed: false },
-        ],
+        enabled: data?.enabled === true,
+        accounts: Array.isArray(data?.accounts) ? (data.accounts as DemoAccount[]) : [],
       };
-    });
-    return { courses: enrichedCourses, isLive: res.isLive };
+    } catch {
+      return { enabled: false, accounts: [] };
+    }
+  },
+
+  /** POST /auth/demo-login (public): returns a single-use Clerk sign-in ticket. */
+  async demoLogin(role: string): Promise<string> {
+    let res: Response;
+    try {
+      res = await fetchWithTimeout(
+        `${API_BASE_URL}/auth/demo-login`,
+        buildInit({ method: 'POST', body: JSON.stringify({ role }) }, null)
+      );
+    } catch {
+      throw new ApiError(0, 'Could not reach the server. Check your connection and try again.');
+    }
+    if (!res.ok) {
+      const fallback =
+        res.status === 429
+          ? 'Too many demo sign-ins. Wait a minute and try again.'
+          : 'Demo sign-in is not available right now.';
+      return throwApiError(res, fallback);
+    }
+    const data = await res.json();
+    if (typeof data?.ticket !== 'string' || !data.ticket) {
+      throw new ApiError(res.status, 'Demo sign-in returned no ticket.');
+    }
+    return data.ticket;
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Trainee endpoints
+// ---------------------------------------------------------------------------
+
+export const apiService = {
+  async getCourses(): Promise<{ courses: Course[]; isLive: boolean }> {
+    const res = await readLive<{ courses?: Course[] }>('/mobile/courses', {});
+    const courses = (res.data.courses ?? []).map((c) => ({
+      ...c,
+      category: c.category ?? '',
+      instructor: c.instructor ?? '',
+      skills: c.skills ?? [],
+      progress: c.progress ?? 0,
+      modules: c.modules ?? [],
+    }));
+    return { courses, isLive: res.isLive };
+  },
+
+  /**
+   * Persists a lesson toggle. Returns the recomputed course progress (0-100)
+   * on success; throws ApiError / network error so the caller can roll back.
+   */
+  async setModuleProgress(courseId: string, moduleId: string, completed: boolean): Promise<number | null> {
+    const res = await authedFetch(
+      `/mobile/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(moduleId)}/progress`,
+      { method: 'POST', body: JSON.stringify({ completed }) }
+    );
+    if (!res.ok) return throwApiError(res, 'Could not save your progress');
+    const data = await readJson(res);
+    return typeof data.course_progress === 'number' ? data.course_progress : null;
   },
 
   async getJobs(): Promise<{ jobs: JobMatch[]; isLive: boolean }> {
-    const res = await fetchWithFallback<{ jobs: JobMatch[] }>(
-      `${API_BASE_URL}/jobs/`,
-      { jobs: MOCK_JOBS }
-    );
-    // The real backend's list endpoint (GET /jobs/) currently returns a
-    // trimmed shape (id, title, employer, location only) - richer fields
-    // like salary/skills_required/openings live on the detail endpoint
-    // (GET /jobs/{id}). Rather than N+1 fetch every job's detail, default
-    // the missing fields here so screens that assume the full JobMatch
-    // shape (e.g. job.skills_required.map(...)) don't crash on live data.
-    const jobDefaults = {
-      sector: 'Cooperative',
-      type: 'Full-time',
-      salary: 'Not disclosed',
-      skills_required: [] as string[],
-      openings: 1,
-      posted_days_ago: 0,
-    };
-    const enrichedJobs = res.data.jobs.map((j) => {
-      const mock = MOCK_JOBS.find((m) => m.id === j.id);
-      return {
-        ...Object.assign({}, jobDefaults, mock, j),
-        match_percentage: mock?.match_percentage ?? Math.floor(70 + Math.random() * 25),
-      };
+    const res = await readLive<{ jobs?: JobMatch[] }>('/mobile/jobs', {});
+    const jobs = (res.data.jobs ?? []).map((j) => ({
+      ...j,
+      title: j.title ?? '',
+      employer: j.employer ?? '',
+      location: j.location ?? '',
+      sector: j.sector ?? '',
+      type: j.type ?? '',
+      salary: j.salary ?? '',
+      skills_required: Array.isArray(j.skills_required) ? j.skills_required : [],
+    }));
+    return { jobs, isLive: res.isLive };
+  },
+
+  async applyToJob(jobId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const res = await authedFetch(`/jobs/${encodeURIComponent(jobId)}/apply`, { method: 'POST' });
+      if (res.ok) {
+        const data = await readJson(res);
+        return { success: true, message: typeof data.message === 'string' ? data.message : 'Application submitted' };
+      }
+      return { success: false, message: extractErrorMessage(await readJson(res), 'Could not submit the application') };
+    } catch {
+      return { success: false, message: 'No connection. Try again when you are online.' };
+    }
+  },
+
+  async getOfflinePackages(): Promise<{ packages: OfflinePackage[]; isLive: boolean }> {
+    const res = await readLive<{ packages?: OfflinePackage[] }>('/mobile/offline/packages', {});
+    return { packages: res.data.packages ?? [], isLive: res.isLive };
+  },
+
+  /** Marks the package downloaded server-side and returns it (with the full course to store locally). */
+  async downloadOfflinePackage(courseId: string): Promise<OfflinePackage> {
+    const res = await authedFetch(`/mobile/offline/packages/${encodeURIComponent(courseId)}/download`, {
+      method: 'POST',
     });
-    return { jobs: enrichedJobs, isLive: res.isLive };
+    if (!res.ok) return throwApiError(res, 'Could not download this course');
+    return (await res.json()) as OfflinePackage;
+  },
+
+  async removeOfflinePackage(courseId: string): Promise<void> {
+    const res = await authedFetch(`/mobile/offline/packages/${encodeURIComponent(courseId)}`, { method: 'DELETE' });
+    if (!res.ok) await throwApiError(res, 'Could not remove this download');
   },
 
   async getSkillPassport(): Promise<{ passport: SkillPassportData; isLive: boolean }> {
-    // Deliberately no trainee_id here: the backend's own docstring says this
-    // endpoint returns rich DB-aggregated evidence when trainee_id is given,
-    // but falls back to a full demo dataset otherwise. The seeded demo
-    // trainees in this DB have no skill evidence rows yet (fresh env), so
-    // passing trainee_id would show an empty passport; omitting it exercises
-    // the same live HTTP path and gets a populated, still-real response.
-    const res = await fetchWithFallback<SkillPassportData>(
-      `${API_BASE_URL}/skills/my-passport`,
-      MOCK_SKILL_PASSPORT
-    );
+    const res = await readLive<SkillPassportData>('/skills/my-passport', EMPTY_PASSPORT);
     return { passport: res.data, isLive: res.isLive };
   },
 
   async getCertificates(): Promise<{ certificates: CertificateItem[]; isLive: boolean }> {
-    const res = await fetchWithFallback<{ certificates: CertificateItem[] }>(
-      `${API_BASE_URL}/certificates/my?trainee_id=${DEMO_TRAINEE_ID}`,
-      { certificates: MOCK_CERTIFICATES }
-    );
-    const rawCerts = Array.isArray(res.data) ? res.data : res.data.certificates || MOCK_CERTIFICATES;
-    // The DB-backed certificate rows don't populate holder_name/programme_title/
-    // issuer yet (nulls), so fill sane display defaults instead of showing
-    // the literal word "null" in the UI.
-    const certificates = rawCerts.map((c) => ({
+    const res = await readLive<{ certificates?: CertificateItem[] }>('/certificates/my', {});
+    const certificates = (res.data.certificates ?? []).map((c) => ({
       ...c,
-      holder_name: c.holder_name || MOCK_TRAINEE.name,
-      programme_title: c.programme_title || 'Cooperative Skilling Programme',
-      issuer: c.issuer || 'National Council for Cooperative Training (NCCT)',
+      holder_name: c.holder_name ?? '',
+      programme_title: c.programme_title ?? '',
+      issuer: c.issuer ?? '',
+      skills_certified: c.skills_certified ?? [],
     }));
     return { certificates, isLive: res.isLive };
   },
 
-  async getAttendanceRecords(): Promise<{ records: AttendanceRecordItem[]; isLive: boolean }> {
-    const res = await fetchWithFallback<{ records: AttendanceRecordItem[] }>(
-      `${API_BASE_URL}/attendance/my?trainee_id=${DEMO_TRAINEE_ID}`,
-      { records: MOCK_ATTENDANCE }
+  async getAttendanceRecords(): Promise<{
+    records: AttendanceRecordItem[];
+    /** overall attendance % as computed by the server; null when unavailable */
+    percentage: number | null;
+    isLive: boolean;
+  }> {
+    const res = await readLive<{ records?: AttendanceRecordItem[]; overall_percentage?: number }>(
+      '/attendance/my',
+      {}
     );
     return {
-      records: res.data.records || MOCK_ATTENDANCE,
+      records: res.data.records ?? [],
+      percentage:
+        res.isLive && typeof res.data.overall_percentage === 'number' ? res.data.overall_percentage : null,
       isLive: res.isLive,
     };
   },
 
   async recordAttendanceScan(qrToken: string): Promise<{ success: boolean; message: string; isLive: boolean }> {
     try {
-      const res = await fetch(`${API_BASE_URL}/attendance/scan`, {
+      const res = await authedFetch('/attendance/scan', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qr_token: qrToken, trainee_id: DEMO_TRAINEE_ID }),
+        body: JSON.stringify({ qr_token: normalizeAttendanceToken(qrToken) }),
       });
       if (res.ok) {
-        const data = await res.json();
+        const data = await readJson(res);
         return { success: true, message: `Recorded for ${data.session || 'Session'}`, isLive: true };
       }
-      const err = await res.json().catch(() => ({}));
-      return { success: false, message: extractErrorMessage(err, 'Scan failed'), isLive: true };
+      return { success: false, message: extractErrorMessage(await readJson(res), 'Scan failed'), isLive: true };
     } catch {
-      // Offline fallback
+      // Unreachable server: the caller queues the token for a later sync.
       return {
         success: true,
         message: 'Attendance recorded locally in offline queue. Will sync when reconnected.',
@@ -232,64 +392,40 @@ export const apiService = {
     }
   },
 
-  async sendCareerChat(message: string): Promise<{ reply: string; isLive: boolean }> {
+  async sendCareerChat(message: string): Promise<{ reply: string; ok: boolean }> {
     try {
-      const res = await fetch(`${API_BASE_URL}/career/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
-      });
+      // Generation can take a while; the backend answers within its own limits.
+      const res = await authedFetch('/career/chat', { method: 'POST', body: JSON.stringify({ message }) }, 30000);
       if (res.ok) {
         const data = await res.json();
-        return { reply: data.response, isLive: true };
+        if (typeof data.response === 'string' && data.response) return { reply: data.response, ok: true };
       }
+      return { reply: 'The advisor could not answer right now. Please try again.', ok: false };
     } catch {
-      // Fallback
+      return { reply: 'No connection. The career advisor needs you to be online.', ok: false };
     }
-
-    const msgLower = message.toLowerCase();
-    if (msgLower.includes('job') || msgLower.includes('apply')) {
-      return {
-        reply: 'Based on your verified skills (92% Cooperative Management), you are eligible for 3 CDO roles at NCDC and Maharashtra State Cooperative Bank.',
-        isLive: false,
-      };
-    }
-    if (msgLower.includes('course') || msgLower.includes('learn') || msgLower.includes('gap')) {
-      return {
-        reply: 'To boost your placement eligibility to 90%+, prioritize completing "Data Analytics for Cooperatives". This bridges your technical ledger audit gap.',
-        isLive: false,
-      };
-    }
-    return {
-      reply: 'I am your CoopSetu Career AI Advisor. I can analyze your Skill Passport, match cooperative job vacancies, and suggest certification pathways. What would you like guidance on?',
-      isLive: false,
-    };
   },
 
   async getCareerGuidance(): Promise<{
     recommendations: CareerRecommendation[];
     career_path: CareerPlanStep[];
-    current_match: number;
+    target_role: string | null;
+    /** readiness % for the target role; only provided by the server */
+    current_match: number | null;
     isLive: boolean;
   }> {
-    const res = await fetchWithFallback<{
-      recommendations: CareerRecommendation[];
-      career_path: CareerPlanStep[];
-      current_match: number;
-    }>(`${API_BASE_URL}/career/recommendations`, {
-      recommendations: MOCK_CAREER_RECOMMENDATIONS,
-      career_path: MOCK_CAREER_STEPS,
-      current_match: 72,
-    });
+    const res = await readLive<{
+      recommendations?: CareerRecommendation[];
+      career_path?: CareerPlanStep[];
+      target_role?: string;
+      current_match?: number;
+    }>('/career/recommendations', {});
     return {
-      recommendations: res.data.recommendations || MOCK_CAREER_RECOMMENDATIONS,
-      career_path: res.data.career_path || MOCK_CAREER_STEPS,
-      current_match: res.data.current_match || 72,
+      recommendations: res.data.recommendations ?? [],
+      career_path: res.data.career_path ?? [],
+      target_role: res.isLive ? (res.data.target_role ?? null) : null,
+      current_match: res.isLive && typeof res.data.current_match === 'number' ? res.data.current_match : null,
       isLive: res.isLive,
     };
-  },
-
-  getOfflineCourses(): OfflineCourseItem[] {
-    return MOCK_OFFLINE_COURSES;
   },
 };

@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
+from app.deps import require_roles, org_scope, assert_org_access
+from app.models.user import User
 from app.models.logistics import LogisticsTask, VehicleAllocation, LogisticsBudget
 from app.models.programme import Programme
 from app.schemas.logistics import LogisticsTaskCreate, LogisticsTaskUpdate
@@ -52,17 +54,22 @@ def _vehicle_dict(v: VehicleAllocation) -> dict:
 
 
 @router.get("/")
-async def get_logistics(db: AsyncSession = Depends(get_db)):
-    tasks_result = await db.execute(select(LogisticsTask).order_by(LogisticsTask.due_date))
+async def get_logistics(db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
+    scope = org_scope(user)
+    def scoped(model):
+        query = select(model)
+        return query.where(model.organisation_id == scope) if scope is not None else query
+
+    tasks_result = await db.execute(scoped(LogisticsTask).order_by(LogisticsTask.due_date))
     tasks = tasks_result.scalars().all()
 
-    vehicles_result = await db.execute(select(VehicleAllocation).order_by(VehicleAllocation.vehicle_no))
+    vehicles_result = await db.execute(scoped(VehicleAllocation).order_by(VehicleAllocation.vehicle_no))
     vehicles = vehicles_result.scalars().all()
 
-    budget_result = await db.execute(select(LogisticsBudget).limit(1))
+    budget_result = await db.execute(scoped(LogisticsBudget).limit(1))
     budget = budget_result.scalars().first()
 
-    prog_result = await db.execute(select(Programme).where(Programme.is_active == True))
+    prog_result = await db.execute(scoped(Programme).where(Programme.is_active == True))
     programmes = prog_result.scalars().all()
 
     return {
@@ -77,7 +84,7 @@ async def get_logistics(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/tasks")
-async def create_task(data: LogisticsTaskCreate, db: AsyncSession = Depends(get_db)):
+async def create_task(data: LogisticsTaskCreate, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
     try:
         prog_uuid = uuid.UUID(data.programme_id)
     except (ValueError, TypeError):
@@ -87,6 +94,8 @@ async def create_task(data: LogisticsTaskCreate, db: AsyncSession = Depends(get_
     programme = result.scalar_one_or_none()
     if not programme:
         raise HTTPException(status_code=404, detail="Programme not found")
+
+    assert_org_access(user, programme.organisation_id)
 
     try:
         due = date.fromisoformat(data.due_date)
@@ -113,7 +122,7 @@ async def create_task(data: LogisticsTaskCreate, db: AsyncSession = Depends(get_
 
 
 @router.patch("/tasks/{task_id}")
-async def update_task(task_id: str, data: LogisticsTaskUpdate, db: AsyncSession = Depends(get_db)):
+async def update_task(task_id: str, data: LogisticsTaskUpdate, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles("institution", "admin"))):
     try:
         tid = uuid.UUID(task_id)
     except (ValueError, TypeError):
@@ -124,6 +133,7 @@ async def update_task(task_id: str, data: LogisticsTaskUpdate, db: AsyncSession 
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
+    assert_org_access(user, task.organisation_id)
     task.done = data.done
     await db.commit()
     await db.refresh(task)

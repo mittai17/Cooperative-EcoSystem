@@ -18,6 +18,12 @@ class Programme(Base):
     start_date = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True)
     description = Column(Text)
+    # Additive, nullable
+    eligibility = Column(Text, nullable=True)
+    application_deadline = Column(DateTime(timezone=True), nullable=True)
+    end_date = Column(DateTime(timezone=True), nullable=True)
+    venue = Column(String(255), nullable=True)
+    created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class Nomination(Base):
@@ -28,6 +34,11 @@ class Nomination(Base):
     status = Column(String(50), default="pending")
     submitted_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    # Additive, nullable. status values: pending|approved|rejected|waitlisted|withdrawn.
+    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="SET NULL"), nullable=True)
+    nominated_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)  # sponsor nominations
+    note = Column(Text, nullable=True)
+    decision_note = Column(Text, nullable=True)
 
 class Batch(Base):
     __tablename__ = "batches"
@@ -37,6 +48,11 @@ class Batch(Base):
     start_date = Column(DateTime(timezone=True))
     end_date = Column(DateTime(timezone=True), nullable=True)
     capacity = Column(Integer, default=30)
+    # Additive, nullable (joining instructions / attendance eligibility)
+    venue = Column(String(255), nullable=True)
+    reporting_instructions = Column(Text, nullable=True)
+    contact_phone = Column(String(20), nullable=True)
+    min_attendance_pct = Column(Integer, nullable=True, server_default="75")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class Enrollment(Base):

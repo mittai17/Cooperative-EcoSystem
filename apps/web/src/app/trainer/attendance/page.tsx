@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
@@ -150,7 +150,7 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function TrainerAttendancePage() {
+function TrainerAttendancePageContent() {
   const api = useApi();
   const searchParams = useSearchParams();
 
@@ -524,5 +524,13 @@ const DEMO_TRAINER_SESSIONS: SessionRow[] = [
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TrainerAttendancePage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground text-sm">Loading attendance...</div>}>
+      <TrainerAttendancePageContent />
+    </Suspense>
   );
 }

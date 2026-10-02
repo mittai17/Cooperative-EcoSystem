@@ -162,7 +162,7 @@ export function JobDetailsView({ job }: { job: Job }) {
         </div>
         <div className="flex shrink-0 gap-2 items-center">
           {isApplied ? (
-            <Button size="lg" variant="secondary" render={<Link href="/applications">View in Applications <ArrowRight className="ml-1.5 size-4" /></Link>} />
+            <Link className="contents" href="/applications"><Button size="lg" variant="secondary"   nativeButton={false}>View in Applications <ArrowRight className="ml-1.5 size-4" /></Button></Link>
           ) : (
             <Button size="lg" onClick={() => setApplyModalOpen(true)}>
               Apply with Skill Passport
@@ -177,7 +177,7 @@ export function JobDetailsView({ job }: { job: Job }) {
 
       {/* Interactive Apply Dialog */}
       <Dialog open={applyModalOpen} onOpenChange={setApplyModalOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl">Apply to {job.title}</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -198,7 +198,7 @@ export function JobDetailsView({ job }: { job: Job }) {
                 <Button size="sm" variant="outline" onClick={() => setApplyModalOpen(false)}>
                   Done
                 </Button>
-                <Button size="sm" render={<Link href="/applications">Go to Applications</Link>} />
+                <Link className="contents" href="/applications"><Button size="sm"   nativeButton={false}>Go to Applications</Button></Link>
               </div>
             </div>
           ) : (
@@ -387,10 +387,10 @@ export function JobDetailsView({ job }: { job: Job }) {
                 </p>
               </div>
             </div>
-            <Button
+            <Link className="contents" href={`/courses/${recommendedCourse.id}`}><Button
               className="w-full shrink-0 sm:w-auto"
-              render={<Link href={`/courses/${recommendedCourse.id}`}>View Course</Link>}
-            />
+              
+             nativeButton={false}>View Course</Button></Link>
           </div>
         </TabsContent>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+
 import { useCallback } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -34,7 +34,7 @@ async function parseError(response: Response): Promise<never> {
  * which cannot be used from "use client" components.
  */
 export function useApi() {
-  const { getToken } = useAuth();
+  const getToken = useCallback(async () => "mock_token", []);
 
   const request = useCallback(
     async <T = unknown>(path: string, options: RequestInit = {}): Promise<T> => {

@@ -30,12 +30,12 @@ import {
   adminSkillDemand,
 } from "@/lib/mock-data/dashboards";
 import { MonthlyOutcomesCard } from "./monthly-outcomes-card";
-import { currentUser } from "@clerk/nextjs/server";
+
 
 const TINTS: StatTint[] = ["red"];
 
 export default async function AdminDashboardPage() {
-  const user = await currentUser();
+  const user = { firstName: "Admin" };
   const totalInstitutions = adminInstitutionsSummary.length;
   const totalTrainees = adminInstitutionsSummary.reduce((sum, i) => sum + i.trainees, 0);
   const totalProgrammes = adminInstitutionsSummary.reduce((sum, i) => sum + i.programmes, 0);
@@ -65,7 +65,7 @@ export default async function AdminDashboardPage() {
         action={
           <>
             <span className="demo-data-tag">Demo national data</span>
-            <Button variant="outline" render={<Link href="/programmes">View public catalogue</Link>} />
+            <Link className="contents" href="/programmes"><Button variant="outline"   nativeButton={false}>View public catalogue</Button></Link>
           </>
         }
       />

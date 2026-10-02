@@ -68,15 +68,13 @@ export default function LandingPage() {
               employment, with the power of AI.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button
+              <Link className="contents" href="/sign-up"><Button
                 size="lg"
-                render={
-                  <Link href="/sign-up">
+                
+               nativeButton={false}>
                     Get Started <ArrowRight className="size-4" />
-                  </Link>
-                }
-              />
-              <Button size="lg" variant="outline" render={<Link href="/programmes">Explore Programmes</Link>} />
+                  </Button></Link>
+              <Link className="contents" href="/programmes"><Button size="lg" variant="outline"   nativeButton={false}>Explore Programmes</Button></Link>
             </div>
           </div>
 
@@ -331,13 +329,13 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row">
-            <Button size="lg" variant="secondary" render={<Link href="/sign-up">Get Started</Link>} />
-            <Button
+            <Link className="contents" href="/sign-up"><Button size="lg" variant="secondary"   nativeButton={false}>Get Started</Button></Link>
+            <Link className="contents" href="/sign-in"><Button
               size="lg"
               variant="outline"
               className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
-              render={<Link href="/sign-in">Sign In</Link>}
-            />
+              
+             nativeButton={false}>Sign In</Button></Link>
           </div>
         </div>
       </section>

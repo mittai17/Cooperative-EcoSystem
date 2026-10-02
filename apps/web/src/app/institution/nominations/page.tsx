@@ -543,7 +543,7 @@ export default function NominationsPage() {
 
       {/* Submit Nomination Dialog */}
       <Dialog open={nominateOpen} onOpenChange={setNominateOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl">Submit Trainee Nomination</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">

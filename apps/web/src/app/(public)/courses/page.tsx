@@ -115,8 +115,8 @@ export default function CoursesPage() {
                 </span>
               </div>
               <div className="flex gap-2 pt-1">
-                <Button className="flex-1" render={<Link href={`/courses/${course.id}`}>View Course</Link>} />
-                <Button variant="outline" className="flex-1" render={<Link href="/skill-passport">Skill impact</Link>} />
+                <Link className="contents" href={`/courses/${course.id}`}><Button className="flex-1"   nativeButton={false}>View Course</Button></Link>
+                <Link className="contents" href="/skill-passport"><Button variant="outline" className="flex-1"   nativeButton={false}>Skill impact</Button></Link>
               </div>
             </div>
           </Card>

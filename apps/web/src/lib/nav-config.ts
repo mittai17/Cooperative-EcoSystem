@@ -24,10 +24,18 @@ import {
 } from "lucide-react";
 import type { UserRole } from "@/lib/types";
 
+export interface NavChildItem {
+  label: string;
+  href: string;
+  badge?: string | number;
+}
+
 export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  badge?: string | number;
+  children?: NavChildItem[];
 }
 
 export interface RoleMeta {
@@ -39,21 +47,34 @@ export interface RoleMeta {
 export const roleNav: Record<UserRole, RoleMeta> = {
   trainee: {
     label: "Trainee",
-    homeHref: "/dashboard",
+    homeHref: "/trainee/dashboard",
     navItems: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "My Learning", href: "/my-learning", icon: BookOpen },
-      { label: "Courses", href: "/courses", icon: GraduationCap },
-      { label: "Assessments", href: "/assessments", icon: ClipboardCheck },
-      { label: "Skill Passport", href: "/skill-passport", icon: BadgeCheck },
-      { label: "Skill Gap", href: "/skill-gap", icon: Target },
-      { label: "Certificates", href: "/certificates", icon: Award },
-      { label: "Jobs", href: "/jobs", icon: Briefcase },
-      { label: "Applications", href: "/applications", icon: ClipboardList },
-      { label: "Attendance", href: "/attendance", icon: MapPin },
-      { label: "Career AI", href: "/career-ai", icon: Brain },
-      { label: "Entrepreneurship", href: "/entrepreneurship", icon: Rocket },
-      { label: "Profile", href: "/profile", icon: UserCircle },
+      { label: "Dashboard", href: "/trainee/dashboard", icon: LayoutDashboard },
+      { label: "Programmes", href: "/trainee/programmes", icon: ClipboardList },
+      { label: "My Learning", href: "/trainee/my-learning", icon: BookOpen },
+      { label: "Courses", href: "/trainee/courses", icon: GraduationCap },
+      { label: "Assessments", href: "/trainee/assessments", icon: ClipboardCheck },
+      {
+        label: "Hostel Management",
+        href: "/trainee/hostel",
+        icon: Building2,
+        children: [
+          { label: "My Hostel", href: "/trainee/hostel" },
+          { label: "Hostel Request", href: "/trainee/hostel/request" },
+          { label: "My Allocation", href: "/trainee/hostel/allocation" },
+          { label: "Hostel Notices", href: "/trainee/hostel/notices" },
+          { label: "Hostel Facilities", href: "/trainee/hostel/facilities" },
+          { label: "Hostel Rules", href: "/trainee/hostel/rules" },
+        ],
+      },
+      { label: "Skill Passport", href: "/trainee/skill-passport", icon: BadgeCheck },
+      { label: "Skill Gap", href: "/trainee/skill-gap", icon: Target },
+      { label: "Certificates", href: "/trainee/certificates", icon: Award },
+      { label: "Jobs", href: "/trainee/jobs", icon: Briefcase },
+      { label: "Attendance", href: "/trainee/attendance", icon: MapPin },
+      { label: "Career AI", href: "/trainee/career-ai", icon: Brain },
+      { label: "Entrepreneurship", href: "/trainee/entrepreneurship", icon: Rocket },
+      { label: "Profile", href: "/trainee/profile", icon: UserCircle },
     ],
   },
   institution: {
@@ -62,12 +83,38 @@ export const roleNav: Record<UserRole, RoleMeta> = {
     navItems: [
       { label: "Dashboard", href: "/institution/dashboard", icon: LayoutDashboard },
       { label: "Programmes", href: "/institution/programmes", icon: GraduationCap },
+      { label: "Batches", href: "/institution/batches", icon: ClipboardList },
       { label: "Trainees", href: "/institution/trainees", icon: Users },
       { label: "Trainers", href: "/institution/trainers", icon: UserCheck },
-      { label: "Attendance", href: "/institution/attendance", icon: ClipboardCheck },
+      { label: "Nominations", href: "/institution/nominations", icon: FileCheck2 },
       { label: "Timetable", href: "/institution/timetable", icon: ClipboardList },
-      { label: "Certificates", href: "/institution/certificates", icon: FileCheck2 },
+      {
+        label: "Hostel Management",
+        href: "/institution/hostel",
+        icon: Building2,
+        children: [
+          { label: "Overview", href: "/institution/hostel" },
+          { label: "Hostels & Blocks", href: "/institution/hostel/blocks" },
+          { label: "Rooms & Beds", href: "/institution/hostel/rooms" },
+          { label: "Allocations", href: "/institution/hostel/allocations" },
+          { label: "Hostel Requests", href: "/institution/hostel/requests" },
+          { label: "Check-in / Check-out", href: "/institution/hostel/check-in-out" },
+          { label: "Occupancy", href: "/institution/hostel/occupancy" },
+          { label: "Hostel Attendance", href: "/institution/hostel/attendance" },
+          { label: "Maintenance & Issues", href: "/institution/hostel/maintenance" },
+          { label: "Notices & Rules", href: "/institution/hostel/notices" },
+          { label: "Facilities", href: "/institution/hostel/facilities" },
+          { label: "Reports", href: "/institution/hostel/reports" },
+          { label: "Settings", href: "/institution/hostel/settings" },
+        ],
+      },
+      { label: "Logistics", href: "/institution/logistics", icon: Target },
+      { label: "Attendance", href: "/institution/attendance", icon: ClipboardCheck },
+      { label: "Assessments", href: "/institution/assessments", icon: BookOpen },
+      { label: "Certificates", href: "/institution/certificates", icon: Award },
       { label: "Analytics", href: "/institution/analytics", icon: BarChart3 },
+      { label: "Reports", href: "/institution/reports", icon: TrendingUp },
+      { label: "Profile", href: "/institution/profile", icon: UserCircle },
     ],
   },
   trainer: {
@@ -76,6 +123,18 @@ export const roleNav: Record<UserRole, RoleMeta> = {
     navItems: [
       { label: "Dashboard", href: "/trainer/dashboard", icon: LayoutDashboard },
       { label: "My Classes", href: "/trainer/classes", icon: Users },
+      {
+        label: "Hostel Management",
+        href: "/trainer/hostel",
+        icon: Building2,
+        children: [
+          { label: "My Batch Hostel", href: "/trainer/hostel" },
+          { label: "Room Allocation", href: "/trainer/hostel/allocations" },
+          { label: "Hostel Attendance", href: "/trainer/hostel/attendance" },
+          { label: "Hostel Requests", href: "/trainer/hostel/requests" },
+          { label: "Hostel Notices", href: "/trainer/hostel/notices" },
+        ],
+      },
       { label: "Attendance", href: "/trainer/attendance", icon: ClipboardCheck },
       { label: "Grading", href: "/trainer/assessments", icon: FileCheck2 },
       { label: "Trainees", href: "/trainer/trainees", icon: UserCheck },

@@ -28,7 +28,7 @@ export default function LoginPage() {
             Log in through the standard authentication portal with your email.
           </p>
         </div>
-        <Button variant="outline" size="sm" render={<Link href="/sign-in">Standard Sign-In <ArrowRight className="ml-1.5 size-3.5" /></Link>} />
+        <Link className="contents" href="/sign-in"><Button variant="outline" size="sm"   nativeButton={false}>Standard Sign-In <ArrowRight className="ml-1.5 size-3.5" /></Button></Link>
       </div>
     </div>
   );

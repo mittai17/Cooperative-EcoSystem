@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetchWithAuth } from "@/lib/api";
-import { currentUser } from "@clerk/nextjs/server";
+
 import { cookies } from "next/headers";
 
 /* Monochrome red ramp (palest -> deepest) so the application funnel donut
@@ -86,7 +86,7 @@ const DEMO_EMPLOYER_CANDIDATES: Candidate[] = [
 export default async function EmployerDashboardPage() {
   const cookieStore = await cookies();
   const demoName = cookieStore.get("coopsetu_demo_name")?.value;
-  const user = await currentUser();
+  const user = { firstName: "Employer" };
 
   let overview: Overview | null = null;
   let jobs: JobRow[] = [];
@@ -125,7 +125,7 @@ export default async function EmployerDashboardPage() {
       <PageHeader
         title={`Welcome, ${employerDisplayName}`}
         description="Manage job postings, discover candidates with verified Skill Passports, and track cooperative hires."
-        action={<Button render={<Link href="/employer/jobs"><Plus className="size-4" /> Create New Job</Link>} />}
+        action={<Link className="contents" href="/employer/jobs"><Button   nativeButton={false}><Plus className="size-4" /> Create New Job</Button></Link>}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -161,7 +161,7 @@ export default async function EmployerDashboardPage() {
                     {candidate.match_score !== null && (
                       <Badge className="bg-success/10 text-success" variant="secondary">{candidate.match_score}% match</Badge>
                     )}
-                    <Button variant="outline" size="sm" render={<Link href="/employer/candidates">View</Link>} />
+                    <Link className="contents" href="/employer/candidates"><Button variant="outline" size="sm"   nativeButton={false}>View</Button></Link>
                   </div>
                 </div>
               ))
@@ -191,7 +191,7 @@ export default async function EmployerDashboardPage() {
               <p className="max-w-md text-sm text-muted-foreground">
                 Create your first posting to start receiving applications from verified trainees.
               </p>
-              <Button size="sm" render={<Link href="/employer/jobs"><Plus className="size-4" /> Create New Job</Link>} />
+              <Link className="contents" href="/employer/jobs"><Button size="sm"   nativeButton={false}><Plus className="size-4" /> Create New Job</Button></Link>
             </div>
           ) : (
             <Table>
@@ -217,7 +217,7 @@ export default async function EmployerDashboardPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" render={<Link href="/employer/jobs">Manage</Link>} />
+                      <Link className="contents" href="/employer/jobs"><Button variant="ghost" size="sm"   nativeButton={false}>Manage</Button></Link>
                     </TableCell>
                   </TableRow>
                 ))}

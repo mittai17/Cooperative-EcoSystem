@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
@@ -91,7 +91,7 @@ function stageTone(status: string): string {
   return "bg-primary/10 text-primary";
 }
 
-export default function EmployerApplicationsPage() {
+function ApplicationsPageContent() {
   const api = useApi();
   const searchParams = useSearchParams();
 
@@ -358,5 +358,13 @@ export default function EmployerApplicationsPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function ApplicationsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground text-sm">Loading applications...</div>}>
+      <ApplicationsPageContent />
+    </Suspense>
   );
 }

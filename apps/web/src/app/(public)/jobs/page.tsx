@@ -132,8 +132,8 @@ export default function JobsPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-row gap-2 sm:w-40 sm:flex-col">
-                  <Button className="flex-1 sm:flex-initial" render={<Link href={`/jobs/${job.id}`}>View Details</Link>} />
-                  <Button variant="outline" className="flex-1 sm:flex-initial" render={<Link href="/sign-up">Apply</Link>} />
+                  <Link className="contents" href={`/jobs/${job.id}`}><Button className="flex-1 sm:flex-initial"   nativeButton={false}>View Details</Button></Link>
+                  <Link className="contents" href="/sign-up"><Button variant="outline" className="flex-1 sm:flex-initial"   nativeButton={false}>Apply</Button></Link>
                 </div>
               </div>
             </Card>

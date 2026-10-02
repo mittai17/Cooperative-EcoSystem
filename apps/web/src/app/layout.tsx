@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, DM_Sans, IBM_Plex_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider } from '@clerk/nextjs';
+
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { PWAProvider } from "@/components/offline/pwa-provider";
 import "./globals.css";
@@ -37,19 +37,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: {
-          colorPrimary: "#E30B1C",
-          borderRadius: "0.75rem",
-          fontFamily: "var(--font-dm-sans), sans-serif",
-        },
-        elements: {
-          card: "border border-border shadow-lg",
-          formButtonPrimary: "bg-primary hover:bg-primary-hover text-primary-foreground",
-        },
-      }}
-    >
+    <>
       <html
         lang="en"
         suppressHydrationWarning
@@ -67,6 +55,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </ThemeProvider>
         </body>
       </html>
-    </ClerkProvider>
+    </>
   );
 }

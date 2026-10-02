@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Plus, Search, Filter, CheckCircle2, X, Archive, Eye } from "lucide-react";
@@ -33,7 +33,7 @@ interface ProgrammeSummaryItem {
   status: string;
 }
 
-export default function ProgrammesPage() {
+function ProgrammesPageContent() {
   const searchParams = useSearchParams();
   const createdNotice = searchParams.get("created");
 
@@ -85,7 +85,7 @@ export default function ProgrammesPage() {
         title="Programmes"
         description="Manage your training programmes, cohorts, curriculum, and batch enrolment."
         action={
-          <Button render={<Link href="/institution/programmes/create"><Plus className="mr-1.5 size-4" /> Create Programme</Link>} />
+          <Link className="contents" href="/institution/programmes/create"><Button   nativeButton={false}><Plus className="mr-1.5 size-4" /> Create Programme</Button></Link>
         }
       />
 
@@ -157,7 +157,7 @@ export default function ProgrammesPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="sm" render={<Link href="/programmes"><Eye className="size-3.5 mr-1" /> View</Link>} />
+                      <Link className="contents" href="/programmes"><Button variant="ghost" size="sm"   nativeButton={false}><Eye className="size-3.5 mr-1" /> View</Button></Link>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -184,5 +184,13 @@ export default function ProgrammesPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ProgrammesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground text-sm">Loading programmes...</div>}>
+      <ProgrammesPageContent />
+    </Suspense>
   );
 }

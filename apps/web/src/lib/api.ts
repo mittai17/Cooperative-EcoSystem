@@ -1,10 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export async function fetchWithAuth(path: string, options: RequestInit = {}) {
-  const { getToken } = await auth();
-  const token = await getToken();
+  const token = "mock_token";
   
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,

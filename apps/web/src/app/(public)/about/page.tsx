@@ -114,8 +114,8 @@ export default function AboutPage() {
             Training (NCCT).
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button render={<Link href="/sign-up">Join as a Trainee</Link>} />
-            <Button variant="outline" render={<Link href="/programmes">Browse Programmes</Link>} />
+            <Link className="contents" href="/sign-up"><Button   nativeButton={false}>Join as a Trainee</Button></Link>
+            <Link className="contents" href="/programmes"><Button variant="outline"   nativeButton={false}>Browse Programmes</Button></Link>
           </div>
         </div>
       </section>
@@ -298,8 +298,8 @@ export default function AboutPage() {
             platform.
           </p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button size="lg" render={<Link href="/sign-up">Get started free <ArrowRight className="ml-1 size-4" /></Link>} />
-            <Button size="lg" variant="outline" render={<Link href="/verify-certificate/CST-2026-DAI-00842">Verify a certificate</Link>} />
+            <Link className="contents" href="/sign-up"><Button size="lg"   nativeButton={false}>Get started free <ArrowRight className="ml-1 size-4" /></Button></Link>
+            <Link className="contents" href="/verify-certificate/CST-2026-DAI-00842"><Button size="lg" variant="outline"   nativeButton={false}>Verify a certificate</Button></Link>
           </div>
           <Separator className="my-8" />
           <div className="flex flex-col items-center gap-1">

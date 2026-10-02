@@ -50,8 +50,8 @@ export function PublicNav() {
         <div className="hidden items-center gap-2 md:flex">
           <LanguageSelector />
           <ThemeToggle />
-          <Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10" render={<Link href="/demo">⚡ Demo Hub</Link>} />
-          <Button render={<Link href="/sign-in">Sign In</Link>} />
+          <Link className="contents" href="/demo"><Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10"   nativeButton={false}>⚡ Demo Hub</Button></Link>
+          <Link className="contents" href="/sign-in"><Button   nativeButton={false}>Sign In</Button></Link>
         </div>
 
         <div className="flex items-center gap-1 md:hidden">
@@ -86,23 +86,16 @@ export function PublicNav() {
               <LanguageSelector />
             </div>
             <div className="mt-1 flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                render={
-                  <Link href="/sign-in" onClick={() => setOpen(false)}>
-                    Sign In
-                  </Link>
-                }
-              />
-              <Button
-                className="flex-1"
-                render={
-                  <Link href="/sign-up" onClick={() => setOpen(false)}>
-                    Get Started
-                  </Link>
-                }
-              />
+              <Link className="contents" href="/sign-in" onClick={() => setOpen(false)}>
+                <Button variant="outline" className="flex-1" nativeButton={false}>
+                  Sign In
+                </Button>
+              </Link>
+              <Link className="contents" href="/sign-up" onClick={() => setOpen(false)}>
+                <Button className="flex-1" nativeButton={false}>
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </nav>
         </div>

@@ -1,32 +1,15 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/login(.*)',
-  '/register(.*)',
-  '/about',
-  '/programmes(.*)',
-  '/courses(.*)',
-  '/jobs(.*)',
-  '/verify-certificate(.*)',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/demo(.*)',
-  '/api/v1/certificates/(.*)/verify',
-  '/kiosk(.*)',
-]);
-
-export default clerkMiddleware(async (auth, req) => {
-  // If demo role cookie is set, allow access to all routes without auth.protect()
+export default function middleware(req: NextRequest) {
+  // If demo role cookie is set, allow access to all routes
   const demoRole = req.cookies.get('coopsetu_demo_role')?.value;
   if (demoRole) {
-    return;
+    return NextResponse.next();
   }
 
-  if (!isPublicRoute(req)) {
-    await auth.protect();
-  }
-});
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

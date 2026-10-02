@@ -4,8 +4,8 @@ export default function InstitutionLayout({ children }: { children: React.ReactN
   return (
     <AppShell
       role="institution"
-      userName="Institute of Rural Management"
-      userSubtitle="admin@irma.coopsetu.ai"
+      userName="VAMNICOM, Pune"
+      userSubtitle="Institution Admin"
     >
       {children}
     </AppShell>

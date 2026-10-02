@@ -1182,15 +1182,15 @@ export default function KioskAttendancePage() {
                   <QrCode className="size-3.5" />
                   CoopSetu AI &middot; {kioskDevice.appVersion} &middot; {kioskDevice.firmwareVersion}
                 </span>
-                <Button
+                  <Link href="/kiosk/status" className="contents"><Button
                   variant="outline"
                   size="sm"
                   className="min-h-12"
-                  render={<Link href="/kiosk/status" />}
+                  nativeButton={false}
                 >
                   <Settings2 className="mr-1.5 size-3.5" />
                   Device status &amp; sync
-                </Button>
+                </Button></Link>
               </div>
             </aside>
           </div>

@@ -1,4 +1,4 @@
-import { SignIn } from "@clerk/nextjs";
+
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -26,41 +26,6 @@ export default function SignInPage() {
           {/* Left Column: 1-Click Demo Login */}
           <div className="lg:col-span-7 flex flex-col gap-4">
             <DemoLoginCard />
-          </div>
-
-          {/* Right Column: Clerk Sign-In */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center">
-            <div className="w-full max-w-md">
-              <div className="mb-3 text-center sm:text-left">
-                <h3 className="font-heading text-sm font-bold text-foreground">
-                  Or Sign In via Clerk Credentials
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  For registered organization emails and custom authentication
-                </p>
-              </div>
-
-              <div className="flex justify-center">
-                <SignIn
-                  routing="path"
-                  path="/sign-in"
-                  signUpUrl="/sign-up"
-                  fallbackRedirectUrl="/dashboard"
-                  appearance={{
-                    variables: {
-                      colorPrimary: "#E30B1C",
-                      borderRadius: "0.75rem",
-                      fontFamily: "var(--font-dm-sans), sans-serif",
-                    },
-                    elements: {
-                      card: "border border-border shadow-md w-full bg-card",
-                      formButtonPrimary:
-                        "bg-primary hover:bg-primary-hover text-primary-foreground",
-                    },
-                  }}
-                />
-              </div>
-            </div>
           </div>
         </div>
       </div>

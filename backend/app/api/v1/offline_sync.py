@@ -1,6 +1,6 @@
 """Authenticated offline outbox receipts with server checked action semantics."""
 from datetime import datetime, timezone
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException

@@ -1,762 +1,705 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
-  BedDouble,
   Building2,
-  CircleAlert,
-  DoorOpen,
-  Hammer,
-  Home,
-  Inbox,
-  LogOut,
-  RefreshCw,
-  UserPlus,
-  Users,
+  Plus,
+  BedDouble,
+  Download,
+  Calendar,
+  ChevronRight,
+  CheckCircle2,
+  Clock,
   Wrench,
+  Search,
+  Filter,
 } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/page-header";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { hostelService } from "@/lib/hostel/hostel-service";
+import { HostelKpiRow } from "@/components/hostel/hostel-kpi-row";
+import { AllocateRoomModal } from "@/components/hostel/allocate-room-modal";
+import { RequestReviewModal } from "@/components/hostel/request-review-modal";
+import { AddHostelModal } from "@/components/hostel/add-hostel-modal";
+import { RoomDetailModal } from "@/components/hostel/room-detail-modal";
+import { exportToCSV } from "@/components/hostel/export-utils";
+import type { HostelRequest, Room } from "@/lib/hostel/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export default function InstitutionHostelOverview() {
+  const [stats, setStats] = useState(hostelService.getStats());
+  const [requests, setRequests] = useState(hostelService.getRequests());
+  const [checkRecords, setCheckRecords] = useState(hostelService.getCheckRecords());
+  const [maintenance, setMaintenance] = useState(hostelService.getMaintenanceIssues());
 
-type LoadState = "loading" | "ready" | "error";
-type RoomStatus = "Occupied" | "Vacant" | "Maintenance";
-type StatusFilter = RoomStatus | "All";
+  // Modals state
+  const [allocateOpen, setAllocateOpen] = useState(false);
+  const [selectedTraineeForAllocation, setSelectedTraineeForAllocation] = useState<string | undefined>(undefined);
+  const [addHostelOpen, setAddHostelOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<HostelRequest | null>(null);
+  const [roomModalOpen, setRoomModalOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
-interface HostelRoom {
-  id: string;
-  code: string;
-  blockId: string;
-  floor: number;
-  capacity: number;
-  status: RoomStatus;
-  occupant: string | null;
-  occupantProgramme: string | null;
-  checkIn: string | null;
-  checkOut: string | null;
-  note: string | null;
-}
+  // Check-in tabs
+  const [checkTab, setCheckTab] = useState<"checkin" | "checkout" | "upcoming" | "overdue">("checkin");
 
-interface HostelBlock {
-  id: string;
-  name: string;
-  kind: "Boys" | "Girls";
-  floors: number[];
-}
-
-interface WaitlistEntry {
-  id: string;
-  name: string;
-  programme: string;
-  appliedOn: string;
-  daysWaiting: number;
-  preference: string;
-}
-
-interface HostelData {
-  blocks: HostelBlock[];
-  rooms: HostelRoom[];
-  waitlist: WaitlistEntry[];
-}
-
-const STATUS_FILTERS: StatusFilter[] = ["All", "Occupied", "Vacant", "Maintenance"];
-
-const STATUS_TONE: Record<RoomStatus, string> = {
-  Occupied: "bg-success/10 text-success",
-  Vacant: "bg-primary/10 text-primary",
-  Maintenance: "bg-warning/10 text-warning",
-};
-
-const DOT_TONE: Record<RoomStatus, string> = {
-  Occupied: "bg-success",
-  Vacant: "bg-primary",
-  Maintenance: "bg-warning",
-};
-
-const TILE_TONE: Record<RoomStatus, string> = {
-  Occupied: "border-success/30 bg-success/5 hover:bg-success/10",
-  Vacant: "border-border bg-card hover:bg-muted/60",
-  Maintenance: "border-warning/40 bg-warning/5 hover:bg-warning/10",
-};
-
-interface VacatedRecord {
-  roomCode: string;
-  occupant: string;
-  programme: string;
-  vacatedOn: string;
-}
-
-async function loadHostel(): Promise<HostelData> {
-  const res = await fetch(`${API_BASE}/api/v1/hostel/`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`API Error: ${res.status}`);
-  return res.json();
-}
-
-async function postAction(path: string, body?: unknown): Promise<HostelRoom> {
-  const res = await fetch(`${API_BASE}/api/v1/hostel${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const json = await res.json().catch(() => ({ detail: "Request failed" })) as { detail?: string };
-    throw new Error(json.detail ?? `API Error: ${res.status}`);
-  }
-  return res.json();
-}
-
-function formatDate(value: string | null): string {
-  if (!value) return "—";
-  return new Date(`${value}T00:00:00Z`).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-export default function HostelPage() {
-  const [blocks, setBlocks] = useState<HostelBlock[]>([]);
-  const [rooms, setRooms] = useState<HostelRoom[]>([]);
-  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
-  const [vacated, setVacated] = useState<VacatedRecord[]>([]);
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
-  const [openRoomId, setOpenRoomId] = useState<string | null>(null);
-  const [allocationChoice, setAllocationChoice] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [actionPending, setActionPending] = useState(false);
-
-  const openRoom = rooms.find((room) => room.id === openRoomId) ?? null;
-  const vacantRooms = rooms.filter((room) => room.status === "Vacant");
-
-  async function refresh() {
-    setLoadState("loading");
-    try {
-      const next = await loadHostel();
-      setBlocks(next.blocks);
-      setRooms(next.rooms);
-      setWaitlist(next.waitlist);
-      setLoadState("ready");
-    } catch {
-      setLoadState("error");
-    }
-  }
-
+  // Subscribe to central reactive updates
   useEffect(() => {
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const unsub = hostelService.subscribe(() => {
+      setStats(hostelService.getStats());
+      setRequests([...hostelService.getRequests()]);
+      setCheckRecords([...hostelService.getCheckRecords()]);
+      setMaintenance([...hostelService.getMaintenanceIssues()]);
+    });
+    return unsub;
   }, []);
 
-  const stats = useMemo(
-    () => ({
-      total: rooms.length,
-      occupied: rooms.filter((room) => room.status === "Occupied").length,
-      vacant: rooms.filter((room) => room.status === "Vacant").length,
-      maintenance: rooms.filter((room) => room.status === "Maintenance").length,
-    }),
-    [rooms],
-  );
-
-  const counts: Record<StatusFilter, number> = {
-    All: stats.total,
-    Occupied: stats.occupied,
-    Vacant: stats.vacant,
-    Maintenance: stats.maintenance,
+  const handleOpenReview = (req: HostelRequest) => {
+    setSelectedRequest(req);
+    setReviewModalOpen(true);
   };
 
-  const allocationRows = useMemo(
-    () =>
-      rooms
-        .filter((room) => room.status === "Occupied" && room.occupant && room.checkIn && room.checkOut)
-        .sort((a, b) => a.code.localeCompare(b.code)),
-    [rooms],
-  );
-
-  const blockName = (blockId: string) =>
-    blocks.find((block) => block.id === blockId)?.name ?? `Block ${blockId}`;
-
-  function resetNotice() {
-    setNotice(null);
-    setOpenRoomId(null);
-    setAllocationChoice(null);
-  }
-
-  async function checkOut(room: HostelRoom) {
-    const occupant = room.occupant;
-    if (!occupant) return;
-    setActionPending(true);
-    try {
-      const updated = await postAction(`/rooms/${room.id}/check-out`);
-      setRooms((prev) => prev.map((item) => (item.id === room.id ? updated : item)));
-      setVacated((prev) => [
-        {
-          roomCode: room.code,
-          occupant,
-          programme: room.occupantProgramme ?? "Programme not on record",
-          vacatedOn: new Date().toISOString().slice(0, 10),
-        },
-        ...prev,
-      ]);
-      setNotice(`${occupant} checked out of ${room.code}. The bed is now vacant.`);
-      setOpenRoomId(null);
-    } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Could not check out this room.");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function markMaintenance(room: HostelRoom) {
-    setActionPending(true);
-    try {
-      const updated = await postAction(`/rooms/${room.id}/maintenance`);
-      setRooms((prev) => prev.map((item) => (item.id === room.id ? updated : item)));
-      setNotice(
-        room.occupant
-          ? `${room.code} moved to maintenance and ${room.occupant} was moved to the waitlist.`
-          : `${room.code} moved to maintenance.`,
-      );
-      if (room.occupant) {
-        const next = await loadHostel();
-        setWaitlist(next.waitlist);
-      }
-      setOpenRoomId(null);
-    } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Could not update this room.");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function returnToService(room: HostelRoom) {
-    setActionPending(true);
-    try {
-      const updated = await postAction(`/rooms/${room.id}/return-to-service`);
-      setRooms((prev) => prev.map((item) => (item.id === room.id ? updated : item)));
-      setNotice(`${room.code} returned to service and is available for allocation.`);
-      setOpenRoomId(null);
-    } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Could not update this room.");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function allocate(waitlistId: string, roomId: string) {
-    const person = waitlist.find((entry) => entry.id === waitlistId);
-    const room = rooms.find((item) => item.id === roomId);
-    if (!person || !room || room.status !== "Vacant") return;
-    setActionPending(true);
-    try {
-      const updated = await postAction("/allocate", { waitlist_id: waitlistId, room_id: roomId });
-      setRooms((prev) => prev.map((item) => (item.id === roomId ? updated : item)));
-      setWaitlist((prev) => prev.filter((entry) => entry.id !== waitlistId));
-      setNotice(`${person.name} allocated to ${room.code} until ${formatDate(updated.checkOut)}.`);
-      setOpenRoomId(null);
-      setAllocationChoice(null);
-    } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Could not allocate this room.");
-    } finally {
-      setActionPending(false);
-    }
-  }
+  const handleExportData = () => {
+    exportToCSV(
+      requests.slice(0, 50).map((r) => ({
+        "Request ID": r.requestId,
+        "Trainee": r.traineeName,
+        "Code": r.traineeCode,
+        "Programme": r.programme,
+        "Batch": r.batch,
+        "Hostel": r.requestedHostel,
+        "Room Type": r.roomPreference,
+        "Status": r.status,
+        "Submitted": r.submittedDate,
+      })),
+      "hostel_requests_overview"
+    );
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Hostel Management"
-        description="Occupancy, room condition and the accommodation waitlist for the residential campus."
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="demo-data-tag">Live dataset · {stats.total} rooms</span>
-            <Button
-              variant="outline"
-              onClick={refresh}
-              disabled={loadState === "loading"}
-              aria-label="Refresh hostel occupancy"
-            >
-              <RefreshCw className={loadState === "loading" ? "size-4 animate-spin" : "size-4"} />
-            </Button>
+    <div className="space-y-6 pb-12">
+      {/* 1. BREADCRUMB & HEADER */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 font-medium">
+            <span>Home</span>
+            <ChevronRight className="size-3" />
+            <Link href="/institution/hostel" className="hover:text-primary">
+              Hostel Management
+            </Link>
+            <ChevronRight className="size-3" />
+            <span className="text-foreground font-semibold">Overview</span>
           </div>
-        }
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-heading">
+            Hostel Management
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Manage hostel facilities, rooms, bed allocation and trainee accommodation.
+          </p>
+        </div>
+
+        {/* TOP ACTIONS */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setAddHostelOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-white font-semibold text-xs shadow-2xs"
+          >
+            <Plus className="size-3.5 mr-1" /> Add Hostel
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAddHostelOpen(true)}
+            className="text-xs font-semibold text-primary border-primary/30 hover:bg-rose-50"
+          >
+            <Plus className="size-3.5 mr-1" /> Add Block
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSelectedTraineeForAllocation(undefined);
+              setAllocateOpen(true);
+            }}
+            className="text-xs font-semibold"
+          >
+            <BedDouble className="size-3.5 mr-1 text-primary" /> Allocate Room
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleExportData}
+            className="text-xs font-medium"
+          >
+            <Download className="size-3.5 mr-1" /> Export
+          </Button>
+
+          <Badge variant="outline" className="h-8 gap-1.5 px-2.5 text-xs font-semibold bg-card">
+            <Calendar className="size-3.5 text-primary" /> 12 Oct 2026
+          </Badge>
+        </div>
+      </div>
+
+      {/* 2. TOP 8 KPI CARDS */}
+      <HostelKpiRow
+        stats={stats}
+        onKpiClick={(key) => {
+          if (key === "pending-requests") {
+            const firstPending = requests.find((r) => r.status === "Pending");
+            if (firstPending) handleOpenReview(firstPending);
+          } else if (key === "available-beds" || key === "occupied-beds") {
+            setAllocateOpen(true);
+          }
+        }}
       />
 
-      {notice && (
-        <div className="flex flex-col items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-2">
-            <BedDouble className="mt-0.5 size-4 shrink-0 text-primary" />
-            <p className="text-sm text-foreground">{notice}</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setNotice(null)}>
-            Dismiss
-          </Button>
-        </div>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Total rooms"
-          value={String(stats.total)}
-          icon={Building2}
-          trend={`${blocks.length} blocks on campus`}
-          trendTone="neutral"
-        />
-        <StatCard
-          label="Occupied"
-          value={String(stats.occupied)}
-          icon={Users}
-          trend={`${Math.round((stats.occupied / Math.max(stats.total, 1)) * 100)}% of inventory`}
-          trendTone="neutral"
-        />
-        <StatCard
-          label="Vacant"
-          value={String(stats.vacant)}
-          icon={DoorOpen}
-          trend={`${waitlist.length} on the waitlist`}
-          trendTone={stats.vacant === 0 ? "down" : "up"}
-        />
-        <StatCard
-          label="Maintenance"
-          value={String(stats.maintenance)}
-          icon={Wrench}
-          trend={stats.maintenance > 0 ? "Beds blocked from allocation" : "No blocked beds"}
-          trendTone={stats.maintenance > 0 ? "down" : "up"}
-        />
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          {STATUS_FILTERS.map((item) => (
-            <Button
-              key={item}
-              variant={statusFilter === item ? "secondary" : "outline"}
-              size="sm"
-              aria-pressed={statusFilter === item}
-              onClick={() => setStatusFilter(item)}
-            >
-              {item}
-              <span className="ml-1.5 font-mono text-xs">{counts[item]}</span>
-            </Button>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-foreground/70">
-          {(["Occupied", "Vacant", "Maintenance"] as RoomStatus[]).map((item) => (
-            <span key={item} className="flex items-center gap-1.5">
-              <span className={cn("size-2 rounded-full", DOT_TONE[item])} aria-hidden="true" />
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {loadState === "error" ? (
-        <div className="flex flex-col items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
-          <div className="flex items-start gap-2">
-            <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
-            <div>
-              <p className="text-sm font-medium text-foreground">Could not load hostel inventory</p>
-              <p className="mt-1 text-sm text-foreground/70">
-                Room data did not resolve. Check your connection and try again.
-              </p>
+      {/* 3. MIDDLE SECTION: 3 PANELS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* A. Occupancy by Block (4 cols) */}
+        <div className="lg:col-span-4 rounded-xl border bg-card p-4.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b">
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                <Building2 className="size-4 text-primary" />
+                Occupancy by Block
+              </h3>
+              <Link href="/institution/hostel/blocks" className="text-xs text-primary font-semibold hover:underline">
+                View All
+              </Link>
             </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={refresh}>
-            Try again
-          </Button>
-        </div>
-      ) : loadState === "loading" ? (
-        <Card>
-          <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {Array.from({ length: 12 }, (_, index) => (
-              <Skeleton key={index} className="h-16 rounded-lg" />
-            ))}
-          </CardContent>
-        </Card>
-      ) : blocks.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-            <span className="icon-tile-red size-10">
-              <Home className="size-5" />
-            </span>
-            <div>
-              <p className="text-sm font-medium text-foreground">No hostel blocks on record</p>
-              <p className="mx-auto mt-1 max-w-sm text-sm text-foreground/70">
-                Nothing has been set up for this campus yet.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 xl:grid-cols-2">
-          {blocks.map((block) => {
-            const blockRooms = rooms.filter((room) => room.blockId === block.id);
-            const occupied = blockRooms.filter((room) => room.status === "Occupied").length;
-            return (
-              <Card key={block.id}>
-                <CardHeader className="border-b">
-                  <CardTitle className="font-heading text-base">{block.name}</CardTitle>
-                  <CardDescription>
-                    {block.kind} block · {occupied} of {blockRooms.length} rooms occupied
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-5">
-                  {block.floors.map((floor) => {
-                    const floorRooms = blockRooms.filter(
-                      (room) => room.floor === floor && (statusFilter === "All" || room.status === statusFilter),
-                    );
-                    return (
-                      <div key={floor}>
-                        <p className="mb-2 text-sm font-medium text-foreground">Floor {floor}</p>
-                        {floorRooms.length === 0 ? (
-                          <p className="rounded-lg border border-dashed border-border p-4 text-center text-sm text-foreground/60">
-                            No {statusFilter.toLowerCase()} rooms on floor {floor}.
-                          </p>
-                        ) : (
-                          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-3">
-                            {floorRooms.map((room) => (
-                              <RoomTile
-                                key={room.id}
-                                room={room}
-                                onOpen={() => {
-                                  setAllocationChoice(null);
-                                  setOpenRoomId(room.id);
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="font-heading text-base">Current allocations</CardTitle>
-            <CardDescription>
-              Derived from live room state. Vacated beds drop out of this table as occupants check
-              out.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            {allocationRows.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-10 text-center">
-                <span className="icon-tile-red size-10">
-                  <Inbox className="size-5" />
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">No active allocations</p>
-                  <p className="mx-auto mt-1 max-w-sm text-sm text-foreground/70">
-                    Every bed is either vacant or blocked for maintenance. Allocate from the waitlist
-                    to create a record.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-lg border border-border">
-                <Table className="min-w-[760px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Trainee</TableHead>
-                      <TableHead>Room</TableHead>
-                      <TableHead>Block</TableHead>
-                      <TableHead>Check-in</TableHead>
-                      <TableHead>Check-out</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allocationRows.map((room) => (
-                      <TableRow key={room.id}>
-                        <TableCell>
-                          <p className="font-medium text-foreground">{room.occupant}</p>
-                          <p className="max-w-[240px] truncate text-xs text-foreground/60">
-                            {room.occupantProgramme}
-                          </p>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs font-semibold text-foreground">
-                          {room.code}
-                        </TableCell>
-                        <TableCell className="text-sm text-foreground">
-                          {blockName(room.blockId).replace(" Hostel", "")}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">{formatDate(room.checkIn)}</TableCell>
-                        <TableCell className="font-mono text-xs">{formatDate(room.checkOut)}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={STATUS_TONE.Occupied}>
-                            Checked in
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-
-            {vacated.length > 0 && (
-              <div className="border-t border-border pt-4">
-                <p className="mb-2 text-sm font-medium text-foreground">Vacated this session</p>
-                <ul className="flex flex-col gap-2">
-                  {vacated.map((record) => (
-                    <li
-                      key={`${record.roomCode}-${record.vacatedOn}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3 text-sm"
-                    >
-                      <span className="font-medium text-foreground">{record.occupant}</span>
-                      <span className="text-foreground/70">{record.programme}</span>
-                      <span className="font-mono text-xs text-foreground/60">
-                        {record.roomCode} · out {formatDate(record.vacatedOn)}
+            <div className="space-y-4 pt-3.5">
+              {stats.blockOccupancy.map((block) => (
+                <div key={block.name} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">{block.name}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-muted-foreground text-[11px]">
+                        {block.occupied} / {block.total}
                       </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      <span className="font-bold text-emerald-600 text-xs w-8 text-right">
+                        {block.percent}%
+                      </span>
+                    </div>
+                  </div>
+                  <Progress value={block.percent} className="h-2 bg-muted/60" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="pt-3 border-t mt-4 text-[11px] text-muted-foreground flex justify-between">
+            <span>Average Block Utilization</span>
+            <span className="font-bold text-foreground">73.6%</span>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-heading text-base">Accommodation waitlist</CardTitle>
-            <CardDescription>
-              {waitlist.length} trainee{waitlist.length === 1 ? "" : "s"} waiting for a bed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {waitlist.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-4 py-10 text-center">
-                <span className="icon-tile-red size-10">
-                  <Home className="size-5" />
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Waitlist is clear</p>
-                  <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/70">
-                    Every trainee seeking accommodation has a bed. New requests from the admission
-                    desk will land here.
-                  </p>
+        {/* B. Hostel-wise Occupancy Donut (5 cols) */}
+        <div className="lg:col-span-5 rounded-xl border bg-card p-4.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b">
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                <BedDouble className="size-4 text-primary" />
+                Hostel-wise Occupancy
+              </h3>
+              <Link href="/institution/hostel/occupancy" className="text-xs text-primary font-semibold hover:underline">
+                View Details
+              </Link>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-6 pt-3">
+              {/* Donut Chart Visual */}
+              <div className="relative size-32 shrink-0 flex items-center justify-center">
+                <svg className="size-full -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-muted/30"
+                    strokeWidth="3.8"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className="text-red-500"
+                    strokeDasharray="74, 100"
+                    strokeWidth="3.8"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="text-xl font-extrabold text-foreground font-heading">
+                    {stats.overallOccupancyRate}%
+                  </span>
+                  <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">
+                    Overall
+                  </span>
                 </div>
               </div>
-            ) : (
-              <>
-                <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm text-foreground/70">
-                  {vacantRooms.length === 0
-                    ? "No bed is currently available — clear a room or close a maintenance ticket to allocate."
-                    : `${vacantRooms.length} bed${vacantRooms.length === 1 ? " is" : "s are"} available.`}
-                </p>
-                {waitlist.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">{entry.name}</p>
-                      <p className="truncate text-xs text-foreground/60">{entry.programme}</p>
-                      <p className="mt-1 font-mono text-xs text-foreground/60">
-                        waiting {entry.daysWaiting}d · {entry.preference}
-                      </p>
+
+              {/* Breakdown Legend */}
+              <div className="space-y-2 flex-1 w-full text-xs">
+                {stats.hostelOccupancy.map((h) => (
+                  <div key={h.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: h.color }} />
+                      <span className="text-foreground truncate max-w-[130px] font-medium">{h.name}</span>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground text-[11px]">
+                        {h.occupied} / {h.total}
+                      </span>
+                      <span className="font-bold text-foreground text-xs w-7 text-right">{h.percent}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-3 border-t mt-4 text-[11px] text-muted-foreground flex justify-between">
+            <span>Operational Capacity</span>
+            <span className="font-bold text-foreground">640 Total Beds Available</span>
+          </div>
+        </div>
+
+        {/* C. Room Status breakdown (3 cols) */}
+        <div className="lg:col-span-3 rounded-xl border bg-card p-4.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b">
+              <h3 className="font-bold text-sm text-foreground">Room Status</h3>
+              <Link href="/institution/hostel/rooms" className="text-xs text-primary font-semibold hover:underline">
+                View All
+              </Link>
+            </div>
+
+            <div className="space-y-3 pt-3">
+              <div className="p-2.5 rounded-lg border bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-emerald-800 dark:text-emerald-300 text-xs">Available</div>
+                  <div className="text-[11px] text-emerald-700/80">142 rooms</div>
+                </div>
+                <span className="text-base font-extrabold text-emerald-700">28%</span>
+              </div>
+
+              <div className="p-2.5 rounded-lg border bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-amber-800 dark:text-amber-300 text-xs">Partially Occupied</div>
+                  <div className="text-[11px] text-amber-700/80">86 rooms</div>
+                </div>
+                <span className="text-base font-extrabold text-amber-700">34%</span>
+              </div>
+
+              <div className="p-2.5 rounded-lg border bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-rose-800 dark:text-rose-300 text-xs">Full</div>
+                  <div className="text-[11px] text-rose-700/80">74 rooms</div>
+                </div>
+                <span className="text-base font-extrabold text-rose-700">38%</span>
+              </div>
+
+              <div className="p-2.5 rounded-lg border bg-purple-50/50 dark:bg-purple-950/20 border-purple-100 flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-purple-800 dark:text-purple-300 text-xs">Maintenance</div>
+                  <div className="text-[11px] text-purple-700/80">8 rooms</div>
+                </div>
+                <span className="text-base font-extrabold text-purple-700">4%</span>
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t mt-4 text-[11px] text-muted-foreground flex justify-between">
+            <span>Total Units</span>
+            <span className="font-bold text-foreground">310 Tracked Rooms</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. RECENT HOSTEL REQUESTS TABLE */}
+      <div className="rounded-xl border bg-card shadow-2xs overflow-hidden">
+        <div className="p-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="font-bold text-base text-foreground font-heading">Recent Hostel Requests</h3>
+            <p className="text-xs text-muted-foreground">Trainee accommodation applications pending administrative review</p>
+          </div>
+          <Link
+            href="/institution/hostel/requests"
+            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            View All Requests ({requests.length}) &rarr;
+          </Link>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-muted/30 border-b text-muted-foreground font-semibold">
+              <tr>
+                <th className="py-3 px-4">Request ID</th>
+                <th className="py-3 px-4">Trainee</th>
+                <th className="py-3 px-4">Programme</th>
+                <th className="py-3 px-4">Batch</th>
+                <th className="py-3 px-4">Gender</th>
+                <th className="py-3 px-4">Requested From</th>
+                <th className="py-3 px-4">Requested To</th>
+                <th className="py-3 px-4">Preference</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Submitted</th>
+                <th className="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {requests.slice(0, 6).map((req) => (
+                <tr key={req.id} className="hover:bg-muted/20 transition-colors">
+                  <td className="py-3 px-4 font-mono font-bold text-primary">{req.requestId}</td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <span className="size-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
+                        {req.traineeName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </span>
+                      <span className="font-medium text-foreground">{req.traineeName}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-muted-foreground max-w-[140px] truncate">{req.programme}</td>
+                  <td className="py-3 px-4 font-semibold">{req.batch}</td>
+                  <td className="py-3 px-4 text-muted-foreground">{req.gender}</td>
+                  <td className="py-3 px-4 text-muted-foreground">{req.trainingStart}</td>
+                  <td className="py-3 px-4 text-muted-foreground">{req.trainingEnd}</td>
+                  <td className="py-3 px-4 text-muted-foreground">{req.requestedHostel}</td>
+                  <td className="py-3 px-4">
+                    <Badge
+                      variant="outline"
+                      className={
+                        req.status === "Approved"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : req.status === "Pending"
+                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                          : req.status === "Under Review"
+                          ? "bg-orange-50 text-orange-700 border-orange-200"
+                          : req.status === "Waitlisted"
+                          ? "bg-purple-50 text-purple-700 border-purple-200"
+                          : req.status === "Allocated"
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : "bg-muted text-muted-foreground"
+                      }
+                    >
+                      {req.status}
+                    </Badge>
+                  </td>
+                  <td className="py-3 px-4 text-muted-foreground">{req.submittedDate}</td>
+                  <td className="py-3 px-4 text-right">
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={vacantRooms.length === 0 || actionPending}
-                      onClick={() => {
-                        const target = vacantRooms[0];
-                        if (target) allocate(entry.id, target.id);
-                      }}
+                      onClick={() => handleOpenReview(req)}
+                      className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-rose-50"
                     >
-                      <UserPlus className="mr-1.5 size-3.5" />
-                      Allocate
+                      {req.status === "Pending" ? "Review" : "View"}
                     </Button>
-                  </div>
-                ))}
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <Dialog open={Boolean(openRoom)} onOpenChange={(open) => (open ? null : resetNotice())}>
-        <DialogContent className="sm:max-w-md">
-          {openRoom && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-2">
-                  <DialogTitle className="font-mono">{openRoom.code}</DialogTitle>
-                  <Badge variant="secondary" className={STATUS_TONE[openRoom.status]}>
-                    {openRoom.status}
+      {/* 5. BOTTOM SECTION: 3 CARDS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* A. Today's Check-ins / Check-outs (6 cols) */}
+        <div className="lg:col-span-6 rounded-xl border bg-card p-4.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b">
+              <h3 className="font-bold text-sm text-foreground">Today&apos;s Check-ins / Check-outs</h3>
+              <Link href="/institution/hostel/check-in-out" className="text-xs text-primary font-semibold hover:underline">
+                View All
+              </Link>
+            </div>
+
+            {/* Sub-tabs */}
+            <div className="flex items-center gap-1.5 pt-3 pb-2 text-xs overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setCheckTab("checkin")}
+                className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer ${
+                  checkTab === "checkin"
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Today&apos;s Check-ins ({stats.todayCheckIns})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCheckTab("checkout")}
+                className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer ${
+                  checkTab === "checkout"
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Today&apos;s Check-outs ({stats.todayCheckOuts})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCheckTab("upcoming")}
+                className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer ${
+                  checkTab === "upcoming"
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Upcoming (12)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCheckTab("overdue")}
+                className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer ${
+                  checkTab === "overdue"
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Overdue (5)
+              </button>
+            </div>
+
+            {/* Check Records Table */}
+            <div className="overflow-x-auto pt-1">
+              <table className="w-full text-xs text-left">
+                <thead className="border-b text-muted-foreground font-semibold">
+                  <tr>
+                    <th className="py-2.5 px-3">Time</th>
+                    <th className="py-2.5 px-3">Trainee</th>
+                    <th className="py-2.5 px-3">Batch</th>
+                    <th className="py-2.5 px-3">Room</th>
+                    <th className="py-2.5 px-3">Bed</th>
+                    <th className="py-2.5 px-3">ID Verified</th>
+                    <th className="py-2.5 px-3">Status</th>
+                    <th className="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {checkRecords.slice(0, 5).map((rec) => (
+                    <tr key={rec.id} className="hover:bg-muted/20">
+                      <td className="py-2.5 px-3 font-mono text-[11px] text-muted-foreground">{rec.time}</td>
+                      <td className="py-2.5 px-3 font-medium text-foreground">{rec.traineeName}</td>
+                      <td className="py-2.5 px-3 text-muted-foreground">{rec.batch}</td>
+                      <td className="py-2.5 px-3 font-bold">{rec.roomNumber}</td>
+                      <td className="py-2.5 px-3 font-mono">{rec.bedNumber}</td>
+                      <td className="py-2.5 px-3">
+                        {rec.idVerified ? (
+                          <CheckCircle2 className="size-4 text-emerald-600" />
+                        ) : (
+                          <span className="size-2 rounded-full bg-amber-500 inline-block" />
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <Badge
+                          variant="outline"
+                          className={
+                            rec.status === "Checked In"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]"
+                              : rec.status === "Late"
+                              ? "bg-rose-50 text-rose-700 border-rose-200 text-[10px]"
+                              : "bg-blue-50 text-blue-700 border-blue-200 text-[10px]"
+                          }
+                        >
+                          {rec.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const r = hostelService.getRoomByNumber(rec.roomNumber);
+                            if (r) {
+                              setSelectedRoom(r);
+                              setRoomModalOpen(true);
+                            }
+                          }}
+                          className="h-6 px-2 text-[11px] text-primary"
+                        >
+                          View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* B. Hostel Attendance (Today) (3 cols) */}
+        <div className="lg:col-span-3 rounded-xl border bg-card p-4.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b">
+              <h3 className="font-bold text-sm text-foreground">Hostel Attendance (Today)</h3>
+              <Link href="/institution/hostel/attendance" className="text-xs text-primary font-semibold hover:underline">
+                View Details
+              </Link>
+            </div>
+
+            <div className="flex flex-col items-center pt-3">
+              <div className="relative size-28 flex items-center justify-center">
+                <svg className="size-full -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-muted/30"
+                    strokeWidth="3.8"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className="text-emerald-500"
+                    strokeDasharray="91, 100"
+                    strokeWidth="3.8"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="text-lg font-extrabold text-foreground font-heading">
+                    {stats.attendanceSummary.presentRate}%
+                  </span>
+                  <span className="text-[9px] font-medium text-muted-foreground">Present</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 w-full pt-3 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-emerald-500" />
+                  <span className="text-muted-foreground">Present:</span>
+                  <span className="font-bold text-foreground ml-auto">{stats.attendanceSummary.presentRate}%</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-rose-500" />
+                  <span className="text-muted-foreground">Absent:</span>
+                  <span className="font-bold text-foreground ml-auto">{stats.attendanceSummary.absentRate}%</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-amber-500" />
+                  <span className="text-muted-foreground">On Leave:</span>
+                  <span className="font-bold text-foreground ml-auto">{stats.attendanceSummary.onLeaveRate}%</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-blue-500" />
+                  <span className="text-muted-foreground">Out Permission:</span>
+                  <span className="font-bold text-foreground ml-auto">{stats.attendanceSummary.outPermissionRate}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-1 pt-3 border-t mt-3 text-center text-[10px]">
+            <div className="bg-muted/30 p-1.5 rounded">
+              <span className="text-muted-foreground block">Total</span>
+              <span className="font-bold text-foreground">{stats.attendanceSummary.totalResidents}</span>
+            </div>
+            <div className="bg-emerald-50 text-emerald-800 p-1.5 rounded">
+              <span className="block">Present</span>
+              <span className="font-bold">{stats.attendanceSummary.presentCount}</span>
+            </div>
+            <div className="bg-rose-50 text-rose-800 p-1.5 rounded">
+              <span className="block">Absent</span>
+              <span className="font-bold">{stats.attendanceSummary.absentCount}</span>
+            </div>
+            <div className="bg-amber-50 text-amber-800 p-1.5 rounded">
+              <span className="block">Leave</span>
+              <span className="font-bold">{stats.attendanceSummary.onLeaveCount}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* C. Recent Maintenance Issues (3 cols) */}
+        <div className="lg:col-span-3 rounded-xl border bg-card p-4.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b">
+              <h3 className="font-bold text-sm text-foreground">Recent Maintenance</h3>
+              <Link href="/institution/hostel/maintenance" className="text-xs text-primary font-semibold hover:underline">
+                View All
+              </Link>
+            </div>
+
+            <div className="divide-y text-xs pt-1">
+              {maintenance.slice(0, 5).map((m) => (
+                <div key={m.id} className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-bold text-primary text-[11px]">{m.issueId}</span>
+                      <span className="font-semibold text-foreground">&bull; {m.location}</span>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      {m.category} &bull; Priority: {m.priority}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      m.status === "Open"
+                        ? "bg-rose-50 text-rose-700 border-rose-200 text-[10px]"
+                        : m.status === "In Progress"
+                        ? "bg-amber-50 text-amber-700 border-amber-200 text-[10px]"
+                        : "bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]"
+                    }
+                  >
+                    {m.status}
                   </Badge>
                 </div>
-                <DialogDescription>
-                  {blockName(openRoom.blockId)} · Floor {openRoom.floor} · {openRoom.capacity} beds
-                </DialogDescription>
-              </DialogHeader>
+              ))}
+            </div>
+          </div>
 
-              <dl className="grid grid-cols-2 gap-3">
-                <Detail label="Occupant" value={openRoom.occupant ?? "No occupant"} />
-                <Detail label="Programme" value={openRoom.occupantProgramme ?? "—"} />
-                <Detail label="Check-in" value={formatDate(openRoom.checkIn)} mono />
-                <Detail label="Check-out" value={formatDate(openRoom.checkOut)} mono />
-                {openRoom.note && (
-                  <div className="col-span-2">
-                    <Detail label="Caretaker note" value={openRoom.note} />
-                  </div>
-                )}
-              </dl>
+          <div className="pt-3 border-t mt-2 flex justify-between text-xs text-muted-foreground">
+            <span>Open Tickets</span>
+            <span className="font-bold text-rose-600">8 Critical / High</span>
+          </div>
+        </div>
+      </div>
 
-              {openRoom.status === "Vacant" && waitlist.length > 0 && (
-                <div className="flex flex-col gap-2 border-t border-border pt-3">
-                  <p className="text-sm font-medium text-foreground">Allocate from the waitlist</p>
-                  <Select
-                    value={allocationChoice}
-                    onValueChange={(value) => setAllocationChoice(String(value))}
-                  >
-                    <SelectTrigger size="sm" className="w-full" aria-label="Waitlisted trainee">
-                      <SelectValue placeholder="Choose a trainee" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {waitlist.map((entry) => (
-                        <SelectItem key={entry.id} value={entry.id}>
-                          {entry.name} · waiting {entry.daysWaiting}d
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+      {/* MODALS */}
+      <AllocateRoomModal
+        open={allocateOpen}
+        onOpenChange={setAllocateOpen}
+        initialTraineeId={selectedTraineeForAllocation}
+      />
 
-              {openRoom.status === "Vacant" && waitlist.length === 0 && (
-                <p className="rounded-lg border border-dashed border-border p-3 text-sm text-foreground/70">
-                  No one is on the waitlist, so this bed can only be allocated by a walk-in request
-                  from the admission desk.
-                </p>
-              )}
+      <RequestReviewModal
+        request={selectedRequest}
+        open={reviewModalOpen}
+        onOpenChange={setReviewModalOpen}
+        onAllocateNow={(traineeId) => {
+          setSelectedTraineeForAllocation(traineeId);
+          setAllocateOpen(true);
+        }}
+      />
 
-              <DialogFooter className="flex-wrap">
-                {openRoom.status === "Occupied" && (
-                  <Button variant="destructive" disabled={actionPending} onClick={() => checkOut(openRoom)}>
-                    <LogOut className="mr-1.5 size-3.5" />
-                    Check out occupant
-                  </Button>
-                )}
-                {openRoom.status === "Maintenance" ? (
-                  <Button variant="outline" disabled={actionPending} onClick={() => returnToService(openRoom)}>
-                    <Hammer className="mr-1.5 size-3.5" />
-                    Return to service
-                  </Button>
-                ) : (
-                  <Button variant="outline" disabled={actionPending} onClick={() => markMaintenance(openRoom)}>
-                    <Wrench className="mr-1.5 size-3.5" />
-                    Mark maintenance
-                  </Button>
-                )}
-                <Button
-                  onClick={() => {
-                    if (allocationChoice) allocate(allocationChoice, openRoom.id);
-                  }}
-                  disabled={openRoom.status !== "Vacant" || !allocationChoice || actionPending}
-                >
-                  <UserPlus className="mr-1.5 size-3.5" />
-                  Allocate bed
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+      <AddHostelModal
+        open={addHostelOpen}
+        onOpenChange={setAddHostelOpen}
+      />
 
-function RoomTile({ room, onOpen }: { room: HostelRoom; onOpen: () => void }) {
-  const sub = room.status === "Occupied" ? (room.occupant ?? "Occupied") : (room.note ?? "Available");
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={`${room.code}, ${room.status}. ${sub}`}
-      className={cn(
-        "flex flex-col rounded-lg border p-3 text-left transition-colors",
-        TILE_TONE[room.status],
-      )}
-    >
-      <span className="flex items-center justify-between gap-2">
-        <span className="font-mono text-sm font-semibold text-foreground">{room.code}</span>
-        <span
-          className={cn("size-2 shrink-0 rounded-full", DOT_TONE[room.status])}
-          aria-hidden="true"
-        />
-      </span>
-      <span className="mt-1 font-mono text-[10px] tracking-wide text-foreground/60 uppercase">
-        {room.status}
-      </span>
-      <span className="mt-0.5 truncate text-xs text-foreground/80">{sub}</span>
-    </button>
-  );
-}
-
-function Detail({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div>
-      <dt className="text-xs text-foreground/60">{label}</dt>
-      <dd
-        className={cn(
-          "mt-0.5 text-sm text-foreground",
-          mono ? "font-mono text-xs font-medium" : "font-medium",
-        )}
-      >
-        {value}
-      </dd>
+      <RoomDetailModal
+        room={selectedRoom}
+        open={roomModalOpen}
+        onOpenChange={setRoomModalOpen}
+        onAllocateBed={() => {
+          setRoomModalOpen(false);
+          setAllocateOpen(true);
+        }}
+      />
     </div>
   );
 }

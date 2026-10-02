@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import {
   AlertTriangle,
@@ -212,7 +212,8 @@ function TableSkeleton() {
 }
 
 export default function InstitutionsPage() {
-  const { getToken, isLoaded } = useAuth();
+  const getToken = () => Promise.resolve("mock_token");
+  const isLoaded = true;
 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");

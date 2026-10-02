@@ -62,11 +62,11 @@ export default async function VerifyCertificatePage({
 
       <CertificateSearchForm initialId={id} />
       <div className="mx-auto mt-3 flex max-w-md justify-center">
-        <Button
+        <Link className="contents" href={`/verify-certificate/${sampleCertificateId}`}><Button
           variant="link"
           size="sm"
-          render={<Link href={`/verify-certificate/${sampleCertificateId}`}>Try the sample certificate</Link>}
-        />
+          
+         nativeButton={false}>Try the sample certificate</Button></Link>
       </div>
 
       <div className="mt-8">
@@ -147,11 +147,11 @@ export default async function VerifyCertificatePage({
                 Double-check the certificate ID printed on the document, or try the sample certificate
                 below.
               </p>
-              <Button
+              <Link className="contents" href={`/verify-certificate/${sampleCertificateId}`}><Button
                 variant="outline"
                 className="mt-2"
-                render={<Link href={`/verify-certificate/${sampleCertificateId}`}>View sample certificate</Link>}
-              />
+                
+               nativeButton={false}>View sample certificate</Button></Link>
             </CardContent>
           </Card>
         )}

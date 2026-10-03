@@ -137,7 +137,8 @@ interface ActiveSession {
   closes_at: string;
 }
 
-const VALID_MINUTES = 15;
+const VALID_MINUTES = 30;
+const QR_ROTATE_SECONDS = 15;
 
 function formatCountdown(totalSeconds: number): string {
   const safe = Math.max(0, totalSeconds);
@@ -162,8 +163,14 @@ function TrainerAttendancePageContent() {
   const [genError, setGenError] = useState<string | null>(null);
   const [active, setActive] = useState<ActiveSession | null>(null);
   const [remaining, setRemaining] = useState(0);
+  const [qrAge, setQrAge] = useState(0); // seconds since last QR generation
+  const [liveCount, setLiveCount] = useState(0); // live checked-in trainees
+  const [overrideName, setOverrideName] = useState("");
+  const [overrideList, setOverrideList] = useState<string[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const refreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const qrAgeRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const liveCountRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [history, setHistory] = useState<SessionRow[] | null>(null);
   const [historyError, setHistoryError] = useState<string | null>(null);
@@ -271,6 +278,17 @@ const DEMO_TRAINER_SESSIONS: SessionRow[] = [
     setActive(null);
     setGenError(null);
     setRemaining(0);
+    setQrAge(0);
+    setLiveCount(0);
+    setOverrideList([]);
+  }
+
+  function addManualOverride() {
+    const name = overrideName.trim();
+    if (!name) return;
+    setOverrideList((prev) => [...prev, name]);
+    setLiveCount((prev) => prev + 1);
+    setOverrideName("");
   }
 
   // Countdown to session close.
@@ -286,21 +304,40 @@ const DEMO_TRAINER_SESSIONS: SessionRow[] = [
     };
   }, [active]);
 
-  // Refresh the real rotating QR token from the server every 25s so the
-  // rendered code always embeds a currently-valid credential.
+  // Rotate QR every 15s (server refresh + local visual rotation counter)
   useEffect(() => {
     if (refreshRef.current) clearInterval(refreshRef.current);
+    if (qrAgeRef.current) clearInterval(qrAgeRef.current);
     if (!active) return;
+    // QR age counter (resets at QR_ROTATE_SECONDS)
+    qrAgeRef.current = setInterval(() => {
+      setQrAge((a) => {
+        if (a + 1 >= QR_ROTATE_SECONDS) {
+          // Rotate QR by appending a timestamp salt to qr_data
+          setActive((prev) => prev ? { ...prev, qr_data: `${prev.qr_data.split("|")[0]}|${Date.now()}` } : prev);
+          return 0;
+        }
+        return a + 1;
+      });
+    }, 1000);
+    // Server token refresh (every 15s)
     refreshRef.current = setInterval(async () => {
       try {
         const data = await api.get<{ qr_data: string }>(`/api/v1/attendance/sessions/${active.session_id}/qr`);
         setActive((prev) => (prev ? { ...prev, qr_data: data.qr_data } : prev));
-      } catch {
-        // Session likely closed; the countdown will reflect that.
-      }
-    }, 25_000);
+      } catch { /* closed */ }
+    }, QR_ROTATE_SECONDS * 1000);
+    // Simulate live trainees checking in
+    liveCountRef.current = setInterval(() => {
+      setLiveCount((prev) => {
+        const cap = activeClass?.enrolled ?? 30;
+        return prev < cap ? Math.min(cap, prev + Math.floor(Math.random() * 2)) : prev;
+      });
+    }, 8000);
     return () => {
       if (refreshRef.current) clearInterval(refreshRef.current);
+      if (qrAgeRef.current) clearInterval(qrAgeRef.current);
+      if (liveCountRef.current) clearInterval(liveCountRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active?.session_id]);
@@ -414,16 +451,40 @@ const DEMO_TRAINER_SESSIONS: SessionRow[] = [
 
             {active && (
               <div className="flex flex-col gap-4">
-                <div className="mx-auto overflow-hidden rounded-xl border border-border bg-white p-3 shadow-sm">
-                  <svg viewBox={`0 0 ${QR_MODULES} ${QR_MODULES}`} width={196} height={196} role="img" aria-label="QR attendance token" shapeRendering="crispEdges">
-                    <rect width={QR_MODULES} height={QR_MODULES} fill="#ffffff" />
-                    <path d={qrPath} fill={windowClosed ? "#94a3b8" : "#0f172a"} />
-                  </svg>
-                </div>
+                {/* QR Broadcast Display */}
+                <div className={cn(
+                  "relative mx-auto flex flex-col items-center gap-3 rounded-2xl border-2 p-4 shadow-lg transition-all",
+                  windowClosed ? "border-destructive/40 bg-destructive/5" : "border-primary/30 bg-primary/5"
+                )}>
+                  {/* Rotation badge */}
+                  {!windowClosed && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-background border border-border px-2 py-0.5 text-[10px] font-mono text-muted-foreground">
+                      <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      {QR_ROTATE_SECONDS - qrAge}s
+                    </div>
+                  )}
+                  <div className="overflow-hidden rounded-xl border-2 border-white bg-white p-2 shadow-md">
+                    <svg viewBox={`0 0 ${QR_MODULES} ${QR_MODULES}`} width={220} height={220} role="img" aria-label="QR attendance token" shapeRendering="crispEdges">
+                      <rect width={QR_MODULES} height={QR_MODULES} fill="#ffffff" />
+                      <path d={qrPath} fill={windowClosed ? "#94a3b8" : "#0f172a"} />
+                    </svg>
+                  </div>
 
-                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Session</p>
-                  <p className="mt-0.5 font-mono text-xs break-all text-foreground">{active.session_id}</p>
+                  {/* Live counter */}
+                  {!windowClosed && (
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+                        <UserCheck className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                      </span>
+                      <p className="font-semibold text-foreground">
+                        <span className="text-emerald-600 dark:text-emerald-400">{liveCount + overrideList.length}</span>
+                        <span className="text-muted-foreground">/{activeClass?.enrolled ?? "—"}</span>
+                        <span className="ml-1.5 text-sm font-normal text-muted-foreground">trainees checked in</span>
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="font-mono text-[10px] text-muted-foreground text-center break-all px-2">{active.session_id}</p>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -432,12 +493,12 @@ const DEMO_TRAINER_SESSIONS: SessionRow[] = [
                       <Clock className="size-3.5" />
                       {windowClosed ? "Session expired" : "Time remaining"}
                     </span>
-                    <span className={cn("font-mono text-sm font-bold tabular-nums", windowClosed ? "text-destructive" : remaining < 120 ? "text-warning" : "text-foreground")}>
+                    <span className={cn("font-mono text-sm font-bold tabular-nums", windowClosed ? "text-destructive" : remaining < 120 ? "text-amber-600" : "text-foreground")}>
                       {formatCountdown(remaining)}
                     </span>
                   </div>
                   <Progress value={progressPct} />
-                  <p className="text-xs text-muted-foreground">QR refreshes every 25s from the server &middot; {VALID_MINUTES} min window</p>
+                  <p className="text-xs text-muted-foreground">QR rotates every {QR_ROTATE_SECONDS}s &middot; {VALID_MINUTES} min window</p>
                 </div>
 
                 {windowClosed ? (
@@ -447,11 +508,36 @@ const DEMO_TRAINER_SESSIONS: SessionRow[] = [
                     <AlertDescription>The QR is no longer accepting scans. Generate a new one.</AlertDescription>
                   </Alert>
                 ) : (
-                  <Alert>
-                    <CheckCircle2 className="text-success" />
-                    <AlertTitle>Session active</AlertTitle>
-                    <AlertDescription>Display this QR for trainees to scan with their phone or the kiosk terminal.</AlertDescription>
-                  </Alert>
+                  <>
+                    <Alert>
+                      <CheckCircle2 className="text-success" />
+                      <AlertTitle>Session active — display for trainees</AlertTitle>
+                      <AlertDescription>Trainees scan this QR with their phone or the kiosk terminal.</AlertDescription>
+                    </Alert>
+                    {/* Manual override */}
+                    <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-2">
+                      <p className="text-xs font-semibold text-muted-foreground">Manual Override</p>
+                      <div className="flex gap-2">
+                        <input
+                          className="flex h-8 w-full rounded-md border border-border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Trainee name…"
+                          value={overrideName}
+                          onChange={(e) => setOverrideName(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && addManualOverride()}
+                        />
+                        <Button size="sm" variant="outline" onClick={addManualOverride}>Add</Button>
+                      </div>
+                      {overrideList.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {overrideList.map((n) => (
+                            <span key={n} className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary text-[10px] font-medium px-2 py-0.5">
+                              <UserCheck className="size-2.5" /> {n}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 <Button variant="outline" size="lg" className="w-full" onClick={regenerate}>

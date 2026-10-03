@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { HorizontalBarList } from "@/components/dashboard/horizontal-bar-list";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { DemoRoleSwitcherBanner } from "@/components/auth/demo-role-switcher-banner";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -697,7 +698,9 @@ export default function KioskStatusPage() {
   }).length;
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    <>
+      <DemoRoleSwitcherBanner currentRole="kiosk" />
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <div>
         <Button
           variant="ghost"
@@ -1122,6 +1125,7 @@ export default function KioskStatusPage() {
         </DialogContent>
       </Dialog>
     </main>
+    </>
   );
 }
 

@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Menu, Bell, Search, ChevronDown } from "lucide-react";
+import { Menu, Bell, Search, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/brand/logo";
@@ -19,6 +19,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -27,11 +28,12 @@ import { cn } from "@/lib/utils";
 import { roleNav } from "@/lib/nav-config";
 import type { UserRole } from "@/lib/types";
 import { DemoRoleSwitcherBanner } from "@/components/auth/demo-role-switcher-banner";
+import { getDemoUserForRole, signOutDemo } from "@/lib/demo-users";
 
 interface AppShellProps {
   role: UserRole;
-  userName: string;
-  userSubtitle: string;
+  userName?: string;
+  userSubtitle?: string;
   children: ReactNode;
 }
 
@@ -200,7 +202,7 @@ function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => v
   );
 }
 
-export function AppShell({ role, children }: AppShellProps) {
+export function AppShell({ role, userName, userSubtitle, children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const meta = roleNav[role];
 
@@ -232,7 +234,7 @@ export function AppShell({ role, children }: AppShellProps) {
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <DemoRoleSwitcherBanner />
+        <DemoRoleSwitcherBanner currentRole={role} />
         {/* Topbar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-background px-4 sm:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -282,9 +284,49 @@ export function AppShell({ role, children }: AppShellProps) {
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
-            <div className="pl-2 flex items-center">
-              <div className="size-8 rounded-full bg-muted/60" />
-            </div>
+            {/* User Profile & Account Menu */}
+            {(() => {
+              const currentUser = getDemoUserForRole(role);
+              return (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="relative flex items-center gap-2 rounded-full p-1 pl-2 hover:bg-muted cursor-pointer"
+                        aria-label="User account menu"
+                      >
+                        <span className="hidden text-right text-xs md:block">
+                          <span className="block font-semibold text-foreground leading-tight">{userName || currentUser.name}</span>
+                          <span className="block text-[10px] text-muted-foreground">{userSubtitle || currentUser.roleTitle}</span>
+                        </span>
+                        <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary border border-primary/20">
+                          {currentUser.initials}
+                        </span>
+                      </Button>
+                    }
+                  />
+                  <DropdownMenuContent align="end" className="w-60">
+                    <DropdownMenuLabel>
+                      <p className="font-semibold text-foreground">{userName || currentUser.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
+                      <span className="mt-1.5 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary capitalize">
+                        {role} workspace
+                      </span>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => signOutDemo()}
+                      className="text-destructive focus:text-destructive cursor-pointer"
+                    >
+                      <LogOut className="mr-2 size-3.5" />
+                      <span>Sign Out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            })()}
           </div>
         </header>
 

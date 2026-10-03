@@ -103,9 +103,17 @@ export const DEMO_USERS: DemoUser[] = [
 ];
 
 /**
- * Set demo session cookies in browser and navigate to target
+ * Get demo user by role with safe fallback
  */
-export function loginAsDemoUser(demoUser: DemoUser): void {
+export function getDemoUserForRole(role?: UserRole | string | null): DemoUser {
+  if (!role) return DEMO_USERS[0];
+  return DEMO_USERS.find((u) => u.role === role) ?? DEMO_USERS[0];
+}
+
+/**
+ * Set demo session cookies in browser without redirecting
+ */
+export function setDemoSessionCookies(demoUser: DemoUser): void {
   if (typeof document === "undefined") return;
 
   const maxAge = 60 * 60 * 24 * 7; // 7 days
@@ -115,9 +123,17 @@ export function loginAsDemoUser(demoUser: DemoUser): void {
   document.cookie = `coopsetu_demo_user=${encodeURIComponent(demoUser.user)}${cookieOptions}`;
   document.cookie = `coopsetu_demo_email=${encodeURIComponent(demoUser.email)}${cookieOptions}`;
   document.cookie = `coopsetu_demo_name=${encodeURIComponent(demoUser.name)}${cookieOptions}`;
+}
 
-  // Force page reload navigation so Next.js server components and middleware see the cookies
-  window.location.href = demoUser.target;
+/**
+ * Set demo session cookies in browser and navigate to target
+ */
+export function loginAsDemoUser(demoUser: DemoUser): void {
+  setDemoSessionCookies(demoUser);
+  if (typeof window !== "undefined") {
+    // Force page reload navigation so Next.js server components and middleware see the cookies
+    window.location.href = demoUser.target;
+  }
 }
 
 /**

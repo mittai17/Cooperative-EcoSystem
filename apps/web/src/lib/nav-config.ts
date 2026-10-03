@@ -21,6 +21,7 @@ import {
   Rocket,
   UserCircle,
   Settings,
+  Truck,
 } from "lucide-react";
 import type { UserRole } from "@/lib/types";
 
@@ -108,7 +109,23 @@ export const roleNav: Record<UserRole, RoleMeta> = {
           { label: "Settings", href: "/institution/hostel/settings" },
         ],
       },
-      { label: "Logistics", href: "/institution/logistics", icon: Target },
+      {
+        label: "Logistics",
+        href: "/institution/logistics",
+        icon: Truck,
+        children: [
+          { label: "Overview", href: "/institution/logistics" },
+          { label: "Transport Plans", href: "/institution/logistics/plans" },
+          { label: "Trips & Assignments", href: "/institution/logistics/trips" },
+          { label: "Vehicles & Drivers", href: "/institution/logistics/vehicles" },
+          { label: "Routes & Pickup Points", href: "/institution/logistics/routes" },
+          { label: "Requests & Approvals", href: "/institution/logistics/requests" },
+          { label: "Passenger Manifest", href: "/institution/logistics/manifest" },
+          { label: "Incidents & Support", href: "/institution/logistics/incidents" },
+          { label: "Expenses & Reports", href: "/institution/logistics/expenses" },
+          { label: "Settings & Audit Log", href: "/institution/logistics/settings" },
+        ],
+      },
       { label: "Attendance", href: "/institution/attendance", icon: ClipboardCheck },
       { label: "Assessments", href: "/institution/assessments", icon: BookOpen },
       { label: "Certificates", href: "/institution/certificates", icon: Award },

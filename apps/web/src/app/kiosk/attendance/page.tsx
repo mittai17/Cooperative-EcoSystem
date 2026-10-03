@@ -23,6 +23,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { DemoRoleSwitcherBanner } from "@/components/auth/demo-role-switcher-banner";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -485,6 +486,7 @@ export default function KioskAttendancePage() {
   /* ── Render ───────────────────────────────────────────────────────────── */
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+      <DemoRoleSwitcherBanner currentRole="kiosk" />
       <style>{`
         @keyframes kiosk-scan {
           0%   { top: 0.75rem; }

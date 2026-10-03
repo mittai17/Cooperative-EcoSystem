@@ -12,7 +12,8 @@ engine = create_async_engine(async_url, poolclass=NullPool, echo=False)
 AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 # sync engine for alembic
-sync_engine = create_engine(settings.database_url, poolclass=NullPool)
+sync_url = settings.database_url.replace("postgresql://", "postgresql+psycopg://")
+sync_engine = create_engine(sync_url, poolclass=NullPool)
 
 Base = declarative_base()
 

@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Menu, Bell, Search, ChevronDown, LogOut } from "lucide-react";
+import { Menu, Bell, Search, ChevronDown, LogOut, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/brand/logo";
@@ -188,13 +188,19 @@ function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => v
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
-              active &&
-                "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              active
+                ? "bg-rose-50 text-red-600 font-semibold dark:bg-rose-950/40 dark:text-red-400"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
             )}
           >
-            <Icon className="size-4.5 shrink-0" strokeWidth={1.9} />
-            {item.label}
+            <Icon className={cn("size-4.5 shrink-0", active ? "text-red-600 dark:text-red-400" : "")} strokeWidth={1.9} />
+            <span className="flex-1 truncate">{item.label}</span>
+            {item.badge && (
+              <span className="rounded-full bg-rose-100/90 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-rose-900/60 dark:text-red-300">
+                {item.badge}
+              </span>
+            )}
           </Link>
         );
       })}
@@ -247,24 +253,28 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
             >
               <Menu className="size-4.5" />
             </Button>
-            <div className="relative hidden w-full max-w-sm sm:block">
+            <div className="relative hidden w-full max-w-md sm:block">
               <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search courses, jobs, skills…"
-                className="rounded-full bg-muted/60 pl-9"
+                placeholder="Search institutions, trainers, trainees, programs..."
+                className="rounded-full bg-muted/60 pl-9 pr-14 text-xs sm:text-sm"
                 aria-label="Search"
               />
+              <kbd className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 rounded border bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-2xs">
+                Ctrl K
+              </kbd>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <LanguageSelector />
+          <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+                  <Button variant="ghost" size="icon" aria-label="Notifications" className="relative cursor-pointer">
                     <Bell className="size-4.5" />
-                    <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive" />
+                    <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-2xs">
+                      3
+                    </span>
                   </Button>
                 }
               />
@@ -283,10 +293,22 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                 </p>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <Button variant="ghost" size="icon" aria-label="Messages" className="cursor-pointer">
+              <MessageSquare className="size-4.5" />
+            </Button>
+
+            <LanguageSelector />
             <ThemeToggle />
+
             {/* User Profile & Account Menu */}
             {(() => {
               const currentUser = getDemoUserForRole(role);
+              const isNCCT = role === "admin";
+              const effectiveName = userName || (isNCCT ? "Admin User" : currentUser.name);
+              const effectiveSubtitle = userSubtitle || (isNCCT ? "NCCT Admin" : currentUser.roleTitle);
+              const effectiveInitials = isNCCT ? "AD" : currentUser.initials;
+
               return (
                 <DropdownMenu>
                   <DropdownMenuTrigger
@@ -297,21 +319,22 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                         className="relative flex items-center gap-2 rounded-full p-1 pl-2 hover:bg-muted cursor-pointer"
                         aria-label="User account menu"
                       >
-                        <span className="hidden text-right text-xs md:block">
-                          <span className="block font-semibold text-foreground leading-tight">{userName || currentUser.name}</span>
-                          <span className="block text-[10px] text-muted-foreground">{userSubtitle || currentUser.roleTitle}</span>
+                        <span className="flex size-8 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-red-600 border border-rose-200">
+                          {effectiveInitials}
                         </span>
-                        <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary border border-primary/20">
-                          {currentUser.initials}
+                        <span className="hidden text-left text-xs md:block">
+                          <span className="block font-semibold text-foreground leading-tight">{effectiveName}</span>
+                          <span className="block text-[10px] text-muted-foreground">{effectiveSubtitle}</span>
                         </span>
+                        <ChevronDown className="size-3.5 text-muted-foreground hidden md:block" />
                       </Button>
                     }
                   />
                   <DropdownMenuContent align="end" className="w-60">
                     <DropdownMenuLabel>
-                      <p className="font-semibold text-foreground">{userName || currentUser.name}</p>
+                      <p className="font-semibold text-foreground">{effectiveName}</p>
                       <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
-                      <span className="mt-1.5 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary capitalize">
+                      <span className="mt-1.5 inline-block rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-red-600 capitalize">
                         {role} workspace
                       </span>
                     </DropdownMenuLabel>

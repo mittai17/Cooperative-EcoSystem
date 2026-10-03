@@ -20,6 +20,7 @@ from app.api.v1 import (
     skills,
     system,
     timetable,
+    trainer,
     users,
 )
 
@@ -47,3 +48,4 @@ api_router.include_router(logistics.router, prefix="/logistics", tags=["Logistic
 api_router.include_router(mobile.router, prefix="/mobile", tags=["Mobile"])
 api_router.include_router(system.router, prefix="/system", tags=["System"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+api_router.include_router(trainer.router, prefix="/trainer", tags=["Trainer"])

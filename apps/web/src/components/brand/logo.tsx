@@ -27,18 +27,26 @@ const sizeMap = {
 export function Logo({ className, iconClassName, textClassName, inverted, size = "default" }: LogoProps) {
   const s = sizeMap[size];
   return (
-    <span className={cn("flex items-center gap-2 font-heading font-bold", s.text, className)}>
-      <span
-        className={cn(
-          "flex items-center justify-center rounded-xl bg-primary text-primary-foreground",
-          s.icon,
-          iconClassName
-        )}
+    <span className={cn("inline-flex items-center gap-2.5 font-heading font-extrabold tracking-tight select-none", s.text, className)}>
+      <svg
+        viewBox="0 0 36 36"
+        className={cn("shrink-0", s.icon, iconClassName)}
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        <Diamond className={s.glyph} strokeWidth={2.4} fill="currentColor" />
-      </span>
-      <span className={cn(inverted ? "text-white" : "text-foreground", textClassName)}>
-        CoopSetu<span className="text-primary"> AI</span>
+        <path
+          d="M18 2.2 L31.8 10.2 V25.8 L18 33.8 L4.2 25.8 V10.2 Z"
+          fill="#E30B1C"
+        />
+        <circle cx="18" cy="11.5" r="2.8" fill="white" />
+        <circle cx="11.5" cy="22.5" r="2.8" fill="white" />
+        <circle cx="24.5" cy="22.5" r="2.8" fill="white" />
+        <line x1="18" y1="11.5" x2="11.5" y2="22.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        <line x1="18" y1="11.5" x2="24.5" y2="22.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        <line x1="11.5" y1="22.5" x2="24.5" y2="22.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+      <span className={cn(inverted ? "text-white" : "text-slate-900 dark:text-white", "font-extrabold", textClassName)}>
+        CoopSetu<span className="text-[#E30B1C]"> AI</span>
       </span>
     </span>
   );

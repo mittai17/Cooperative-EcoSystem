@@ -20,6 +20,14 @@ class Assessment(Base):
     max_attempts = Column(Integer, nullable=False, server_default="3")
     shuffle = Column(Boolean, nullable=False, server_default="false")
     show_answers = Column(String(20), nullable=False, server_default="after_submit")
+    # Trainer workspace (additive). status: draft|published; legacy rows are published.
+    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="SET NULL"), nullable=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    status = Column(String(20), nullable=False, server_default="published")
+    module_title = Column(String(255), nullable=True)
+    description = Column(Text, nullable=True)
+    instructions = Column(Text, nullable=True)
+    scheduled_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 

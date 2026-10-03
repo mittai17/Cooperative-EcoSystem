@@ -29,6 +29,8 @@ class TimetableSlot(Base):
     # wall-clock time of the institution (IST); `time_slot` stays for the web grid.
     start_time = Column(Time, nullable=True)
     end_time = Column(Time, nullable=True)
+    # Trainer workspace (additive): the course this slot teaches.
+    course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 

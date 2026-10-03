@@ -13,7 +13,6 @@ import {
   ScanLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DEMO_USERS,
   getActiveDemoSession,
@@ -79,7 +78,6 @@ export function DemoRoleSwitcherBanner({ currentRole }: DemoRoleSwitcherBannerPr
         demoUser: active.demoUser,
       });
     } else {
-      // Sync cookie so the rest of the application matches current view
       const targetRole = currentRole || detectRoleFromPath(pathname);
       const user = getDemoUserForRole(targetRole);
       setSession({
@@ -104,57 +102,46 @@ export function DemoRoleSwitcherBanner({ currentRole }: DemoRoleSwitcherBannerPr
   };
 
   return (
-    <div className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/95 text-foreground shadow-xs backdrop-blur">
+    <div className="sticky top-0 z-50 w-full border-b border-border/80 bg-slate-50/90 dark:bg-card/90 text-foreground shadow-xs backdrop-blur">
       <div className="mx-auto flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 sm:px-4">
-        {/* Left: Active Role Indicator */}
-        <div className="flex items-center gap-2">
-          <Badge className="bg-red-500/10 text-red-600 border border-red-500/20 flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold rounded-full">
-            <Sparkles className="size-3" />
-            DEMO
-          </Badge>
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground hidden sm:inline">Active:</span>
-            <span className="font-bold text-foreground">
-              {session.demoUser?.name || session.name}
-            </span>
-            <span className="text-[11px] text-muted-foreground hidden md:inline">
-              ({session.demoUser?.org || session.org})
-            </span>
-          </div>
-        </div>
-
-        {/* Center: 1-Click Role Switcher Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+        {/* Left: Role Switcher Pill Buttons (Matches evaluator request Screenshot_20261003_184613.png) */}
+        <div className="flex items-center gap-2 overflow-x-auto py-0.5">
           {DEMO_USERS.map((user) => {
             const Icon = ROLE_ICONS[user.role] ?? GraduationCap;
             const isCurrent = session.role === user.role;
             const isTarget = switching === user.role;
 
             return (
-              <Button
+              <button
                 key={user.id}
-                size="sm"
-                variant={isCurrent ? "default" : "outline"}
+                type="button"
                 className={cn(
-                  "h-7 text-xs px-2.5 sm:px-3 transition-all gap-1.5 rounded-full font-medium",
+                  "flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-medium transition-all shrink-0 cursor-pointer shadow-2xs",
                   isCurrent
-                    ? "bg-[#E30B1C] text-white hover:bg-[#c80a18] shadow-xs border-transparent font-semibold cursor-default"
-                    : "bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground border-border/70"
+                    ? "bg-[#E30B1C] text-white hover:bg-[#c80a18] shadow-xs font-semibold cursor-default"
+                    : "bg-white dark:bg-card hover:bg-slate-100 dark:hover:bg-muted text-slate-600 dark:text-muted-foreground hover:text-foreground border border-slate-200/90 dark:border-border"
                 )}
                 disabled={Boolean(switching) && !isCurrent}
                 onClick={() => handleSwitch(user)}
                 title={`Switch to ${user.name} (${user.roleTitle})`}
               >
-                <Icon className={cn("size-3.5", isCurrent ? "text-white" : "text-muted-foreground")} />
+                <Icon className={cn("size-3.5", isCurrent ? "text-white" : "text-slate-500 dark:text-muted-foreground")} />
                 <span className="capitalize">{user.role}</span>
                 {isTarget && <span className="animate-spin text-[10px]">…</span>}
-              </Button>
+              </button>
             );
           })}
         </div>
 
-        {/* Right: Sign Out Action */}
-        <div className="flex items-center gap-1">
+        {/* Right: Active user indicator & Sign out */}
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground">Active:</span>
+            <span className="font-semibold text-foreground">
+              {session.demoUser?.name || session.name}
+            </span>
+          </div>
+
           <Button
             size="sm"
             variant="ghost"
@@ -164,7 +151,7 @@ export function DemoRoleSwitcherBanner({ currentRole }: DemoRoleSwitcherBannerPr
             title="Sign out of demo session"
           >
             <LogOut className="size-3.5" />
-            <span>Sign Out</span>
+            <span className="hidden sm:inline">Sign Out</span>
           </Button>
         </div>
       </div>

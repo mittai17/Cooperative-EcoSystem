@@ -22,3 +22,6 @@ from app.models.mobile import (  # noqa: F401
 )
 from app.models.notification import Notification, PushToken  # noqa: F401
 from app.models.infra import IntegrationUsage, AiCache, TtsAudio, SyncReceipt  # noqa: F401
+from app.models.trainer import (  # noqa: F401
+    BatchCourse, Assignment, AssignmentSubmission, Announcement, DirectMessage, SkillEvaluation, ManualGrade,
+)

@@ -1,55 +1,228 @@
-import { FileText, Download, Play } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/page-header";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+"use client";
 
-const mockReports = [
-  { id: "1", title: "Trainee Progress Report", desc: "Detailed breakdown of trainee attendance and assessment scores across all active programmes.", lastGen: "2026-09-20" },
-  { id: "2", title: "Employment Outcomes", desc: "Placement statistics, top hiring employers, and average salary trends.", lastGen: "2026-09-01" },
-  { id: "3", title: "Skill Gap Analysis", desc: "Comparison of current market skill demand against capacity of training institutions.", lastGen: "2026-08-15" },
-  { id: "4", title: "Institution Performance", desc: "Benchmarking institutions based on completion rates, attendance, and placements.", lastGen: "2026-09-25" },
-  { id: "5", title: "Certificate Registry", desc: "Full ledger of all certificates issued, including revoked and expired status.", lastGen: "2026-09-27" },
-];
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { Download } from "lucide-react";
+import { getAdminDashboard, getReport, type ReportResponse } from "@/lib/admin/admin-api";
+import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
+import { DemoBanner } from "@/components/admin/shared/demo-banner";
+import {
+  DEMO_DONUT,
+  DEMO_REPORTS,
+  REPORT_PERIODS,
+  REPORT_TABS,
+  chartBars,
+  type ChartPoint,
+  type ReportKey,
+} from "@/components/admin/reports/report-data";
+import { downloadReportCsv } from "@/components/admin/reports/export-csv";
+
+// Recharts measures the DOM, so the chart components are loaded only in the browser.
+const EnrollmentBarChart = dynamic(
+  () => import("@/components/admin/reports/report-charts").then((m) => m.EnrollmentBarChart),
+  { ssr: false },
+);
+const DistributionDonut = dynamic(
+  () => import("@/components/admin/reports/report-charts").then((m) => m.DistributionDonut),
+  { ssr: false },
+);
+
+const BAR_TITLES: Record<ReportKey, string> = {
+  enrollment: "Trainee Enrollment",
+  placements: "Placements by Month",
+  assessments: "Average Score by Assessment",
+  certifications: "Certifications by Program",
+};
 
 export default function ReportsPage() {
+  const [tab, setTab] = useState<ReportKey>("enrollment");
+  const [months, setMonths] = useState<number>(6);
+  const [report, setReport] = useState<ReportResponse | null>(null);
+  const [donut, setDonut] = useState<ChartPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [usingDemo, setUsingDemo] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [data, dashboard] = await Promise.all([getReport(tab), getAdminDashboard()]);
+        if (cancelled) return;
+        setReport(data);
+        setDonut(dashboard.program_distribution.map((p) => ({ label: p.label, value: p.percent })));
+        setUsingDemo(false);
+        setError(null);
+      } catch (err) {
+        if (cancelled) return;
+        setReport(DEMO_REPORTS[tab]);
+        setDonut(DEMO_DONUT);
+        setUsingDemo(true);
+        setError(err instanceof Error ? err.message : "Failed to load report");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, reloadKey]);
+
+  const bars = report ? chartBars(report.chart) : [];
+  // The period select trims the monthly series to the most recent N points.
+  const visibleBars = tab === "enrollment" || tab === "placements" ? bars.slice(-months) : bars;
+
+  async function handleExport() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await downloadReportCsv(tab);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Reports Center"
-        description="Generate and download system-wide reports and analytics."
+      <AdminPageHeader
+        icon={Download}
+        title="Reports"
+        description="View and export platform reports."
+        action={
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting}
+            className="inline-flex items-center gap-2 rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 disabled:opacity-60"
+          >
+            <Download className="h-4 w-4" /> {exporting ? "Exporting..." : "Export Report"}
+          </button>
+        }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {mockReports.map((report) => (
-          <Card key={report.id} className="flex flex-col">
-            <CardHeader>
-              <div className="mb-2 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary" />
-              </div>
-              <CardTitle className="font-heading text-lg">{report.title}</CardTitle>
-              <CardDescription>{report.desc}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-sm text-muted-foreground">Last generated: {report.lastGen}</p>
-            </CardContent>
-            <CardFooter className="flex gap-2 border-t pt-4">
-              <Button variant="outline" className="flex-1">
-                <Download className="mr-2 h-4 w-4" /> Download
-              </Button>
-              <Button className="flex-1">
-                <Play className="mr-2 h-4 w-4" /> Generate
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div role="tablist" aria-label="Report type" className="flex flex-wrap gap-6 border-b border-slate-200">
+          {REPORT_TABS.map((t) => (
+            <button
+              key={t.key}
+              role="tab"
+              aria-selected={tab === t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={`-mb-px border-b-2 px-1 pb-3 text-sm font-semibold transition-colors ${
+                tab === t.key ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {usingDemo && <DemoBanner />}
+            <span className="text-xs text-slate-500">Live data unavailable: {error}</span>
+            <button
+              type="button"
+              onClick={() => setReloadKey((k) => k + 1)}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        {exportError && (
+          <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+            Could not export: {exportError}
+          </p>
+        )}
+
+        {loading ? (
+          <div className="mt-6 grid gap-6 lg:grid-cols-2" aria-busy="true" aria-label="Loading report">
+            <div className="h-72 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-72 animate-pulse rounded-xl bg-slate-100" />
+          </div>
+        ) : (
+          <>
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <section className="rounded-xl border border-slate-200 p-5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-base font-semibold text-slate-900">{BAR_TITLES[tab]}</h2>
+                  {(tab === "enrollment" || tab === "placements") && (
+                    <select
+                      aria-label="Chart period"
+                      value={months}
+                      onChange={(e) => setMonths(Number(e.target.value))}
+                      className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-primary"
+                    >
+                      {REPORT_PERIODS.map((p) => (
+                        <option key={p.value} value={p.value}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+                <div className="h-64">
+                  {visibleBars.length === 0 ? <EmptyChart /> : <EnrollmentBarChart data={visibleBars} />}
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-slate-200 p-5">
+                <h2 className="mb-4 text-base font-semibold text-slate-900">Program-wise Distribution</h2>
+                <div className="h-64">
+                  {donut.length === 0 ? <EmptyChart /> : <DistributionDonut data={donut} />}
+                </div>
+              </section>
+            </div>
+
+            <div className="mt-6 overflow-x-auto">
+              {!report || report.rows.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+                  No rows for this report yet.
+                </div>
+              ) : (
+                <table className="w-full min-w-[560px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
+                      {report.columns.map((col) => (
+                        <th key={col} className="px-3 py-3 font-semibold">
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.rows.map((row, i) => (
+                      <tr key={i} className="border-b border-slate-100 last:border-0">
+                        {row.map((cell, j) => (
+                          <td key={j} className="px-3 py-3 text-slate-700">
+                            {typeof cell === "number" ? cell.toLocaleString("en-IN") : (cell ?? "-")}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+function EmptyChart() {
+  return (
+    <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-slate-300 text-sm text-slate-500">
+      No chart data yet.
     </div>
   );
 }

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Download, QrCode } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
@@ -15,6 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const mockSessions = [
   { id: "s1", date: "2026-09-29", time: "10:00 AM", programme: "Cooperative Management", topic: "Intro to Bylaws", attendance: 92 },
@@ -23,6 +33,8 @@ const mockSessions = [
 ];
 
 export default function AttendancePage() {
+  const [qrOpen, setQrOpen] = useState(false);
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -31,7 +43,9 @@ export default function AttendancePage() {
         action={
           <div className="flex gap-2">
             <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download Report</Button>
-            <Button><QrCode className="mr-2 h-4 w-4" /> Generate QR</Button>
+            <Button onClick={() => setQrOpen(true)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+              <QrCode className="mr-2 h-4 w-4" /> Generate QR
+            </Button>
           </div>
         }
       />
@@ -69,6 +83,23 @@ export default function AttendancePage() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="sm:max-w-md text-center">
+          <DialogHeader>
+            <DialogTitle className="text-center">Session Attendance QR</DialogTitle>
+            <DialogDescription className="text-center">
+              Display this QR code for trainees to scan using the CoopSetu app to mark their attendance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center p-6 bg-white rounded-lg border border-border mx-auto my-4">
+            <QrCode className="size-64 text-black" strokeWidth={1} />
+          </div>
+          <p className="text-sm text-muted-foreground font-mono bg-muted p-2 rounded">
+            SESSION_ID: {mockSessions[0].id.toUpperCase()}-20260929
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

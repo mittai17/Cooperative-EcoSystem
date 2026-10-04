@@ -232,11 +232,11 @@ export default function CreateProgrammePage() {
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t">
-              <Link className="contents" href="/institution/programmes"><Button
+              <Button
                 type="button"
                 variant="outline"
-                
-               nativeButton={false}>Cancel</Button></Link>
+                render={<Link href="/institution/programmes" />}
+              >Cancel</Button>
               <Button type="submit" disabled={submitting}>
                 {submitting ? "Publishing..." : "Create & Publish Programme"}
               </Button>

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, CheckCheck, Loader2, Radio, Save, Search, Sparkles, Square } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,72 @@ function useCountdown(closesAt: string | undefined, live: boolean) {
   return Math.max(0, Math.floor((new Date(closesAt).getTime() - now) / 1000));
 }
 const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+// ── QR visual generator (deterministic SVG) ──────
+const QR_MODULES = 25;
+
+function fnv1a(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+function mulberry32(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function finderOrigin(row: number, col: number): { row: number; col: number } | null {
+  const last = QR_MODULES - 7;
+  if (row < 7 && col < 7) return { row: 0, col: 0 };
+  if (row < 7 && col >= last) return { row: 0, col: last };
+  if (row >= last && col < 7) return { row: last, col: 0 };
+  return null;
+}
+
+function finderBit(row: number, col: number, origin: { row: number; col: number }): boolean {
+  const r = row - origin.row;
+  const c = col - origin.col;
+  const ring = r === 0 || c === 0 || r === 6 || c === 6;
+  const core = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+  return ring || core;
+}
+
+function buildQrPath(payload: string): string {
+  const random = mulberry32(fnv1a(payload));
+  const grid: boolean[][] = [];
+  for (let row = 0; row < QR_MODULES; row += 1) {
+    const cells: boolean[] = [];
+    for (let col = 0; col < QR_MODULES; col += 1) {
+      const origin = finderOrigin(row, col);
+      if (origin) {
+        cells.push(finderBit(row, col, origin));
+      } else if (row === 6 || col === 6) {
+        cells.push((row === 6 ? col : row) % 2 === 0);
+      } else {
+        cells.push(random() > 0.52);
+      }
+    }
+    grid.push(cells);
+  }
+  let path = "";
+  for (let row = 0; row < QR_MODULES; row += 1) {
+    for (let col = 0; col < QR_MODULES; col += 1) {
+      if (grid[row][col]) path += `M${col},${row}h1v1h-1z`;
+    }
+  }
+  return path;
+}
+// ──────────────────────────────────────────────────
 
 export function SessionView({ id, mode }: { id: string; mode: string }) {
   const q = useTrainerQuery<SessionState>(`/attendance/session/${id}`, { pollMs: 3000 });
@@ -126,7 +191,9 @@ export function SessionView({ id, mode }: { id: string; mode: string }) {
         {showQr && (
           <div className="flex flex-col items-center gap-4 rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
             <div className="rounded-2xl border bg-white p-4">
-              <QRCodeSVG value={d.qr as string} size={240} level="M" />
+              <svg viewBox={`0 0 ${QR_MODULES} ${QR_MODULES}`} width={240} height={240} className="fill-current text-slate-900">
+                <path d={buildQrPath(d.qr as string)} />
+              </svg>
             </div>
             <div className="text-center">
               <p className="font-heading text-4xl font-bold tabular-nums">{mmss(left)}</p>

@@ -34,6 +34,10 @@ const ROLE_ICONS: Record<string, React.ElementType> = {
   kiosk: ScanLine,
 };
 
+const ROLE_LABELS: Record<string, string> = {
+  kiosk: "Attendance",
+};
+
 function detectRoleFromPath(pathname: string): UserRole {
   if (pathname.startsWith("/institution")) return "institution";
   if (pathname.startsWith("/trainer")) return "trainer";
@@ -126,7 +130,7 @@ export function DemoRoleSwitcherBanner({ currentRole }: DemoRoleSwitcherBannerPr
                 title={`Switch to ${user.name} (${user.roleTitle})`}
               >
                 <Icon className={cn("size-3.5", isCurrent ? "text-white" : "text-slate-500 dark:text-muted-foreground")} />
-                <span className="capitalize">{user.role}</span>
+                <span className="capitalize">{ROLE_LABELS[user.role] ?? user.role}</span>
                 {isTarget && <span className="animate-spin text-[10px]">…</span>}
               </button>
             );

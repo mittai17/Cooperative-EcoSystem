@@ -143,7 +143,106 @@
     "signOut": "வெளியேறு",
     "notifications": "அறிவிப்புகள்",
     "openNavigation": "வழிசெலுத்தல் பட்டியைத் திற",
-    "languageSwitcher": "மொழியை மாற்று"
+    "languageSwitcher": "மொழியை மாற்று",
+    "messages": "செய்திகள்",
+    "userMenu": "பயனர் கணக்கு மெனு",
+    "adminUser": "நிர்வாகப் பயனர்",
+    "roleWorkspace": "{role} பணியிடம்",
+    "workspaceTag": "{role} பணியிடம் · டெமோ",
+    "demoNotesFooter": "டெமோ அறிவிப்புகள்; நேரடி எச்சரிக்கைகள் பின்தள ஒருங்கிணைப்புடன் வரும்",
+    "spotlight": {
+      "campusAlt": "VAMNICOM வளாகம்",
+      "institution": {
+        "title": "வலிமையான கூட்டுறவுகளை உருவாக்குதல்",
+        "tagline": "பயிற்சி அளியுங்கள். அதிகாரமளியுங்கள். மாற்றுங்கள்."
+      },
+      "keepLearning": {
+        "title": "தொடர்ந்து கற்றுக்கொள்ளுங்கள்",
+        "tagline": "சிறந்த நாளை உருவாக்குவோம்"
+      }
+    },
+    "demoNotes": {
+      "trainee": {
+        "0": {
+          "title": "புதிய மதிப்பீடு திட்டமிடப்பட்டது",
+          "detail": "Tally உடன் கணக்கியல், தொகுதி 3 வினாடி வினா அக்டோபர் 2 அன்று"
+        },
+        "1": {
+          "title": "திறன் கடவுச்சீட்டு புதுப்பிக்கப்பட்டது",
+          "detail": "பால்பண்ணை செயல்பாடுகளில் நம்பிக்கை 88% ஆக உயர்ந்தது"
+        },
+        "2": {
+          "title": "புதிய வேலைப் பொருத்தம்",
+          "detail": "பால் கொள்முதல் மேற்பார்வையாளர், 91% பொருத்தம்"
+        }
+      },
+      "institution": {
+        "0": {
+          "title": "2 பரிந்துரைகள் நிலுவையில் உள்ளன",
+          "detail": "கூட்டுறவு மேலாண்மை அடிப்படைகள்"
+        },
+        "1": {
+          "title": "வருகைக் குறைவு கண்டறியப்பட்டது",
+          "detail": "3ஆம் வாரத்தில் வருகை 85% ஆகக் குறைந்தது"
+        }
+      },
+      "trainer": {
+        "0": {
+          "title": "வருகை பதிவு செய்யப்படவில்லை",
+          "detail": "இன்றைய வருகைக்காக 2 வகுப்புகள் காத்திருக்கின்றன"
+        },
+        "1": {
+          "title": "மதிப்பீட்டு வரிசை அதிகரிக்கிறது",
+          "detail": "ஆய்வுக்காக 15 திட்டச் சமர்ப்பிப்புகள் நிலுவையில்"
+        }
+      },
+      "employer": {
+        "0": {
+          "title": "புதிய சரிபார்க்கப்பட்ட பொருத்தம்",
+          "detail": "ரவீந்திரா எஸ். பாட்டீல், பால்பண்ணை மேற்பார்வையாளருக்கு 94% பொருத்தம்"
+        },
+        "1": {
+          "title": "பணியிடம் விரைவில் மூடப்படும்",
+          "detail": "பயிற்சி கூட்டுறவுச் சங்கச் செயலர்"
+        }
+      },
+      "admin": {
+        "0": {
+          "title": "மாதாந்திர விளைவு அறிக்கை தயார்",
+          "detail": "செப்டம்பர் வேலைவாய்ப்பு ஓட்டம் புதுப்பிக்கப்பட்டது"
+        },
+        "1": {
+          "title": "புதிய நிறுவனம் இணைக்கப்பட்டது",
+          "detail": "மீன்வளக் கூட்டுறவு கூட்டமைப்பு, கொச்சி"
+        }
+      },
+      "kiosk": {
+        "0": {
+          "title": "முனையம் இணையத்தில்",
+          "detail": "நிலையம் 01 மைய மையத்துடன் ஒத்திசைவு முடிந்தது"
+        },
+        "1": {
+          "title": "வருகை இடையகம்",
+          "detail": "18 ஆஃப்லைன் பதிவுகள் வெற்றிகரமாக ஒத்திசைக்கப்பட்டன"
+        }
+      }
+    },
+    "chatbot": {
+      "greeting": "வணக்கம் {name}! நான் CoopSetu AI, உங்கள் தொழில் மற்றும் கற்றல் உதவியாளர். இன்று நான் உங்களுக்கு எவ்வாறு உதவ முடியும்?",
+      "online": "இணையத்தில்",
+      "placeholder": "எதையும் கேளுங்கள்...",
+      "suggestions": {
+        "0": "அடுத்து நான் எந்தப் பாடநெறிகளை எடுக்க வேண்டும்?",
+        "1": "PACS டிஜிட்டல் கணக்கியலுக்கு எவ்வாறு விண்ணப்பிப்பது?",
+        "2": "என் திறன் கடவுச்சீட்டின் சுருக்கத்தைக் காட்டு"
+      },
+      "responses": {
+        "0": "உங்கள் சுயவிவரத்தின் அடிப்படையில், அடுத்ததாக 'PACS டிஜிட்டல் கணக்கியல்' சான்றிதழை முடிக்க பரிந்துரைக்கிறேன். இது உங்கள் அனுபவத்துடன் சரியாகப் பொருந்துகிறது.",
+        "1": "புதிய பாடநெறிகளில் பதிவு செய்ய பக்கப்பட்டியிலிருந்து 'நிகழ்ச்சித்திட்டங்கள்' தாவலுக்குச் செல்லலாம்.",
+        "2": "உங்கள் திறன் கடவுச்சீட்டில் தற்போது பால்பண்ணை செயல்பாடுகளில் 'மேம்பட்ட' நிலையும், PACS கணக்கியலில் 'இடைநிலை' நிலையும் காட்டப்படுகிறது.",
+        "3": "உங்கள் கூட்டுறவுத் தொழில் பாதை தொடர்பாக வேறு ஏதேனும் உதவி தேவையா?"
+      }
+    }
   },
   "public": {
     "nav": {
@@ -155,7 +254,8 @@
       "demoHub": "டெமோ மையம்",
       "signIn": "உள்நுழை",
       "getStarted": "தொடங்குங்கள்",
-      "language": "மொழி"
+      "language": "மொழி",
+      "toggleMenu": "வழிசெலுத்தல் மெனுவை மாற்று"
     },
     "hero": {
       "badgeBrand": "CoopSetu AI",
@@ -186,7 +286,33 @@
     "roles": {
       "title": "சூழலமைப்பின் ஒவ்வொரு பங்கிற்கும் உருவாக்கப்பட்டது",
       "body": "பங்கு அடிப்படையிலான அணுகல், ஒவ்வொரு டாஷ்போர்டையும் அந்தப் பங்கு உண்மையில் எடுக்கும் முடிவுகளில் கவனம் செலுத்த வைக்கிறது.",
-      "getStarted": "தொடங்குங்கள்"
+      "getStarted": "தொடங்குங்கள்",
+      "items": {
+        "trainee": {
+          "label": "பயிற்சியாளர் / கற்பவர்",
+          "description": "நிகழ்ச்சித்திட்டங்களில் சேருங்கள், உங்கள் திறன் கடவுச்சீட்டை உருவாக்குங்கள், வேலைகளைக் கண்டறியுங்கள்"
+        },
+        "institution": {
+          "label": "கூட்டுறவு நிறுவனம்",
+          "description": "நிகழ்ச்சித்திட்டங்களை நடத்துங்கள், பயிற்சியாளர்களைப் பரிந்துரையுங்கள், விளைவுகளைக் கண்காணியுங்கள்"
+        },
+        "trainer": {
+          "label": "பயிற்சியாளர் / ஆசிரியர்",
+          "description": "வகுப்புகள், வருகை மற்றும் மதிப்பீடுகளை நிர்வகியுங்கள்"
+        },
+        "employer": {
+          "label": "முதலாளி / கூட்டுறவுச் சங்கம்",
+          "description": "வேலைகளை வெளியிடுங்கள், சரிபார்க்கப்பட்ட திறமையான விண்ணப்பதாரர்களைக் கண்டறியுங்கள்"
+        },
+        "admin": {
+          "label": "NCCT நிர்வாகி",
+          "description": "நிறுவனங்கள், நிகழ்ச்சித்திட்டங்கள் மற்றும் தேசிய விளைவுகளைக் கண்காணியுங்கள்"
+        },
+        "kiosk": {
+          "label": "டிஜிட்டல் கியோஸ்க் நிலையம்",
+          "description": "வருகை மற்றும் சான்றிதழ் சரிபார்ப்புக்கான ஆஃப்லைன்-முதல் கிராம நிலையம்"
+        }
+      }
     },
     "features": {
       "title": "சுழற்சியை இயக்கும் AI அடுக்கு",
@@ -234,6 +360,426 @@
         "verifyCertificate": "சான்றிதழைச் சரிபார்க்கவும்",
         "ncctAdminLogin": "NCCT நிர்வாக உள்நுழைவு"
       }
+    },
+    "loop": {
+      "stages": {
+        "registration": {
+          "label": "பதிவு",
+          "description": "பயிற்சியாளர் மற்றும் நிறுவனங்களின் இணைப்பு"
+        },
+        "training": {
+          "label": "பயிற்சி",
+          "description": "கூட்டுறவுத் துறை நிகழ்ச்சித்திட்டங்கள் மற்றும் பாடநெறிகள்"
+        },
+        "skills": {
+          "label": "திறன்கள்",
+          "description": "செயல்திறன் தரவிலிருந்து AI அனுமானித்த திறன்கள்"
+        },
+        "certification": {
+          "label": "சான்றளிப்பு",
+          "description": "சரிபார்க்கக்கூடிய டிஜிட்டல் சான்றிதழ்கள்"
+        },
+        "jobMatching": {
+          "label": "வேலைப் பொருத்தம்",
+          "description": "AI திறன்களை திறந்த பணியிடங்களுடன் பொருத்துகிறது"
+        },
+        "employment": {
+          "label": "வேலைவாய்ப்பு",
+          "description": "கூட்டுறவு முதலாளிகளிடம் பணி அமர்வு"
+        },
+        "employerFeedback": {
+          "label": "முதலாளியின் கருத்து",
+          "description": "பணியிடச் செயல்திறன் குறிப்புகள்"
+        },
+        "newTraining": {
+          "label": "புதிய பயிற்சி",
+          "description": "கருத்துகள் எதிர்காலப் பாடத்திட்டங்களை வடிவமைக்கின்றன"
+        }
+      },
+      "feedbackNote": "முதலாளியின் கருத்து நேரடியாகப் பாடத்திட்ட வடிவமைப்புக்குத் திரும்பி, சுழற்சியை முழுமையாக்குகிறது; பயிற்சி உண்மையான, தற்போதைய தேவைக்கு ஏற்ப இருப்பதை உறுதி செய்கிறது."
+    },
+    "aboutPage": {
+      "hero": {
+        "badge": "SIH 2026 · PS 26087",
+        "title": "AI {name} பற்றி",
+        "body": "கூட்டுறவுப் பயிற்சியை சரிபார்க்கக்கூடிய திறன்கள் மற்றும் உண்மையான வேலைவாய்ப்புடன் இணைக்கும் தேசிய AI தளம் — கூட்டுறவு அமைச்சகம் மற்றும் தேசிய கூட்டுறவுப் பயிற்சி கவுன்சில் (NCCT) ஆகியவற்றுக்காக உருவாக்கப்பட்டது.",
+        "joinTrainee": "பயிற்சியாளராக இணையுங்கள்",
+        "browseProgrammes": "நிகழ்ச்சித்திட்டங்களைப் பாருங்கள்"
+      },
+      "mission": {
+        "label": "எங்கள் நோக்கம்",
+        "title": "பயிற்சிக்கும் வாழ்வாதாரத்துக்கும் இடையிலான சுழற்சியை முழுமையாக்குதல்",
+        "body": "இந்தியாவின் கூட்டுறவுத் துறை ஆண்டுதோறும் ஆயிரக்கணக்கானோருக்குப் பயிற்சி அளிக்கிறது; ஆனாலும் விளைவுகள் கண்ணுக்குத் தெரியாமலே உள்ளன — பயிற்சியாளரின் கற்றல் பயணத்தை வேலைவாய்ப்புடன் இணைக்கும் டிஜிட்டல் தொடர்பு இல்லாமல் நிறுவனங்களில் சிதறிக் கிடக்கின்றன. CoopSetu AI அதை மாற்றுகிறது.",
+        "passportBody": "ஒவ்வொரு பயிற்சியாளருக்கும் முதலாளிகள் நம்பக்கூடிய, AI-இயங்கும் உயிருள்ள {passport} வழங்குகிறோம்; ஒவ்வொரு நிறுவனத்துக்கும் நேரடி டாஷ்போர்டு வழங்குகிறோம்; NCCT-க்கு திறன் வழங்கல் மற்றும் தேவை பற்றிய தேசிய பகுப்பாய்வு வழங்குகிறோம்.",
+        "passport": "திறன் கடவுச்சீட்டு",
+        "tiles": {
+          "passports": "சரிபார்க்கப்பட்ட திறன் கடவுச்சீட்டுகள்",
+          "advisor": "AI தொழில் ஆலோசகர்",
+          "analytics": "தேசிய பகுப்பாய்வு",
+          "kiosk": "QR கியோஸ்க் வருகை"
+        }
+      },
+      "problem": {
+        "label": "பிரச்சனை அறிக்கை · SIH 2026 PS 26087",
+        "title": "நாங்கள் தீர்க்கும் பிரச்சனை",
+        "intro": "கூட்டுறவு அமைச்சகம் வெளியிட்ட ஸ்மார்ட் இந்தியா ஹேக்கத்தான் 2026 பிரச்சனை அறிக்கை 26087, கூட்டுறவுப் பயிற்சி சூழலமைப்பில் உள்ள முக்கிய இடைவெளிகளை அடையாளம் காட்டுகிறது:",
+        "points": {
+          "0": "கூட்டுறவுப் பயிற்சி விளைவுகளுக்கான ஒருங்கிணைந்த டிஜிட்டல் பதிவு இல்லை",
+          "1": "கையேடு, காகித அடிப்படையிலான வருகை மற்றும் சான்றளிப்பு",
+          "2": "பயிற்றுவிக்கப்படும் திறன்களுக்கும் முதலாளிகள் கோரும் திறன்களுக்கும் இடையிலான இடைவெளி",
+          "3": "கூறப்படும் கூட்டுறவுத் திறனை முதலாளிகளால் சரிபார்க்க முடிவதில்லை",
+          "4": "தேசியப் பயிற்சி ஓட்டத்தை NCCT நேரடியாகக் காண முடியவில்லை"
+        },
+        "closing": "CoopSetu AI ஒரே ஒருங்கிணைந்த தளத்தின் மூலம் இந்த இடைவெளிகள் ஒவ்வொன்றையும் நேரடியாகத் தீர்க்கிறது."
+      },
+      "howItWorks": {
+        "label": "இது எவ்வாறு செயல்படுகிறது",
+        "title": "நான்கு படிகளில் சேர்க்கை முதல் வேலைவாய்ப்பு வரை",
+        "steps": {
+          "enrol": {
+            "title": "பதிவு செய்து சேருங்கள்",
+            "description": "பயிற்சியாளர்கள் கூட்டுறவு நிறுவனங்கள் மூலம் பதிவு செய்கின்றனர். NCCT ஒப்புதல் அளிக்கிறது; VAMNICOM நிகழ்ச்சித்திட்ட ஒதுக்கீட்டை ஒருங்கிணைக்கிறது."
+          },
+          "train": {
+            "title": "பயிற்சி மற்றும் வருகை",
+            "description": "QR அடிப்படையிலான கியோஸ்க் வருகை, நேரடி கால அட்டவணைகள் மற்றும் பயிற்சியாளர் மதிப்பீடு — அனைத்தும் நேரடியாகப் பதிவு செய்யப்படுகின்றன."
+          },
+          "passport": {
+            "title": "AI திறன் கடவுச்சீட்டு",
+            "description": "முடிக்கப்பட்ட ஒவ்வொரு தொகுதி, மதிப்பீடு மற்றும் முதலாளியின் கருத்து ஒரு பாதுகாப்பான டிஜிட்டல் திறன் கடவுச்சீட்டாக வடிகட்டப்படுகிறது."
+          },
+          "place": {
+            "title": "பொருத்துதல் மற்றும் பணி அமர்த்துதல்",
+            "description": "AI தொழில் ஆலோசகர் சரிபார்க்கப்பட்ட திறன்களை கூட்டுறவு முதலாளிகளின் நேரடி வேலை அறிவிப்புகளுடன் பொருத்துகிறார். வேலைவாய்ப்பு சுழற்சி முழுமையடைகிறது."
+          }
+        }
+      },
+      "technology": {
+        "label": "தொழில்நுட்பம்",
+        "title": "நவீன, உற்பத்தித் தரமான அடித்தளங்களில் கட்டப்பட்டது",
+        "body": "எங்கள் மோனோரெப்போ விரைவான மேம்பாட்டுக்கு உதவும் தேர்ந்தெடுக்கப்பட்ட தொழில்நுட்பத் தொகுப்பைப் பயன்படுத்துகிறது; இலட்சக்கணக்கான பயிற்சியாளர்களுக்கு சேவை செய்யும் தேசிய பயன்பாட்டுக்கும் அளவிடக்கூடியதாக உள்ளது.",
+        "features": {
+          "edge": {
+            "label": "எட்ஜ்-முதல் கட்டமைப்பு",
+            "description": "Next.js எட்ஜ் இயக்க நேரம் வழியாக 100 ms-க்கும் குறைவான பதில்கள்"
+          },
+          "certificates": {
+            "label": "பாதுகாப்பான சான்றிதழ்கள்",
+            "description": "பிளாக்செயின்-ஆதரவு QR சரிபார்ப்பு"
+          },
+          "kiosk": {
+            "label": "ஆஃப்லைன்-முதல் கியோஸ்க்",
+            "description": "மீண்டும் இணைந்ததும் Raspberry Pi QR வருகை ஒத்திசைகிறது"
+          },
+          "multiRole": {
+            "label": "பல-பங்கு தளம்",
+            "description": "பயிற்சியாளர், நிறுவனம், பயிற்றுநர், முதலாளி, NCCT நிர்வாகி"
+          }
+        }
+      },
+      "partners": {
+        "label": "கூட்டாளர்கள் மற்றும் நிறுவனங்கள்",
+        "title": "CoopSetu-க்கு வலு சேர்க்கும் சூழலமைப்புக் கூட்டாளர்கள்",
+        "names": {
+          "ncct": "தேசிய கூட்டுறவுப் பயிற்சி கவுன்சில்",
+          "vamnicom": "வைகுண்ட் மேத்தா தேசிய நிறுவனம்",
+          "ndri": "தேசிய பால்பண்ணை ஆராய்ச்சி நிறுவனம்",
+          "iffco": "இந்திய விவசாயிகள் உர கூட்டுறவு",
+          "nafed": "தேசிய வேளாண் கூட்டுறவு சந்தைப்படுத்தல் கூட்டமைப்பு",
+          "moc": "கூட்டுறவு அமைச்சகம், இந்திய அரசு"
+        },
+        "note": "இவை மாதிரி கூட்டாளர் சின்னங்கள் — உண்மையான கூட்டாளர் ஒருங்கிணைப்புகள் v2 வெளியீட்டுக்குத் திட்டமிடப்பட்டுள்ளன."
+      },
+      "cta": {
+        "title": "கூட்டுறவுப் பயிற்சியை மாற்றியமைக்கத் தயாரா?",
+        "body": "ஏற்கனவே 24,800+ பயிற்சியாளர்கள், 112 நிறுவனங்கள் மற்றும் 7,380 வேலை பெற்ற முன்னாள் மாணவர்கள் தளத்தில் இணைந்துள்ளனர்.",
+        "getStarted": "இலவசமாகத் தொடங்குங்கள்",
+        "verify": "சான்றிதழைச் சரிபார்க்கவும்",
+        "ministry": "கூட்டுறவு அமைச்சகம் · தேசிய கூட்டுறவுப் பயிற்சி கவுன்சில்",
+        "sih": "ஸ்மார்ட் இந்தியா ஹேக்கத்தான் 2026 · பிரச்சனை அறிக்கை 26087"
+      }
+    },
+    "courseCatalog": {
+      "title": "சுயவேக மற்றும் பயிற்சியாளர் வழிநடத்தும் பாடநெறிகள்",
+      "body": "உங்கள் AI திறன் கடவுச்சீட்டில் சரிபார்க்கப்பட்ட சான்றாக நேரடியாகச் சேரும் சிறிய, திறன்-மையப் பாடநெறிகள்.",
+      "demoTag": "டெமோ நோக்கத்திற்கான மாதிரி பாடநெறி பட்டியல்",
+      "searchPlaceholder": "பாடநெறிகள் அல்லது திறன்களைத் தேடுங்கள்…",
+      "allCategories": "அனைத்து வகைகளும்",
+      "countOne": "{count} பாடநெறி கிடைத்தது",
+      "countMany": "{count} பாடநெறிகள் கிடைத்தன",
+      "byInstructor": "{name} வழங்குவது",
+      "hours": "{count} மணி நேரம்",
+      "viewCourse": "பாடநெறியைக் காண்க",
+      "skillImpact": "திறன் தாக்கம்"
+    },
+    "jobCatalog": {
+      "title": "கூட்டுறவு முதலாளிகளின் வேலைகள்",
+      "body": "பால் ஒன்றியங்கள், கடன் சங்கங்கள், FPO-க்கள் மற்றும் பிற கூட்டுறவு முதலாளிகள் நேரடியாக வெளியிட்ட காலியிடங்கள்; நீங்கள் உள்நுழைந்த பின் உங்கள் சரிபார்க்கப்பட்ட திறன் கடவுச்சீட்டின் அடிப்படையில் வரிசைப்படுத்தப்பட்டவை.",
+      "demoTag": "டெமோ நோக்கத்திற்கான மாதிரி வேலைப் பட்டியல்கள்",
+      "searchPlaceholder": "வேலைகள், முதலாளிகள் அல்லது திறன்களைத் தேடுங்கள்…",
+      "allSectors": "அனைத்துத் துறைகளும்",
+      "allTypes": "அனைத்து வகைகளும்",
+      "jobTypes": {
+        "Full-time": "முழுநேரம்",
+        "Part-time": "பகுதிநேரம்",
+        "Contract": "ஒப்பந்தம்",
+        "Apprenticeship": "பயிற்சி நியமனம்"
+      },
+      "new": "புதியது",
+      "match": "{percent}% பொருத்தம்",
+      "postedToday": "இன்று வெளியிடப்பட்டது",
+      "postedOne": "{count} நாளுக்கு முன் வெளியிடப்பட்டது",
+      "postedMany": "{count} நாட்களுக்கு முன் வெளியிடப்பட்டது",
+      "openingOne": "{count} காலியிடம்",
+      "openingMany": "{count} காலியிடங்கள்",
+      "resultsOne": "{count} காலியிடம் கிடைத்தது",
+      "resultsMany": "{count} காலியிடங்கள் கிடைத்தன",
+      "viewDetails": "விவரங்களைக் காண்க",
+      "apply": "விண்ணப்பிக்கவும்"
+    },
+    "jobDetails": {
+      "backToJobs": "வேலைகளுக்குத் திரும்பு",
+      "match": "{percent}% பொருத்தம்",
+      "applicationSubmittedBadge": "விண்ணப்பம் சமர்ப்பிக்கப்பட்டது",
+      "viewInApplications": "விண்ணப்பங்களில் காண்க",
+      "applyWithPassport": "திறன் கடவுச்சீட்டுடன் விண்ணப்பிக்கவும்",
+      "saved": "சேமிக்கப்பட்டது",
+      "save": "சேமி",
+      "applyTitle": "{title} பணிக்கு விண்ணப்பிக்கவும்",
+      "submittedTitle": "விண்ணப்பம் சமர்ப்பிக்கப்பட்டது!",
+      "submittedBodyBefore": "உங்கள் சரிபார்க்கப்பட்ட திறன் கடவுச்சீட்டு மற்றும் தொடர்பு விவரங்கள் அனுப்பப்பட்டுள்ளன",
+      "submittedBodyAfter": ". உங்கள் விண்ணப்பங்கள் மையத்தில் மதிப்பாய்வு முன்னேற்றத்தைக் கண்காணிக்கலாம்.",
+      "done": "முடிந்தது",
+      "goToApplications": "விண்ணப்பங்களுக்குச் செல்",
+      "passportAttached": "சரிபார்க்கப்பட்ட திறன் கடவுச்சீட்டு இணைக்கப்பட்டது ({percent}% வேலைப் பொருத்தம்)",
+      "includesSkills": "உங்கள் NCCT-சான்றளிக்கப்பட்ட திறன்கள் அடங்கும்: {skills}.",
+      "applicantDetails": "விண்ணப்பதாரர் விவரங்கள்",
+      "candidate": "விண்ணப்பதாரர்:",
+      "email": "மின்னஞ்சல்:",
+      "noteToEmployer": "முதலாளிக்கான குறிப்பு (விருப்பத்தேர்வு)",
+      "notePlaceholder": "உங்கள் நடைமுறை கூட்டுறவு அனுபவம் அல்லது கிடைக்கும் தன்மை பற்றிய சுருக்கமான குறிப்பு...",
+      "cancel": "ரத்துசெய்",
+      "submitting": "சமர்ப்பிக்கப்படுகிறது...",
+      "confirmApply": "உறுதிசெய்து விண்ணப்பிக்கவும்",
+      "tabs": {
+        "overview": "கண்ணோட்டம்",
+        "requirements": "தேவைகள்",
+        "skills": "திறன்கள்",
+        "match": "நீங்கள் ஏன் பொருந்துகிறீர்கள்",
+        "company": "நிறுவனம்"
+      },
+      "aboutRole": "இந்தப் பணி பற்றி",
+      "whatYoullDo": "நீங்கள் என்ன செய்வீர்கள்",
+      "whatYoullNeed": "உங்களுக்கு என்ன தேவைப்படும்",
+      "salary": "ஊதியம்",
+      "openings": "காலியிடங்கள்",
+      "sector": "துறை",
+      "posted": "வெளியிடப்பட்டது",
+      "today": "இன்று",
+      "postedAgo": "{count} நாட்களுக்கு முன்",
+      "skillsRequired": "தேவையான திறன்கள்",
+      "basedOnPassport": "உங்கள் சரிபார்க்கப்பட்ட திறன் கடவுச்சீட்டின் அடிப்படையில்",
+      "matchedSkills": "பொருந்தும் திறன்கள் ({matched}/{total})",
+      "missingSkills": "இல்லாத திறன்கள்",
+      "recommendedCourse": "பரிந்துரைக்கப்பட்ட பாடநெறி",
+      "copy": {
+        "responsibilities": {
+          "0": "{employer}-இன் {sector} செயல்பாடுகளில் {title} தொடர்பான அன்றாடப் பணிகளை சுயமாக நிறைவேற்றுதல்.",
+          "1": "{location} மற்றும் அதைச் சுற்றியுள்ள உறுப்பினர் சங்கங்கள் மற்றும் களப் பணியாளர்களுடன் ஒருங்கிணைந்து பணிகளை நேரத்திற்குள் முடித்தல்.",
+          "2": "{skill} சிறந்த நடைமுறைகளைப் பயன்படுத்தி, விளைவுகளை கூட்டுறவு வாரியத்துக்கு அறிக்கையிடுதல்.",
+          "3": "{employer} குழு வளரும்போது புதிய பணியாளர்களின் அறிமுகம் மற்றும் பயிற்சிக்கு ஆதரவளித்தல்."
+        },
+        "requirements": {
+          "0": "{skills} பற்றிய செயல்முறை அறிவு.",
+          "1": "{location}-இல் தங்கியிருக்கவோ அல்லது அங்கு தொடர்ந்து பயணிக்கவோ தயாராக இருத்தல்.",
+          "2One": "{count} காலியிடத்துடன் {type} பணிக்கான கிடைக்கும் தன்மை.",
+          "2Many": "{count} காலியிடங்களுடன் {type} பணிக்கான கிடைக்கும் தன்மை.",
+          "3": "கூட்டுறவுத் துறை அல்லது கிராமப்புற மேம்பாட்டில் முந்தைய அனுபவம் விரும்பத்தக்கது; கட்டாயமில்லை."
+        },
+        "companyBlurb": "{employer} என்பது {location} இல் இயங்கும், {sector} துறையைச் சேர்ந்த கூட்டுறவு முதலாளி. அவர்கள் CoopSetu இல் சரிபார்க்கப்பட்ட காலியிடங்களை நேரடியாக வெளியிடுகிறார்கள்; வெறும் ரெஸ்யூம் முக்கிய சொற்களுக்குப் பதிலாக AI-வரிசைப்படுத்தப்பட்ட, திறன்-கடவுச்சீட்டு ஆதரவுடைய வேட்பாளர் பொருத்தங்களின் அடிப்படையில் பணியமர்த்துகிறார்கள்."
+      }
+    },
+    "courseLearning": {
+      "backToLearning": "என் கற்றலுக்குத் திரும்பு",
+      "savedOffline": "ஆஃப்லைனுக்காகச் சேமிக்கப்பட்டது",
+      "removeOfflineTitle": "ஆஃப்லைன் தேக்ககத்திலிருந்து நீக்கு",
+      "remove": "நீக்கு",
+      "savingOffline": "IndexedDB-இல் சேமிக்கப்படுகிறது...",
+      "downloadOffline": "ஆஃப்லைனுக்காகப் பதிவிறக்கு",
+      "offlineMode": "ஆஃப்லைன் பயன்முறை",
+      "percentComplete": "{percent}% முடிந்தது",
+      "progressCount": "{done}/{total} பாடங்கள்",
+      "tabs": {
+        "course": "பாடநெறி",
+        "quiz": "விரைவு வினாடி வினா",
+        "notes": "ஆஃப்லைன் குறிப்புகள்",
+        "discussion": "கலந்துரையாடல்",
+        "resources": "வளங்கள்"
+      },
+      "courseContent": "பாடநெறி உள்ளடக்கம்",
+      "lessonCount": "{count} பாடங்கள்",
+      "minutesShort": "{count} நி",
+      "minutes": "{count} நிமிடங்கள்",
+      "play": "இயக்கு",
+      "pause": "இடைநிறுத்து",
+      "completed": "முடிந்தது",
+      "markedCompleted": "முடிந்ததாகக் குறிக்கப்பட்டது",
+      "markComplete": "முடிந்ததெனக் குறி",
+      "finishCourse": "பாடநெறியை முடி",
+      "nextLesson": "அடுத்த பாடம்",
+      "lessonBody": "“{title}” பின்னுள்ள அடிப்படைகளைக் கற்றுக்கொண்டு, அது உண்மையான கூட்டுறவுச் சூழ்நிலைகளில் எவ்வாறு பொருந்துகிறது என்பதைப் பாருங்கள்; {category} பயிற்சியிலிருந்து எடுக்கப்பட்ட நடைமுறை உதாரணங்களுடன்.",
+      "curriculum": {
+        "modules": {
+          "0": {
+            "title": "அறிமுகம்",
+            "lessons": {
+              "0": "{topic} என்றால் என்ன",
+              "1": "{topic}-இன் வரலாறும் கோட்பாடுகளும்",
+              "2": "இது ஏன் முக்கியம்: {topic}"
+            }
+          },
+          "1": {
+            "title": "முக்கிய கருத்துகள்",
+            "lessons": {
+              "0": "{topic}-ஐ புரிந்துகொள்ளுதல்",
+              "1": "{topic}-இல் முக்கிய கட்டமைப்புகள்",
+              "2": "{topic}-ஐப் பயன்படுத்துதல்"
+            }
+          },
+          "2": {
+            "title": "நடைமுறைப் பயன்பாடு",
+            "lessons": {
+              "0": "நேரடிப் பயிற்சி: {topic}",
+              "1": "வழக்கு ஆய்வு: {topic}",
+              "2": "களப் பயிற்சி: {topic}"
+            }
+          },
+          "3": {
+            "title": "மதிப்பீடு மற்றும் மறுஆய்வு",
+            "lessons": {
+              "0": "{topic}-ஐ மறுஆய்வு செய்தல்",
+              "1": "{topic}-இல் பொதுவான தவறுகள்",
+              "2": "{topic}-ஐ நிறைவு செய்தல்"
+            }
+          }
+        }
+      },
+      "quiz": {
+        "title": "ஆஃப்லைன் அறிவுச் சோதனை",
+        "intro": "{title} பற்றிய உங்கள் புரிதலைச் சோதியுங்கள். இணையத்தில் இருக்கும்போது சமர்ப்பிப்புகள் தானாக ஒத்திசைக்கப்படும்.",
+        "questionOf": "கேள்வி 1 / 1",
+        "question": "இந்தியாவின் முதன்மை கூட்டுறவுச் சங்கத்தில் துணைவிதிகளை ஏற்கவும் வரவு செலவுத் திட்டங்களுக்கு ஒப்புதல் அளிக்கவும் பொறுப்பான முதன்மை ஆளுகை அதிகாரம் எது?",
+        "options": {
+          "0": "உறுப்பினர்களின் பொதுக்குழு (அனைத்து முதன்மை பங்குதாரர் உறுப்பினர்கள்)",
+          "1": "வெளி வணிக வங்கிக் குழு",
+          "2": "மாநகராட்சி ஆணையர்",
+          "3": "சுயாதீன மூன்றாம் தரப்பு தணிக்கை நிறுவனம்"
+        },
+        "recorded": "பதில் ஆஃப்லைன் ஒத்திசைவு வரிசையில் பதிவு செய்யப்பட்டது!",
+        "score": "மதிப்பெண்: {score} • சேவையக ஒத்திசைவுக்காக ஒத்திசைக்கப்பட்டது அல்லது வரிசையில் வைக்கப்பட்டது.",
+        "submit": "பதிலைச் சமர்ப்பி"
+      },
+      "notes": {
+        "title": "பாட ஆய்வு வழிகாட்டி மற்றும் குறிப்புகள்",
+        "storedLocally": "ஆஃப்லைனில் எப்போதும் படிக்க உங்கள் சாதனத்தில் உள்ளூரில் சேமிக்கப்பட்டது.",
+        "focusArea": "கவனக் குவிப்பு:",
+        "focusBody": "{category}-இல் {title}.",
+        "principle": "ஜனநாயக கூட்டுறவு நிறுவனங்களில், வைத்திருக்கும் பங்குகளின் எண்ணிக்கை எதுவாக இருந்தாலும், ஒவ்வொரு உறுப்பினருக்கும் ஒரு வாக்கு உண்டு. வெளிப்படையான கணக்கியல், வழக்கமான தணிக்கைகள் மற்றும் துல்லியமான இருப்புக் கணக்கீடு ஆகியவை உறுப்பினர் நலனைப் பாதுகாக்கின்றன.",
+        "checklistTitle": "முக்கிய கூட்டுறவுத் துணைவிதி பட்டியல்",
+        "checklist": {
+          "0": "நிதியாண்டு முடிவிலிருந்து ஆறு மாதங்களுக்குள் கட்டாய வருடாந்திரப் பொதுக்குழு (AGM).",
+          "1": "பங்குப் பதிவேடுகள், ஈவுத்தொகை விநியோகக் கணக்குகள் மற்றும் உறுப்பினர் வருகைப் பதிவுகளை முறையாகப் பராமரித்தல்.",
+          "2": "சட்டப்படியான இருப்பு நிதி ஒதுக்கீட்டைப் பின்பற்றுதல் (பொதுவாக நிகர லாபத்தில் 25%, ஆதரவுத் திரும்பப்பெறுதலுக்கு முன்)."
+        }
+      },
+      "discussion": {
+        "title": "இன்னும் கலந்துரையாடல் இழைகள் இல்லை",
+        "body": "இந்தப் பாடநெறிக்கான சக பயிற்சியாளர் மற்றும் பயிற்றுநர் கலந்துரையாடல் பின்வரும் கட்டமைப்புக் கட்டத்தில் வரும்."
+      },
+      "resources": {
+        "title": "இன்னும் பதிவிறக்கக்கூடிய வளங்கள் இல்லை",
+        "body": "இந்தப் பாடநெறிக்கான ஸ்லைடு தொகுப்புகள், வார்ப்புருக்கள் மற்றும் குறிப்புத் தாள்கள் பின்வரும் கட்டமைப்புக் கட்டத்தில் வரும்."
+      }
+    },
+    "demo": {
+      "badge": "ஸ்மார்ட் இந்தியா ஹேக்கத்தான் 2026 மதிப்பீட்டு மையம்",
+      "title": "CoopSetu AI டெமோ மையம்",
+      "body": "கூட்டுறவுத் திறன் மேம்பாட்டுச் சூழலமைப்பின் ஒவ்வொரு அம்சத்தையும் சோதியுங்கள். கீழே உள்ள 6 பங்குகளில் ஒன்றைத் தேர்ந்தெடுத்து, முன்பே ஏற்றப்பட்ட சுயவிவரங்கள், செயலில் உள்ள பாடநெறிகள், சரிபார்க்கப்பட்ட சான்றிதழ்கள் மற்றும் நேரடி டாஷ்போர்டுகளுடன் நுழையுங்கள்.",
+      "guideTitle": "ஒவ்வொரு பங்கிலும் மதிப்பீட்டாளர்கள் என்ன சோதிக்கலாம்",
+      "guideBody": "மேல் மாற்றி பட்டியைப் பயன்படுத்தி எப்போது வேண்டுமானாலும் பங்குகளை மாற்றலாம்",
+      "pillars": {
+        "skillPassport": {
+          "title": "1. திறன் கடவுச்சீட்டு மற்றும் மூடிய சுழற்சி",
+          "detail": "முதலாளிகள் நேரடியாகத் தேடும் சரிபார்க்கக்கூடிய, நுண்-சான்றளிக்கப்பட்ட திறன்களுக்கு பயிற்சி எவ்வாறு வழிவகுக்கிறது என்பதை சரிபாருங்கள்."
+        },
+        "offline": {
+          "title": "2. ஆஃப்லைன்-முதல் மற்றும் உறுதியானது",
+          "detail": "பாடநெறிகளை உள்ளூரில் பதிவிறக்கம் செய்தல், ஆஃப்லைன் QR வருகை வரிசை மற்றும் IndexedDB ஒத்திசைவைச் சோதியுங்கள்."
+        },
+        "institutional": {
+          "title": "3. நிறுவனப் பணிப்பாய்வு",
+          "detail": "பயிற்சியாளர் பரிந்துரை ஒப்புதல்கள், தொகுப்பு நிர்வாகம் மற்றும் தேசிய விளைவுக் கண்காணிப்பை ஆய்வு செய்யுங்கள்."
+        },
+        "multiRole": {
+          "title": "4. பல-பங்கு சூழலமைப்பு",
+          "detail": "1 கிளிக்கில் பயிற்சியாளர், பயிற்றுநர், முதலாளி, நிர்வாகி மற்றும் கியோஸ்க் இடையே தடையின்றி மாறுங்கள்."
+        }
+      }
+    },
+    "login": {
+      "badge": "CoopSetu AI டெமோ மற்றும் உற்பத்தி அணுகல்",
+      "title": "நுழைவதற்கு உங்கள் பங்கைத் தேர்ந்தெடுங்கள்",
+      "body": "எங்கள் 6 சூழலமைப்புப் பங்குகளில் எதுவாகவும் CoopSetu AI-ஐ ஆராயுங்கள். முழு நிலை மற்றும் முன்பே நிரப்பப்பட்ட தரவுடன் உடனடியாக உள்நுழைய கீழே ஏதேனும் ஒரு பங்கைத் தேர்ந்தெடுங்கள்.",
+      "credentialsTitle": "உங்களிடம் உள்நுழைவு சான்றுகள் அல்லது தனிப்பயன் சான்றுகள் உள்ளனவா?",
+      "credentialsBody": "உங்கள் மின்னஞ்சலுடன் நிலையான அங்கீகார போர்ட்டல் வழியாக உள்நுழையுங்கள்.",
+      "standardSignIn": "நிலையான உள்நுழைவு"
+    },
+    "verify": {
+      "title": "சான்றிதழ் சரிபார்ப்பு",
+      "body": "CoopSetu AI வழங்கிய எந்தச் சான்றிதழின் உண்மைத்தன்மையையும் உடனடியாகச் சரிபாருங்கள். முடிவுகள் {ledger} உடன் சரிபார்க்கப்படுகின்றன.",
+      "trySample": "மாதிரிச் சான்றிதழை முயற்சி செய்க",
+      "searchPlaceholder": "சான்றிதழ் அடையாள எண்ணை உள்ளிடுக, எ.கா. CST-2026-DAI-00842",
+      "submit": "சரிபார்",
+      "status": {
+        "valid": {
+          "label": "சரிபார்க்கப்பட்டு செல்லுபடியாகும்",
+          "message": "இந்தச் சான்றிதழ் உண்மையானது மற்றும் தற்போது செல்லுபடியாகும். இது NCCT Apex Ledger மூலம் மறைக்குறியீட்டு முறையில் கையொப்பமிடப்பட்டது."
+        },
+        "expired": {
+          "label": "உண்மையானது — காலாவதியானது",
+          "message": "இந்தச் சான்றிதழ் உண்மையானதாக இருந்தது, ஆனால் அதன் செல்லுபடி காலம் முடிந்துவிட்டது. புதுப்பிப்புக்கு வழங்கிய நிறுவனத்தைத் தொடர்புகொள்ளுங்கள்."
+        },
+        "revoked": {
+          "label": "ரத்து செய்யப்பட்டது",
+          "message": "இந்தச் சான்றிதழ் வழங்கிய நிறுவனத்தால் அதிகாரப்பூர்வமாக ரத்து செய்யப்பட்டுள்ளது; இனி செல்லுபடியாகாது."
+        }
+      },
+      "certificateId": "சான்றிதழ் அடையாள எண்:",
+      "qrAlt": "சான்றிதழ் QR குறியீடு",
+      "scanToVerify": "சரிபார்க்க ஸ்கேன் செய்க",
+      "fields": {
+        "holder": "சான்றிதழ் உரிமையாளர்",
+        "issuer": "வழங்கும் நிறுவனம்",
+        "issueDate": "வழங்கிய தேதி",
+        "validUntil": "வரை செல்லுபடியாகும்",
+        "grade": "வழங்கப்பட்ட தரம்",
+        "programme": "நிகழ்ச்சித்திட்டம்"
+      },
+      "skillsCertified": "சான்றளிக்கப்பட்ட திறன்கள்",
+      "crypto": {
+        "title": "மறைக்குறியீட்டு சரிபார்ப்பு — NCCT Apex Ledger",
+        "hash": "சரிபார்ப்பு ஹாஷ்",
+        "algorithm": "அல்காரிதம்",
+        "registry": "பதிவேடு",
+        "issuerDid": "வழங்குநர் DID"
+      },
+      "print": "அச்சிடு / PDF சேமி",
+      "viewFull": "முழுச் சான்றிதழைக் காண்க",
+      "watermark": "🔒 {date} IST அன்று சரிபார்க்கப்பட்டது · CoopSetu AI சான்றிதழ் பதிவேடு · NCCT Apex Ledger",
+      "notFound": {
+        "title": "“{id}” க்கு சான்றிதழ் எதுவும் கிடைக்கவில்லை",
+        "body": "உங்கள் ஆவணத்தில் அச்சிடப்பட்ட சான்றிதழ் அடையாள எண்ணை மீண்டும் சரிபார்க்கவும், அல்லது கீழே உள்ள மாதிரிச் சான்றிதழ்களில் ஒன்றை முயற்சிக்கவும்."
+      }
     }
   },
   "common": {
@@ -250,7 +796,8 @@
     "delete": "நீக்கு",
     "view": "பார்",
     "export": "ஏற்றுமதி",
-    "noData": "தரவு இல்லை"
+    "noData": "தரவு இல்லை",
+    "close": "மூடு"
   },
   "trainee": {
     "attendance": {
@@ -813,38 +1360,77 @@
       "kpiCourses": "செயலில் உள்ள படிப்புகள்"
     },
     "aiInterview": {
-      "enterRoleHint": "starting",
-      "privacyNote": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "description": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "fallbackQuestions": "Interview transcript",
-      "transcriptTitle": "Interview transcript",
-      "differentRole": "font-normal text-muted-foreground",
-      "title": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "orEnterBelow": "No skills listed on your profile yet.",
-      "getFeedback": "Get Practice Feedback",
-      "welcomeTitle": "Welcome to your AI mock interview for {role}.",
-      "cameraNote": "Interview transcript",
-      "noMessages": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "startInterview": "starting",
-      "feedbackFailed": "Could not generate your practice feedback.",
-      "practiceHeading": "PRACTICE FEEDBACK — not shared with employers, not a hiring decision",
-      "newInterview": "starting",
-      "fromProfile": "From your profile.",
-      "emptyIdle": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "practiceComplete": "Practice ended. The camera and microphone are off.",
-      "sendFailed": "Your answer could not be sent. Please try again.",
-      "noTargetRole": "No skills listed on your profile yet.",
-      "optional": "font-normal text-muted-foreground",
-      "startFailed": "Could not start the interview.",
-      "starting": "starting",
-      "practisingFor": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "setRoleLink": "No skills listed on your profile yet.",
-      "practiceEnded": "Practice ended. The camera and microphone are off.",
+      "title": "AI Mock Interview",
+      "description": "Practise interview questions tailored to cooperative roles. Get real-time AI feedback and dimension scores.",
+      "practisingFor": "Target Role",
+      "fromProfile": "From your profile",
+      "skillsLabel": "Skills",
       "noSkills": "No skills listed on your profile yet.",
-      "rolePlaceholder": "font-normal text-muted-foreground",
-      "skillsLabel": "From your profile.",
+      "noTargetRole": "No target role set on profile.",
+      "setRoleLink": "Set a role",
+      "orEnterBelow": "or enter one below:",
+      "differentRole": "Role to practice",
+      "optional": "(Optional)",
+      "rolePlaceholder": "e.g., Data Engineer, PACS Manager, Dairy Procurement Specialist",
+      "enterRoleHint": "Enter a target role to practice.",
+      "startInterview": "Start Interview",
+      "starting": "Starting...",
+      "newInterview": "New Interview",
+      "cameraNote": "Camera preview is local and optional.",
+      "cameraIdle": "Camera preview will appear here during the interview (Optional)",
+      "cameraPreview": "Camera preview",
+      "waitingPermission": "Requesting camera and microphone access...",
+      "elapsed": "Elapsed: {time}",
+      "transcriptTitle": "Interview Transcript",
+      "fallbackQuestions": "Standard Question Bank",
+      "emptyIdle": "Select or type a role above and click 'Start Interview' to begin.",
+      "practiceEnded": "Interview stopped. Camera and mic are off.",
+      "practiceComplete": "Interview complete. Camera and mic are off.",
+      "getFeedback": "Get Evaluation & Feedback",
+      "practiceHeading": "PRACTICE FEEDBACK",
+      "welcomeTitle": "Welcome to your AI mock interview for {role}.",
+      "welcomeBody": "I will ask you role-specific interview questions and assess your responses. Take your time and respond thoughtfully.",
+      "noMessages": "No messages yet.",
+      "sendFailed": "Your answer could not be sent. Please try again.",
+      "startFailed": "Could not start the interview. Please try again.",
+      "feedbackFailed": "Could not generate practice feedback.",
+      "privacyNote": "Your video and audio are processed locally and never recorded or sent to employers.",
+      "live": "Live Interview",
+      "endInterview": "End Interview",
+      "listening": "Listening...",
+      "sendAnswer": "Send Answer",
+      "sending": "Sending...",
+      "placeholderEnded": "Interview ended",
+      "placeholderType": "Type your answer... (Ctrl+Enter to send)",
+      "answerLabel": "Your answer",
+      "stopListening": "Stop listening",
+      "speakAnswer": "Speak answer",
+      "voiceUnsupported": "Voice input is not supported in this browser.",
       "loadRoleFailed": "Could not load your target role.",
-      "welcomeBody": "I will ask you real interview questions and listen to your answers. Please speak clearly. Take your time."
+      "aiInterviewer": "AI Interviewer",
+      "you": "You",
+      "generating": "Generating evaluation...",
+      "employerHeading": "EVALUATION SUMMARY",
+      "fallbackBadge": "Standard Question Bank",
+      "scores": "Performance Dimensions",
+      "dimCommunication": "Communication",
+      "dimDomainKnowledge": "Domain Knowledge",
+      "dimProblemSolving": "Problem Solving",
+      "dimCoopSector": "Cooperative Sector Knowledge",
+      "notScored": "Not scored",
+      "strengths": "Observed Strengths",
+      "gaps": "Areas for Improvement",
+      "followUp": "Suggested Follow-up Practice Topics",
+      "noneNoted": "None noted",
+      "noneSuggested": "None suggested",
+      "camUnsupported": "This browser cannot access a camera. You can still answer by typing.",
+      "camDenied": "Camera or microphone permission was denied. Allow access in your browser settings and restart the interview, or continue by typing your answers.",
+      "camNotFound": "No camera or microphone was found. You can still answer by typing.",
+      "camError": "The camera could not be started. You can still answer by typing.",
+      "speechUnsupported": "Voice answers are not supported in this browser. Type your answer instead.",
+      "speechBlocked": "Microphone access for speech recognition was blocked. Type your answer instead.",
+      "speechStopped": "Speech recognition stopped ({code}). Type your answer or try again.",
+      "speechCouldNotStart": "Speech recognition could not start. Type your answer instead."
     },
     "profile": {
       "notifAssessmentsDesc": "Notification Preferences",
@@ -1049,5 +1635,19 @@
       "title": "Courses",
       "enrolled": "Enrolled"
     }
+  },
+  "auth": {
+    "signIn": {
+      "backHome": "முகப்புக்குத் திரும்பு",
+      "footer": "CoopSetu AI · தேசிய கூட்டுறவுத் திறன் மேம்பாடு மற்றும் வேலைவாய்ப்பு தளம் · SIH 2026"
+    },
+    "signUp": {
+      "disabledTitle": "பதிவு செய்தல் முடக்கப்பட்டுள்ளது",
+      "disabledBody": "இந்த டெமோ போலி அங்கீகாரத்தை மட்டுமே பயன்படுத்துகிறது."
+    }
+  },
+  "brand": {
+    "logoAlt": "CoopSetu AI - கற்போம், திறன், பணி, இணைந்து வளர்வோம்",
+    "emblemAlt": "CoopSetu AI சின்னம்"
   }
 }

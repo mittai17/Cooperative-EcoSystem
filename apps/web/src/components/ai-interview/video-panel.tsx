@@ -52,7 +52,7 @@ export function VideoPanel({
             autoPlay
             muted
             playsInline
-            aria-label={t("trainee.aiInterview.cameraPreview")}
+            aria-label={t("trainee.aiInterview.cameraPreview", "Camera Preview") || "Camera Preview"}
             className="h-full w-full scale-x-[-1] object-cover"
           />
         ) : (
@@ -64,9 +64,9 @@ export function VideoPanel({
             )}
             <p className="max-w-sm text-sm">
               {cameraStatus === "requesting"
-                ? t("trainee.aiInterview.waitingPermission")
+                ? (t("trainee.aiInterview.waitingPermission", "Requesting camera and microphone access...") || "Requesting camera and microphone access...")
                 : cameraMessage ??
-                  t("trainee.aiInterview.cameraIdle")}
+                  (t("trainee.aiInterview.cameraIdle", "Camera preview will appear here during the interview (Optional)") || "Camera preview will appear here during the interview (Optional)")}
             </p>
           </div>
         )}
@@ -74,8 +74,8 @@ export function VideoPanel({
         {live && (
           <div className="absolute right-3 top-3 flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
             <span className="size-2 rounded-full bg-primary" aria-hidden />
-            <span>{t("trainee.aiInterview.live")}</span>
-            <span className="tabular-nums" aria-label={t("trainee.aiInterview.elapsed").replace("{time}", formatElapsed(elapsedSeconds))}>
+            <span>{t("trainee.aiInterview.live", "Live Interview") || "Live Interview"}</span>
+            <span className="tabular-nums" aria-label={(t("trainee.aiInterview.elapsed", "Elapsed: {time}") || "Elapsed: {time}").replace("{time}", formatElapsed(elapsedSeconds))}>
               {formatElapsed(elapsedSeconds)}
             </span>
           </div>
@@ -94,7 +94,7 @@ export function VideoPanel({
             className="h-10 rounded-full bg-primary px-6 text-white hover:bg-primary-hover"
           >
             <Square className="fill-current" aria-hidden />
-            {t("trainee.aiInterview.endInterview")}
+            {t("trainee.aiInterview.endInterview", "End Interview") || "End Interview"}
           </Button>
         </div>
       )}

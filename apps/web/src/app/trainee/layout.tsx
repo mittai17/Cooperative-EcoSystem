@@ -3,7 +3,7 @@ import { MockChatbot } from "@/components/dashboard/mock-chatbot";
 
 export default function TraineeLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AppShell role="trainee" userName="Ravindra S. Patil" userSubtitle="ravindra.patil@coopsetu.ai">
+    <AppShell role="trainee" userName="Arjun Kumar" userSubtitle="arjunkumar@example.com">
       {children}
       <MockChatbot />
     </AppShell>

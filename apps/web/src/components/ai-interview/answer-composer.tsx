@@ -46,14 +46,14 @@ export function AnswerComposer({
           role="status"
         >
           <AudioLines className="size-5 animate-pulse text-primary" aria-hidden />
-          <span>{t("trainee.aiInterview.listening")}</span>
+          <span>{t("trainee.aiInterview.listening", "Listening...") || "Listening..."}</span>
           {interim && <span className="max-w-xs truncate text-muted-foreground">{interim}</span>}
         </div>
       )}
 
       {speechError && <p className="text-xs text-amber-700">{speechError}</p>}
 
-      <div className="flex items-end gap-2">
+      <div className="flex w-full items-end gap-2">
         <Textarea
           value={draft}
           onChange={(event) => onDraftChange(event.target.value)}
@@ -65,11 +65,13 @@ export function AnswerComposer({
           }}
           disabled={disabled || submitting}
           placeholder={
-            disabled ? t("trainee.aiInterview.placeholderEnded") : t("trainee.aiInterview.placeholderType")
+            disabled
+              ? t("trainee.aiInterview.placeholderEnded", "Interview ended") || "Interview ended"
+              : t("trainee.aiInterview.placeholderType", "Type your answer... (Ctrl+Enter to send)") || "Type your answer... (Ctrl+Enter to send)"
           }
-          aria-label={t("trainee.aiInterview.answerLabel")}
+          aria-label={t("trainee.aiInterview.answerLabel", "Your answer") || "Your answer"}
           rows={2}
-          className="min-h-10 resize-none bg-background"
+          className="flex-1 min-w-0 w-full resize-none bg-background min-h-10"
         />
         {speechSupported && (
           <Button
@@ -79,21 +81,28 @@ export function AnswerComposer({
             onClick={onToggleListening}
             disabled={disabled || submitting}
             aria-pressed={listening}
-            aria-label={listening ? t("trainee.aiInterview.stopListening") : t("trainee.aiInterview.speakAnswer")}
-            className={cn(listening && "border-primary text-primary")}
+            aria-label={
+              listening
+                ? t("trainee.aiInterview.stopListening", "Stop listening") || "Stop listening"
+                : t("trainee.aiInterview.speakAnswer", "Speak answer") || "Speak answer"
+            }
+            className={cn("shrink-0", listening && "border-primary text-primary")}
           >
             {listening ? <MicOff aria-hidden /> : <Mic aria-hidden />}
           </Button>
         )}
-        <Button type="button" onClick={onSubmit} disabled={!canSend}>
-          <Send aria-hidden />
-          {submitting ? t("trainee.aiInterview.sending") : t("trainee.aiInterview.sendAnswer")}
+        <Button type="button" onClick={onSubmit} disabled={!canSend} className="shrink-0 gap-2">
+          <Send className="size-4" aria-hidden />
+          {submitting
+            ? t("trainee.aiInterview.sending", "Sending...") || "Sending..."
+            : t("trainee.aiInterview.sendAnswer", "Send Answer") || "Send Answer"}
         </Button>
       </div>
 
       {!speechSupported && (
         <p className="text-xs text-muted-foreground">
-          {t("trainee.aiInterview.voiceUnsupported")}
+          {t("trainee.aiInterview.voiceUnsupported", "Voice input is not supported in this browser.") ||
+            "Voice input is not supported in this browser."}
         </p>
       )}
     </div>

@@ -143,7 +143,106 @@
     "signOut": "Sign out",
     "notifications": "Notifications",
     "openNavigation": "Open navigation menu",
-    "languageSwitcher": "Change language"
+    "languageSwitcher": "Change language",
+    "messages": "Messages",
+    "userMenu": "User account menu",
+    "adminUser": "Admin User",
+    "roleWorkspace": "{role} workspace",
+    "workspaceTag": "{role} workspace · demo",
+    "demoNotesFooter": "Demo notifications, live alerts arrive with the backend integration",
+    "spotlight": {
+      "campusAlt": "VAMNICOM campus",
+      "institution": {
+        "title": "Building Stronger Cooperatives",
+        "tagline": "Train. Empower. Transform."
+      },
+      "keepLearning": {
+        "title": "Keep Learning",
+        "tagline": "Build a Better Tomorrow"
+      }
+    },
+    "demoNotes": {
+      "trainee": {
+        "0": {
+          "title": "New assessment scheduled",
+          "detail": "Bookkeeping with Tally, Module 3 Quiz due Oct 2"
+        },
+        "1": {
+          "title": "Skill Passport updated",
+          "detail": "Dairy Operations confidence rose to 88%"
+        },
+        "2": {
+          "title": "New job match",
+          "detail": "Dairy Procurement Supervisor, 91% match"
+        }
+      },
+      "institution": {
+        "0": {
+          "title": "2 nominations pending",
+          "detail": "Cooperative Management Fundamentals"
+        },
+        "1": {
+          "title": "Attendance dip flagged",
+          "detail": "Week 3 attendance fell to 85%"
+        }
+      },
+      "trainer": {
+        "0": {
+          "title": "Attendance not marked",
+          "detail": "2 classes awaiting today's attendance"
+        },
+        "1": {
+          "title": "Grading queue growing",
+          "detail": "15 project submissions awaiting review"
+        }
+      },
+      "employer": {
+        "0": {
+          "title": "New verified match",
+          "detail": "Ravindra S. Patil, 94% match for Dairy Supervisor"
+        },
+        "1": {
+          "title": "Posting closing soon",
+          "detail": "Apprentice Cooperative Society Secretary"
+        }
+      },
+      "admin": {
+        "0": {
+          "title": "Monthly outcomes report ready",
+          "detail": "September employment funnel updated"
+        },
+        "1": {
+          "title": "New institution onboarded",
+          "detail": "Fisheries Cooperative Federation, Kochi"
+        }
+      },
+      "kiosk": {
+        "0": {
+          "title": "Terminal Online",
+          "detail": "Station 01 sync complete with Central Hub"
+        },
+        "1": {
+          "title": "Attendance Buffer",
+          "detail": "18 offline records synced successfully"
+        }
+      }
+    },
+    "chatbot": {
+      "greeting": "Hi {name}! I am CoopSetu AI, your career and learning assistant. How can I help you today?",
+      "online": "Online",
+      "placeholder": "Ask me anything...",
+      "suggestions": {
+        "0": "What courses should I take next?",
+        "1": "How do I apply for PACS Digital Accounting?",
+        "2": "Show my skill passport summary"
+      },
+      "responses": {
+        "0": "Based on your profile, I recommend completing the 'PACS Digital Accounting' certification next. It perfectly aligns with your experience.",
+        "1": "You can navigate to the 'Programmes' tab from the sidebar to register for new courses.",
+        "2": "Your skill passport currently shows 'Advanced' in Dairy Operations and 'Intermediate' in PACS Accounting.",
+        "3": "Is there anything else I can assist you with regarding your cooperative career path?"
+      }
+    }
   },
   "public": {
     "nav": {
@@ -155,7 +254,8 @@
       "demoHub": "Demo Hub",
       "signIn": "Sign In",
       "getStarted": "Get Started",
-      "language": "Language"
+      "language": "Language",
+      "toggleMenu": "Toggle navigation menu"
     },
     "hero": {
       "badgeBrand": "CoopSetu AI",
@@ -186,7 +286,33 @@
     "roles": {
       "title": "Built for every role in the ecosystem",
       "body": "Role-based access keeps each dashboard focused on the decisions that role actually makes.",
-      "getStarted": "Get started"
+      "getStarted": "Get started",
+      "items": {
+        "trainee": {
+          "label": "Trainee / Learner",
+          "description": "Enrol in programmes, build your Skill Passport, find jobs"
+        },
+        "institution": {
+          "label": "Cooperative Institution",
+          "description": "Run programmes, nominate trainees, track outcomes"
+        },
+        "trainer": {
+          "label": "Trainer / Faculty",
+          "description": "Manage classes, attendance, and assessments"
+        },
+        "employer": {
+          "label": "Employer / Cooperative Society",
+          "description": "Post jobs, discover verified skilled candidates"
+        },
+        "admin": {
+          "label": "NCCT Administrator",
+          "description": "Oversee institutions, programmes, and national outcomes"
+        },
+        "kiosk": {
+          "label": "Digital Kiosk Station",
+          "description": "Offline-first village station for attendance and certificate verification"
+        }
+      }
     },
     "features": {
       "title": "The AI layer that makes the loop work",
@@ -234,6 +360,426 @@
         "verifyCertificate": "Verify a certificate",
         "ncctAdminLogin": "NCCT admin login"
       }
+    },
+    "loop": {
+      "stages": {
+        "registration": {
+          "label": "Registration",
+          "description": "Trainee & institution onboarding"
+        },
+        "training": {
+          "label": "Training",
+          "description": "Cooperative-sector programmes & courses"
+        },
+        "skills": {
+          "label": "Skills",
+          "description": "AI-inferred skills from performance data"
+        },
+        "certification": {
+          "label": "Certification",
+          "description": "Verifiable digital certificates"
+        },
+        "jobMatching": {
+          "label": "Job Matching",
+          "description": "AI matches skills to open roles"
+        },
+        "employment": {
+          "label": "Employment",
+          "description": "Placement with cooperative employers"
+        },
+        "employerFeedback": {
+          "label": "Employer Feedback",
+          "description": "On-the-job performance signals"
+        },
+        "newTraining": {
+          "label": "New Training",
+          "description": "Feedback reshapes future curricula"
+        }
+      },
+      "feedbackNote": "Employer feedback flows straight back into curriculum design, closing the loop so training keeps matching real, current demand."
+    },
+    "aboutPage": {
+      "hero": {
+        "badge": "SIH 2026 · PS 26087",
+        "title": "About {name} AI",
+        "body": "A national AI platform that connects cooperative training to verifiable skills and real employment — built for the Ministry of Cooperation and National Council for Cooperative Training (NCCT).",
+        "joinTrainee": "Join as a Trainee",
+        "browseProgrammes": "Browse Programmes"
+      },
+      "mission": {
+        "label": "Our Mission",
+        "title": "Close the loop between training and livelihood",
+        "body": "India's cooperative sector trains thousands every year, yet outcomes remain invisible — fragmented across institutions with no digital thread connecting a trainee's learning journey to employment. CoopSetu AI changes that.",
+        "passportBody": "We give every trainee a living, AI-powered {passport} that employers can trust, every institution a real-time dashboard, and NCCT a national analytics view of skill supply and demand.",
+        "passport": "Skill Passport",
+        "tiles": {
+          "passports": "Verified Skill Passports",
+          "advisor": "AI Career Advisor",
+          "analytics": "National Analytics",
+          "kiosk": "QR Kiosk Attendance"
+        }
+      },
+      "problem": {
+        "label": "Problem Statement · SIH 2026 PS 26087",
+        "title": "What we're solving",
+        "intro": "The Smart India Hackathon 2026 Problem Statement 26087, issued by the Ministry of Cooperation, identifies critical gaps in the cooperative training ecosystem:",
+        "points": {
+          "0": "No unified digital record of cooperative training outcomes",
+          "1": "Manual, paper-based attendance and certification",
+          "2": "Gap between skills trained and skills demanded by employers",
+          "3": "Employers cannot verify claimed cooperative competencies",
+          "4": "NCCT has no real-time visibility into national training throughput"
+        },
+        "closing": "CoopSetu AI directly addresses every one of these gaps with a single integrated platform."
+      },
+      "howItWorks": {
+        "label": "How It Works",
+        "title": "From enrolment to placement in four steps",
+        "steps": {
+          "enrol": {
+            "title": "Register & Enrol",
+            "description": "Trainees register via cooperative institutions. NCCT approves and VAMNICOM coordinates programme allocation."
+          },
+          "train": {
+            "title": "Train & Attend",
+            "description": "QR-based kiosk attendance, live timetables, and trainer grading — all captured in real-time."
+          },
+          "passport": {
+            "title": "AI Skill Passport",
+            "description": "Every completed module, assessment, and employer feedback is distilled into a tamper-proof digital Skill Passport."
+          },
+          "place": {
+            "title": "Match & Place",
+            "description": "AI career advisor matches verified skills to live job postings from cooperative employers. Placement loop closes."
+          }
+        }
+      },
+      "technology": {
+        "label": "Technology",
+        "title": "Built on modern, production-grade foundations",
+        "body": "Our monorepo uses a curated stack that enables rapid iteration while remaining scalable to a national deployment serving millions of trainees.",
+        "features": {
+          "edge": {
+            "label": "Edge-first architecture",
+            "description": "Sub-100 ms responses via Next.js edge runtime"
+          },
+          "certificates": {
+            "label": "Tamper-proof certificates",
+            "description": "Blockchain-anchored QR verification"
+          },
+          "kiosk": {
+            "label": "Offline-first kiosk",
+            "description": "Raspberry Pi QR attendance syncs when reconnected"
+          },
+          "multiRole": {
+            "label": "Multi-role platform",
+            "description": "Trainee, Institution, Trainer, Employer, NCCT Admin"
+          }
+        }
+      },
+      "partners": {
+        "label": "Partners & Institutions",
+        "title": "Ecosystem partners powering CoopSetu",
+        "names": {
+          "ncct": "National Council for Cooperative Training",
+          "vamnicom": "Vaikunth Mehta National Institute",
+          "ndri": "National Dairy Research Institute",
+          "iffco": "Indian Farmers Fertiliser Cooperative",
+          "nafed": "National Agricultural Cooperative Marketing Federation",
+          "moc": "Ministry of Cooperation, GoI"
+        },
+        "note": "Dummy partner logos — real partner integrations planned for v2 launch."
+      },
+      "cta": {
+        "title": "Ready to transform cooperative training?",
+        "body": "Join 24,800+ trainees, 112 institutions, and 7,380 placed alumni already on the platform.",
+        "getStarted": "Get started free",
+        "verify": "Verify a certificate",
+        "ministry": "Ministry of Cooperation · National Council for Cooperative Training",
+        "sih": "Smart India Hackathon 2026 · Problem Statement 26087"
+      }
+    },
+    "courseCatalog": {
+      "title": "Self-paced & instructor-led courses",
+      "body": "Shorter, skill-focused courses that feed directly into your AI Skill Passport as verified evidence.",
+      "demoTag": "Sample course catalogue for demo purposes",
+      "searchPlaceholder": "Search courses or skills…",
+      "allCategories": "All categories",
+      "countOne": "{count} course found",
+      "countMany": "{count} courses found",
+      "byInstructor": "by {name}",
+      "hours": "{count} hours",
+      "viewCourse": "View Course",
+      "skillImpact": "Skill impact"
+    },
+    "jobCatalog": {
+      "title": "Jobs from cooperative employers",
+      "body": "Openings posted directly by dairy unions, credit societies, FPOs, and other cooperative employers, ranked against your verified Skill Passport once you're signed in.",
+      "demoTag": "Sample job listings for demo purposes",
+      "searchPlaceholder": "Search jobs, employers, or skills…",
+      "allSectors": "All sectors",
+      "allTypes": "All types",
+      "jobTypes": {
+        "Full-time": "Full-time",
+        "Part-time": "Part-time",
+        "Contract": "Contract",
+        "Apprenticeship": "Apprenticeship"
+      },
+      "new": "New",
+      "match": "{percent}% Match",
+      "postedToday": "Posted today",
+      "postedOne": "Posted {count} day ago",
+      "postedMany": "Posted {count} days ago",
+      "openingOne": "{count} opening",
+      "openingMany": "{count} openings",
+      "resultsOne": "{count} opening found",
+      "resultsMany": "{count} openings found",
+      "viewDetails": "View Details",
+      "apply": "Apply"
+    },
+    "jobDetails": {
+      "backToJobs": "Back to Jobs",
+      "match": "{percent}% Match",
+      "applicationSubmittedBadge": "Application Submitted",
+      "viewInApplications": "View in Applications",
+      "applyWithPassport": "Apply with Skill Passport",
+      "saved": "Saved",
+      "save": "Save",
+      "applyTitle": "Apply to {title}",
+      "submittedTitle": "Application Submitted!",
+      "submittedBodyBefore": "Your verified Skill Passport and contact details have been sent to",
+      "submittedBodyAfter": ". You can monitor the review progress in your Applications hub.",
+      "done": "Done",
+      "goToApplications": "Go to Applications",
+      "passportAttached": "Verified Skill Passport Attached ({percent}% Job Match)",
+      "includesSkills": "Includes your NCCT-certified skills: {skills}.",
+      "applicantDetails": "Applicant Details",
+      "candidate": "Candidate:",
+      "email": "Email:",
+      "noteToEmployer": "Note to Employer (Optional)",
+      "notePlaceholder": "Share a short note about your practical cooperative experience or availability...",
+      "cancel": "Cancel",
+      "submitting": "Submitting...",
+      "confirmApply": "Confirm & Apply",
+      "tabs": {
+        "overview": "Overview",
+        "requirements": "Requirements",
+        "skills": "Skills",
+        "match": "Why You Match",
+        "company": "Company"
+      },
+      "aboutRole": "About this role",
+      "whatYoullDo": "What you'll do",
+      "whatYoullNeed": "What you'll need",
+      "salary": "Salary",
+      "openings": "Openings",
+      "sector": "Sector",
+      "posted": "Posted",
+      "today": "Today",
+      "postedAgo": "{count}d ago",
+      "skillsRequired": "Skills required",
+      "basedOnPassport": "Based on your verified Skill Passport",
+      "matchedSkills": "Matched Skills ({matched}/{total})",
+      "missingSkills": "Missing Skills",
+      "recommendedCourse": "Recommended Course",
+      "copy": {
+        "responsibilities": {
+          "0": "Own day-to-day delivery of {title} duties across {employer}'s {sector} operations.",
+          "1": "Coordinate with member societies and field staff in and around {location} to keep work on schedule.",
+          "2": "Apply {skill} best practices and report outcomes to the cooperative's board.",
+          "3": "Support onboarding and training of new staff as the {employer} team grows."
+        },
+        "requirements": {
+          "0": "Working knowledge of {skills}.",
+          "1": "Comfortable being based in or regularly travelling to {location}.",
+          "2One": "Available for a {type} engagement with {count} opening.",
+          "2Many": "Available for a {type} engagement with {count} openings.",
+          "3": "Prior cooperative-sector or rural-development experience preferred, not mandatory."
+        },
+        "companyBlurb": "{employer} is a cooperative employer in the {sector} sector, operating out of {location}. They post verified openings directly on CoopSetu and hire against AI-ranked, skill-passport-backed candidate matches rather than resume keywords alone."
+      }
+    },
+    "courseLearning": {
+      "backToLearning": "Back to My Learning",
+      "savedOffline": "Saved for Offline",
+      "removeOfflineTitle": "Remove from offline cache",
+      "remove": "Remove",
+      "savingOffline": "Saving to IndexedDB...",
+      "downloadOffline": "Download for Offline",
+      "offlineMode": "Offline Mode",
+      "percentComplete": "{percent}% complete",
+      "progressCount": "{done}/{total} lessons",
+      "tabs": {
+        "course": "Course",
+        "quiz": "Quick Quiz",
+        "notes": "Offline Notes",
+        "discussion": "Discussion",
+        "resources": "Resources"
+      },
+      "courseContent": "Course Content",
+      "lessonCount": "{count} lessons",
+      "minutesShort": "{count}m",
+      "minutes": "{count} minutes",
+      "play": "Play",
+      "pause": "Pause",
+      "completed": "Completed",
+      "markedCompleted": "Marked as Completed",
+      "markComplete": "Mark Complete",
+      "finishCourse": "Finish Course",
+      "nextLesson": "Next Lesson",
+      "lessonBody": "Learn the fundamentals behind “{title}” and see how it applies to real cooperative-sector scenarios, with practical examples drawn from {category} practice.",
+      "curriculum": {
+        "modules": {
+          "0": {
+            "title": "Introduction",
+            "lessons": {
+              "0": "What is {topic}",
+              "1": "History and Principles of {topic}",
+              "2": "Why it matters: {topic}"
+            }
+          },
+          "1": {
+            "title": "Core Concepts",
+            "lessons": {
+              "0": "Understanding {topic}",
+              "1": "Key Frameworks in {topic}",
+              "2": "Applying {topic}"
+            }
+          },
+          "2": {
+            "title": "Practical Application",
+            "lessons": {
+              "0": "Hands-on Practice: {topic}",
+              "1": "Case Study: {topic}",
+              "2": "Field Exercise: {topic}"
+            }
+          },
+          "3": {
+            "title": "Assessment & Review",
+            "lessons": {
+              "0": "Reviewing {topic}",
+              "1": "Common Pitfalls in {topic}",
+              "2": "Wrapping Up {topic}"
+            }
+          }
+        }
+      },
+      "quiz": {
+        "title": "Offline Knowledge Check",
+        "intro": "Test your understanding of {title}. Submissions sync automatically when online.",
+        "questionOf": "Question 1 of 1",
+        "question": "What is the primary governing authority responsible for adopting bylaws and approving budgets in an Indian primary cooperative society?",
+        "options": {
+          "0": "General Body of Members (All primary shareholding members)",
+          "1": "External Commercial Banking Syndicate",
+          "2": "Municipal Corporation Commissioner",
+          "3": "Independent Third-Party Auditing Firm"
+        },
+        "recorded": "Answer Recorded into Offline Sync Queue!",
+        "score": "Score: {score} • Synced or enqueued for server synchronization.",
+        "submit": "Submit Answer"
+      },
+      "notes": {
+        "title": "Lesson Study Guide & Notes",
+        "storedLocally": "Stored locally on your device for offline reading anytime.",
+        "focusArea": "Focus Area:",
+        "focusBody": "{title} in {category}.",
+        "principle": "In democratic cooperative enterprises, every member has one vote regardless of the number of shares held. Transparent bookkeeping, routine audits, and accurate inventory accounting ensure that member welfare remains protected.",
+        "checklistTitle": "Key Cooperative Bylaw Checklist",
+        "checklist": {
+          "0": "Mandatory annual general meetings (AGM) within six months of the financial year end.",
+          "1": "Proper maintenance of share registers, dividend distribution accounts, and member attendance logs.",
+          "2": "Adherence to statutory reserve fund allocations (typically 25% of net profit before patronage refund)."
+        }
+      },
+      "discussion": {
+        "title": "No discussion threads yet",
+        "body": "Peer and instructor discussion for this course arrives in a later build pass."
+      },
+      "resources": {
+        "title": "No downloadable resources yet",
+        "body": "Slide decks, templates, and reference sheets for this course arrive in a later build pass."
+      }
+    },
+    "demo": {
+      "badge": "Smart India Hackathon 2026 Evaluation Hub",
+      "title": "CoopSetu AI Demo Hub",
+      "body": "Test every feature across the cooperative skilling ecosystem. Select any of the 6 roles below to enter with pre-loaded profiles, active courses, verified certifications, and live dashboards.",
+      "guideTitle": "What Evaluators Can Test in Each Persona",
+      "guideBody": "Switch between personas at any time using the top switcher bar",
+      "pillars": {
+        "skillPassport": {
+          "title": "1. Skill Passport & Closed Loop",
+          "detail": "Verify how training leads to verifiable, micro-credentialed skills that employers directly search for."
+        },
+        "offline": {
+          "title": "2. Offline-First & Resilient",
+          "detail": "Test downloading courses locally, offline QR attendance queueing, and IndexedDB sync."
+        },
+        "institutional": {
+          "title": "3. Institutional Workflow",
+          "detail": "Examine trainee nomination approvals, batch management, and national outcomes tracking."
+        },
+        "multiRole": {
+          "title": "4. Multi-Role Ecosystem",
+          "detail": "Seamlessly jump between Trainee, Trainer, Employer, Admin, and Kiosk in 1 click."
+        }
+      }
+    },
+    "login": {
+      "badge": "CoopSetu AI Demo & Production Access",
+      "title": "Choose Your Persona to Enter",
+      "body": "Explore CoopSetu AI as any of our 6 ecosystem roles. Select any persona below to log in instantly with full state and pre-populated data.",
+      "credentialsTitle": "Have credentials or custom credentials?",
+      "credentialsBody": "Log in through the standard authentication portal with your email.",
+      "standardSignIn": "Standard Sign-In"
+    },
+    "verify": {
+      "title": "Certificate Verification",
+      "body": "Instantly verify the authenticity of any CoopSetu AI–issued certificate. Results are checked against the {ledger}.",
+      "trySample": "Try the sample certificate",
+      "searchPlaceholder": "Enter certificate ID, e.g. CST-2026-DAI-00842",
+      "submit": "Verify",
+      "status": {
+        "valid": {
+          "label": "Verified & Valid",
+          "message": "This certificate is authentic and currently valid. It was cryptographically signed by the NCCT Apex Ledger."
+        },
+        "expired": {
+          "label": "Authentic — Expired",
+          "message": "This certificate was genuine but its validity period has ended. Contact the issuing institution for renewal."
+        },
+        "revoked": {
+          "label": "Revoked",
+          "message": "This certificate has been officially revoked by the issuing institution and is no longer valid."
+        }
+      },
+      "certificateId": "Certificate ID:",
+      "qrAlt": "Certificate QR code",
+      "scanToVerify": "Scan to verify",
+      "fields": {
+        "holder": "Certificate Holder",
+        "issuer": "Issuing Institution",
+        "issueDate": "Issue Date",
+        "validUntil": "Valid Until",
+        "grade": "Grade Awarded",
+        "programme": "Programme"
+      },
+      "skillsCertified": "Skills Certified",
+      "crypto": {
+        "title": "Cryptographic Verification — NCCT Apex Ledger",
+        "hash": "Verification Hash",
+        "algorithm": "Algorithm",
+        "registry": "Registry",
+        "issuerDid": "Issuer DID"
+      },
+      "print": "Print / Save PDF",
+      "viewFull": "View Full Certificate",
+      "watermark": "🔒 Verified {date} IST · CoopSetu AI Certificate Registry · NCCT Apex Ledger",
+      "notFound": {
+        "title": "No certificate found for “{id}”",
+        "body": "Double-check the certificate ID printed on your document, or try one of the sample certificates below."
+      }
     }
   },
   "common": {
@@ -250,7 +796,8 @@
     "delete": "Delete",
     "view": "View",
     "export": "Export",
-    "noData": "No data"
+    "noData": "No data",
+    "close": "Close"
   },
   "trainee": {
     "attendance": {
@@ -694,7 +1241,7 @@
       "clipboardBlocked": "The clipboard was blocked. Select the link above and copy it manually."
     },
     "hostel": {
-      "management": "Home",
+      "management": "Hostel Management",
       "floor": "Gender:",
       "myHostel": "Home",
       "wardenInfo": "Chief Residential Warden",
@@ -813,38 +1360,77 @@
       "kpiCourses": "Active Courses"
     },
     "aiInterview": {
-      "enterRoleHint": "starting",
-      "privacyNote": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "description": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "fallbackQuestions": "Interview transcript",
-      "transcriptTitle": "Interview transcript",
-      "differentRole": "font-normal text-muted-foreground",
-      "title": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "orEnterBelow": "No skills listed on your profile yet.",
-      "getFeedback": "Get Practice Feedback",
-      "welcomeTitle": "Welcome to your AI mock interview for {role}.",
-      "cameraNote": "Interview transcript",
-      "noMessages": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "startInterview": "starting",
-      "feedbackFailed": "Could not generate your practice feedback.",
-      "practiceHeading": "PRACTICE FEEDBACK — not shared with employers, not a hiring decision",
-      "newInterview": "starting",
-      "fromProfile": "From your profile.",
-      "emptyIdle": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "practiceComplete": "Practice ended. The camera and microphone are off.",
-      "sendFailed": "Your answer could not be sent. Please try again.",
-      "noTargetRole": "No skills listed on your profile yet.",
-      "optional": "font-normal text-muted-foreground",
-      "startFailed": "Could not start the interview.",
-      "starting": "starting",
-      "practisingFor": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "setRoleLink": "No skills listed on your profile yet.",
-      "practiceEnded": "Practice ended. The camera and microphone are off.",
+      "title": "AI Mock Interview",
+      "description": "Practise interview questions tailored to cooperative roles. Get real-time AI feedback and dimension scores.",
+      "practisingFor": "Target Role",
+      "fromProfile": "From your profile",
+      "skillsLabel": "Skills",
       "noSkills": "No skills listed on your profile yet.",
-      "rolePlaceholder": "font-normal text-muted-foreground",
-      "skillsLabel": "From your profile.",
+      "noTargetRole": "No target role set on profile.",
+      "setRoleLink": "Set a role",
+      "orEnterBelow": "or enter one below:",
+      "differentRole": "Role to practice",
+      "optional": "(Optional)",
+      "rolePlaceholder": "e.g., Data Engineer, PACS Manager, Dairy Procurement Specialist",
+      "enterRoleHint": "Enter a target role to practice.",
+      "startInterview": "Start Interview",
+      "starting": "Starting...",
+      "newInterview": "New Interview",
+      "cameraNote": "Camera preview is local and optional.",
+      "cameraIdle": "Camera preview will appear here during the interview (Optional)",
+      "cameraPreview": "Camera preview",
+      "waitingPermission": "Requesting camera and microphone access...",
+      "elapsed": "Elapsed: {time}",
+      "transcriptTitle": "Interview Transcript",
+      "fallbackQuestions": "Standard Question Bank",
+      "emptyIdle": "Select or type a role above and click 'Start Interview' to begin.",
+      "practiceEnded": "Interview stopped. Camera and mic are off.",
+      "practiceComplete": "Interview complete. Camera and mic are off.",
+      "getFeedback": "Get Evaluation & Feedback",
+      "practiceHeading": "PRACTICE FEEDBACK",
+      "welcomeTitle": "Welcome to your AI mock interview for {role}.",
+      "welcomeBody": "I will ask you role-specific interview questions and assess your responses. Take your time and respond thoughtfully.",
+      "noMessages": "No messages yet.",
+      "sendFailed": "Your answer could not be sent. Please try again.",
+      "startFailed": "Could not start the interview. Please try again.",
+      "feedbackFailed": "Could not generate practice feedback.",
+      "privacyNote": "Your video and audio are processed locally and never recorded or sent to employers.",
+      "live": "Live Interview",
+      "endInterview": "End Interview",
+      "listening": "Listening...",
+      "sendAnswer": "Send Answer",
+      "sending": "Sending...",
+      "placeholderEnded": "Interview ended",
+      "placeholderType": "Type your answer... (Ctrl+Enter to send)",
+      "answerLabel": "Your answer",
+      "stopListening": "Stop listening",
+      "speakAnswer": "Speak answer",
+      "voiceUnsupported": "Voice input is not supported in this browser.",
       "loadRoleFailed": "Could not load your target role.",
-      "welcomeBody": "I will ask you real interview questions and listen to your answers. Please speak clearly. Take your time."
+      "aiInterviewer": "AI Interviewer",
+      "you": "You",
+      "generating": "Generating evaluation...",
+      "employerHeading": "EVALUATION SUMMARY",
+      "fallbackBadge": "Standard Question Bank",
+      "scores": "Performance Dimensions",
+      "dimCommunication": "Communication",
+      "dimDomainKnowledge": "Domain Knowledge",
+      "dimProblemSolving": "Problem Solving",
+      "dimCoopSector": "Cooperative Sector Knowledge",
+      "notScored": "Not scored",
+      "strengths": "Observed Strengths",
+      "gaps": "Areas for Improvement",
+      "followUp": "Suggested Follow-up Practice Topics",
+      "noneNoted": "None noted",
+      "noneSuggested": "None suggested",
+      "camUnsupported": "This browser cannot access a camera. You can still answer by typing.",
+      "camDenied": "Camera or microphone permission was denied. Allow access in your browser settings and restart the interview, or continue by typing your answers.",
+      "camNotFound": "No camera or microphone was found. You can still answer by typing.",
+      "camError": "The camera could not be started. You can still answer by typing.",
+      "speechUnsupported": "Voice answers are not supported in this browser. Type your answer instead.",
+      "speechBlocked": "Microphone access for speech recognition was blocked. Type your answer instead.",
+      "speechStopped": "Speech recognition stopped ({code}). Type your answer or try again.",
+      "speechCouldNotStart": "Speech recognition could not start. Type your answer instead."
     },
     "profile": {
       "notifAssessmentsDesc": "Notification Preferences",
@@ -1002,14 +1588,14 @@
     },
     "hostelRules": {
       "cat4p1": "Night Curfew & Gate Timings",
-      "description": "Home",
+      "description": "Comprehensive guide to campus residency regulations, dining policies, and safety protocols for all trainees.",
       "cat4": "Night Curfew & Gate Timings",
       "cat3p2": "Night Curfew & Gate Timings",
       "cat2": "Night Curfew & Gate Timings",
       "cat4p2": "Night Curfew & Gate Timings",
       "cat2p2": "Night Curfew & Gate Timings",
-      "title": "Home",
-      "breadcrumb": "Home",
+      "title": "Hostel Rules & Code of Conduct",
+      "breadcrumb": "Hostel Rules",
       "cat1p2": "Night Curfew & Gate Timings",
       "cat1p1": "Night Curfew & Gate Timings",
       "cat2p1": "Night Curfew & Gate Timings",
@@ -1050,5 +1636,19 @@
       "enrolled": "Enrolled",
       "subtitle": "Explore self-paced & instructor-led cooperative courses to build verified skills for your AI Skill Passport."
     }
+  },
+  "auth": {
+    "signIn": {
+      "backHome": "Back to Home",
+      "footer": "CoopSetu AI · National Cooperative Skilling & Placement Platform · SIH 2026"
+    },
+    "signUp": {
+      "disabledTitle": "Sign up is disabled",
+      "disabledBody": "This demo uses mock authentication only."
+    }
+  },
+  "brand": {
+    "logoAlt": "CoopSetu AI - Learn, Skill, Work, Grow Together",
+    "emblemAlt": "CoopSetu AI Emblem"
   }
 }

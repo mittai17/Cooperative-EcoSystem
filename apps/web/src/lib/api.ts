@@ -155,6 +155,15 @@ async function mockFetch(path: string): Promise<unknown> {
   if (p === "/api/v1/admin/settings") return { general: { org_name: "NCCT", admin_email: "admin@ncct.gov.in", contact_phone: null, contact_address: null }, appearance: { accent_color: "#E30B1C", density: "comfortable" }, notifications: { email_enabled: true, weekly_digest: true, placement_alerts: true, digest_frequency: "weekly" }, security: { session_timeout_minutes: 60, mfa_required: false, password_min_length: 8, allowed_email_domains: [] } };
   if (p === "/api/v1/admin/audit-logs") return paged(MOCK_AUDIT_LOGS, page, page_size);
   
+  // AI Interview mock target
+  if (p === "/api/v1/trainee/ai-interview/target") {
+    return {
+      target_role: "PACS Management Trainee",
+      source: "profile",
+      skills: ["Cooperative Accounting", "Member Relations", "PACS Computerisation", "Agricultural Credit"],
+    };
+  }
+
   // Users API (people-roster)
   if (p === "/api/v1/users/") return [];
   if (p === "/api/v1/users/batches") return [];
@@ -164,6 +173,28 @@ async function mockFetch(path: string): Promise<unknown> {
 
 export async function fetchWithAuth(path: string, options: RequestInit = {}) {
   if (process.env.NEXT_PUBLIC_MOCK_API !== 'false') {
+    if (path.startsWith("/api/v1/trainee/ai-interview")) {
+      try {
+        const p = path.split("?")[0];
+        let action = "target";
+        const body = options.body ? JSON.parse(options.body as string) : {};
+        if (p.endsWith("/sessions")) action = "start";
+        else if (p.endsWith("/turns")) action = "turn";
+        else if (p.endsWith("/evaluate")) action = "evaluate";
+
+        const res = await fetch("/api/ai-interview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, ...body }),
+        });
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch {
+        // Continue to mock fallback if fetch fails
+      }
+    }
+
     if (!options.method || options.method === 'GET') {
       return mockFetch(path);
     }

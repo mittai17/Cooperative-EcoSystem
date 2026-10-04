@@ -97,7 +97,7 @@ def trainee_context(title: str, skills: Sequence[str]) -> JobBrief:
 @dataclass(frozen=True)
 class AIResult:
     text: str
-    source: Literal["gemini", "fallback"]
+    source: Literal["gemini", "openrouter", "fallback"]
 
 
 # ---------------------------------------------------------------- text hygiene
@@ -268,6 +268,89 @@ async def _call_gemini(system_prompt: str, user_text: str, *, expect_json: bool,
     return text or None
 
 
+
+def _openrouter_api_key() -> Optional[str]:
+    return get_settings().openrouter_api_key or None
+
+async def _call_openrouter(system_prompt: str, user_text: str, *, expect_json: bool, max_output_tokens: int) -> Optional[str]:
+    key = _openrouter_api_key()
+    if not key:
+        return None
+    if len(system_prompt) + len(user_text) > MAX_REQUEST_CHARS:
+        logger.warning("AI interview request exceeds size cap; using fallback")
+        return None
+
+    # OpenRouter API format
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "HTTP-Referer": "https://coopsetuai.spadevity.tech",
+        "X-Title": "CoopSetu AI"
+    }
+    
+    # We use Google Gemini 2.0 Flash or Llama 3.3 70b Instruct as per prompt
+    model_name = "google/gemini-2.0-flash-001"
+    
+    payload = {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_text}
+        ],
+        "max_tokens": max_output_tokens,
+        "temperature": 0.3,
+    }
+    
+    if expect_json:
+        # OpenRouter supports response_format for some models
+        payload["response_format"] = {"type": "json_object"}
+        
+    try:
+        async with _new_client() as client:
+            resp = await client.post(url, headers=headers, json=payload)
+    except httpx.HTTPError as exc:
+        logger.warning("AI interview OpenRouter request failed: %s", type(exc).__name__)
+        return None
+    except Exception as exc:
+        logger.warning("AI interview OpenRouter request raised unexpectedly: %s", type(exc).__name__)
+        return None
+
+    if resp.status_code != 200:
+        logger.warning("AI interview OpenRouter call returned status %s", resp.status_code)
+        return None
+        
+    try:
+        data = resp.json()
+    except ValueError:
+        return None
+        
+    if not isinstance(data, dict):
+        return None
+        
+    choices = data.get("choices") or []
+    if not choices or not isinstance(choices[0], dict):
+        return None
+        
+    message = choices[0].get("message") or {}
+    text = message.get("content", "").strip()
+    return text or None
+
+
+async def _call_ai(system_prompt: str, user_text: str, *, expect_json: bool, max_output_tokens: int) -> tuple[Optional[str], Literal["gemini", "openrouter", "fallback"]]:
+    """Unified AI caller: tries Gemini first, then OpenRouter, then fallback."""
+    if _gemini_api_key():
+        text = await _call_gemini(system_prompt, user_text, expect_json=expect_json, max_output_tokens=max_output_tokens)
+        if text:
+            return text, "gemini"
+            
+    if _openrouter_api_key():
+        text = await _call_openrouter(system_prompt, user_text, expect_json=expect_json, max_output_tokens=max_output_tokens)
+        if text:
+            return text, "openrouter"
+            
+    return None, "fallback"
+
+
 def _normalise_question(text: Optional[str]) -> Optional[str]:
     if not text:
         return None
@@ -287,11 +370,10 @@ async def next_turn(history: Sequence[Mapping[str, str]], job: JobBrief) -> AIRe
         )
     else:
         user_text = "The interview has not started. Write only the opening question, with no preamble."
-    question = _normalise_question(
-        await _call_gemini(system_prompt, user_text, expect_json=False, max_output_tokens=300)
-    )
+    raw_text, source = await _call_ai(system_prompt, user_text, expect_json=False, max_output_tokens=300)
+    question = _normalise_question(raw_text)
     if question is not None:
-        return AIResult(text=question, source="gemini")
+        return AIResult(text=question, source=source) # type: ignore
     return AIResult(text=fallback_question(job, history), source="fallback")
 
 
@@ -344,9 +426,8 @@ async def evaluate(history: Sequence[Mapping[str, str]], job: JobBrief) -> dict[
         "Use null for a dimension the transcript gives no evidence for. Do not recommend hiring or rejection.\n\n"
         "Transcript:\n" + format_transcript(history)
     )
-    parsed = parse_evaluation(
-        await _call_gemini(system_prompt, user_text, expect_json=True, max_output_tokens=800)
-    )
+    raw_text, source = await _call_ai(system_prompt, user_text, expect_json=True, max_output_tokens=800)
+    parsed = parse_evaluation(raw_text)
     if parsed is None:
         return fallback_evaluation(job)
-    return {**parsed, "source": "gemini"}
+    return {**parsed, "source": source}

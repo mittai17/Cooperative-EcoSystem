@@ -1,8 +1,9 @@
 "use client";
 
-import { Bot, User } from "lucide-react";
+import { Bot, User, Volume2 } from "lucide-react";
 import { cn } from "cn";
 import { useT } from "@/i18n";
+import { Button } from "@/components/ui/button";
 
 /** Display role: "ai" is the interviewer, "candidate" is the person being interviewed. */
 export type TranscriptRole = "ai" | "candidate";
@@ -20,9 +21,11 @@ export interface TranscriptMessage {
 interface TranscriptProps {
   messages: TranscriptMessage[];
   emptyMessage: string;
+  onSpeakMessage?: (text: string) => void;
+  speaking?: boolean;
 }
 
-export function Transcript({ messages, emptyMessage }: TranscriptProps) {
+export function Transcript({ messages, emptyMessage, onSpeakMessage, speaking }: TranscriptProps) {
   const t = useT();
   if (messages.length === 0) {
     return (
@@ -37,7 +40,7 @@ export function Transcript({ messages, emptyMessage }: TranscriptProps) {
       className="flex flex-1 flex-col gap-3 overflow-y-auto p-4"
       role="log"
       aria-live="polite"
-      aria-label={t("trainee.aiInterview.transcriptTitle")}
+      aria-label={t("trainee.aiInterview.transcriptTitle", "Interview Transcript") || "Interview Transcript"}
     >
       {messages.map((message) => {
         const isAi = message.role === "ai";
@@ -49,24 +52,39 @@ export function Transcript({ messages, emptyMessage }: TranscriptProps) {
             {isAi && (
               <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Bot className="size-4" aria-hidden />
-                <span className="sr-only">{t("trainee.aiInterview.aiInterviewer")}</span>
+                <span className="sr-only">{t("trainee.aiInterview.aiInterviewer", "AI Interviewer") || "AI Interviewer"}</span>
               </span>
             )}
             <div
               className={cn(
-                "max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                "relative group max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
                 isAi
                   ? "rounded-tl-sm border border-border bg-muted/60 text-slate-800"
                   : "rounded-tr-sm bg-primary/10 text-slate-800",
               )}
             >
               {message.title && <p className="mb-1 font-semibold text-slate-900">{message.title}</p>}
-              <p>{message.text}</p>
+              <p>{message.text || "(Question loading...)"}</p>
+              {isAi && onSpeakMessage && message.text && (
+                <div className="mt-1 flex items-center justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 gap-1 px-1.5 text-xs text-muted-foreground hover:text-primary"
+                    onClick={() => onSpeakMessage(message.text)}
+                    title={t("trainee.aiInterview.listenQuestion", "Listen to this question") || "Listen to this question"}
+                  >
+                    <Volume2 className="size-3.5" />
+                    <span className="text-[11px]">{t("trainee.aiInterview.listen", "Listen") || "Listen"}</span>
+                  </Button>
+                </div>
+              )}
             </div>
             {!isAi && (
               <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <User className="size-4" aria-hidden />
-                <span className="sr-only">{t("trainee.aiInterview.you")}</span>
+                <span className="sr-only">{t("trainee.aiInterview.you", "You") || "You"}</span>
               </span>
             )}
           </div>

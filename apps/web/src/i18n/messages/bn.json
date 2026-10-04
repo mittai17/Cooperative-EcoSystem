@@ -143,7 +143,106 @@
     "signOut": "সাইন আউট",
     "notifications": "বিজ্ঞপ্তি",
     "openNavigation": "নেভিগেশন মেনু খুলুন",
-    "languageSwitcher": "ভাষা পরিবর্তন করুন"
+    "languageSwitcher": "ভাষা পরিবর্তন করুন",
+    "messages": "বার্তা",
+    "userMenu": "ব্যবহারকারী অ্যাকাউন্ট মেনু",
+    "adminUser": "প্রশাসক ব্যবহারকারী",
+    "roleWorkspace": "{role} ওয়ার্কস্পেস",
+    "workspaceTag": "{role} ওয়ার্কস্পেস · ডেমো",
+    "demoNotesFooter": "ডেমো বিজ্ঞপ্তি; লাইভ সতর্কতা ব্যাকএন্ড সংযোজনের সঙ্গে আসবে",
+    "spotlight": {
+      "campusAlt": "VAMNICOM ক্যাম্পাস",
+      "institution": {
+        "title": "শক্তিশালী সমবায় গড়ে তোলা",
+        "tagline": "প্রশিক্ষণ দিন। ক্ষমতায়ন করুন। রূপান্তর আনুন।"
+      },
+      "keepLearning": {
+        "title": "শিখতে থাকুন",
+        "tagline": "একটি উন্নত আগামী গড়ি"
+      }
+    },
+    "demoNotes": {
+      "trainee": {
+        "0": {
+          "title": "নতুন মূল্যায়ন নির্ধারিত",
+          "detail": "Tally সহ হিসাবরক্ষণ, মডিউল 3 কুইজের সময়সীমা 2 অক্টোবর"
+        },
+        "1": {
+          "title": "দক্ষতা পাসপোর্ট আপডেট হয়েছে",
+          "detail": "ডেয়ারি পরিচালনায় আত্মবিশ্বাস 88%-এ উন্নীত"
+        },
+        "2": {
+          "title": "নতুন চাকরির মিল",
+          "detail": "ডেয়ারি ক্রয় সুপারভাইজার, 91% মিল"
+        }
+      },
+      "institution": {
+        "0": {
+          "title": "2টি মনোনয়ন মুলতুবি",
+          "detail": "সমবায় ব্যবস্থাপনার মূলনীতি"
+        },
+        "1": {
+          "title": "উপস্থিতিতে পতন চিহ্নিত",
+          "detail": "তৃতীয় সপ্তাহে উপস্থিতি 85%-এ নেমে এসেছে"
+        }
+      },
+      "trainer": {
+        "0": {
+          "title": "উপস্থিতি চিহ্নিত হয়নি",
+          "detail": "আজকের উপস্থিতির জন্য 2টি ক্লাস অপেক্ষমাণ"
+        },
+        "1": {
+          "title": "মূল্যায়ন সারি বাড়ছে",
+          "detail": "পর্যালোচনার জন্য 15টি প্রকল্প জমা অপেক্ষমাণ"
+        }
+      },
+      "employer": {
+        "0": {
+          "title": "নতুন যাচাইকৃত মিল",
+          "detail": "রবীন্দ্র এস. পাটিল, ডেয়ারি সুপারভাইজারের জন্য 94% মিল"
+        },
+        "1": {
+          "title": "পদের আবেদন শীঘ্রই বন্ধ হবে",
+          "detail": "অ্যাপ্রেন্টিস সমবায় সমিতির সচিব"
+        }
+      },
+      "admin": {
+        "0": {
+          "title": "মাসিক ফলাফল প্রতিবেদন প্রস্তুত",
+          "detail": "সেপ্টেম্বরের কর্মসংস্থান ফানেল আপডেট হয়েছে"
+        },
+        "1": {
+          "title": "নতুন প্রতিষ্ঠান যুক্ত হয়েছে",
+          "detail": "মৎস্য সমবায় ফেডারেশন, কোচি"
+        }
+      },
+      "kiosk": {
+        "0": {
+          "title": "টার্মিনাল অনলাইনে",
+          "detail": "স্টেশন 01-এর কেন্দ্রীয় হাবের সঙ্গে সিঙ্ক সম্পন্ন"
+        },
+        "1": {
+          "title": "উপস্থিতি বাফার",
+          "detail": "18টি অফলাইন রেকর্ড সফলভাবে সিঙ্ক হয়েছে"
+        }
+      }
+    },
+    "chatbot": {
+      "greeting": "নমস্কার {name}! আমি CoopSetu AI, আপনার ক্যারিয়ার ও শিক্ষা সহায়ক। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
+      "online": "অনলাইন",
+      "placeholder": "আমাকে যা খুশি জিজ্ঞাসা করুন...",
+      "suggestions": {
+        "0": "পরবর্তীতে আমার কোন কোর্সগুলো নেওয়া উচিত?",
+        "1": "PACS ডিজিটাল অ্যাকাউন্টিংয়ের জন্য কীভাবে আবেদন করব?",
+        "2": "আমার দক্ষতা পাসপোর্টের সারাংশ দেখান"
+      },
+      "responses": {
+        "0": "আপনার প্রোফাইল অনুযায়ী, পরবর্তীতে 'PACS ডিজিটাল অ্যাকাউন্টিং' সার্টিফিকেশন সম্পন্ন করার পরামর্শ দিচ্ছি। এটি আপনার অভিজ্ঞতার সঙ্গে পুরোপুরি মেলে।",
+        "1": "নতুন কোর্সে নিবন্ধনের জন্য সাইডবার থেকে 'কর্মসূচি' ট্যাবে যান।",
+        "2": "আপনার দক্ষতা পাসপোর্টে বর্তমানে ডেয়ারি পরিচালনায় 'উন্নত' এবং PACS হিসাবরক্ষণে 'মধ্যম' দেখাচ্ছে।",
+        "3": "আপনার সমবায় ক্যারিয়ার পথ নিয়ে আর কোনো বিষয়ে কি সাহায্য করতে পারি?"
+      }
+    }
   },
   "public": {
     "nav": {
@@ -155,7 +254,8 @@
       "demoHub": "ডেমো হাব",
       "signIn": "সাইন ইন",
       "getStarted": "শুরু করুন",
-      "language": "ভাষা"
+      "language": "ভাষা",
+      "toggleMenu": "নেভিগেশন মেনু টগল করুন"
     },
     "hero": {
       "badgeBrand": "CoopSetu AI",
@@ -186,7 +286,33 @@
     "roles": {
       "title": "সমবায় বাস্তুতন্ত্রের প্রতিটি ভূমিকার জন্য তৈরি",
       "body": "ভূমিকাভিত্তিক প্রবেশাধিকার প্রতিটি ড্যাশবোর্ডকে সেই ভূমিকার প্রকৃত সিদ্ধান্তগুলোর উপর কেন্দ্রীভূত রাখে।",
-      "getStarted": "শুরু করুন"
+      "getStarted": "শুরু করুন",
+      "items": {
+        "trainee": {
+          "label": "প্রশিক্ষণার্থী / শিক্ষার্থী",
+          "description": "কর্মসূচিতে ভর্তি হন, আপনার দক্ষতা পাসপোর্ট তৈরি করুন, চাকরি খুঁজুন"
+        },
+        "institution": {
+          "label": "সমবায় প্রতিষ্ঠান",
+          "description": "কর্মসূচি পরিচালনা করুন, প্রশিক্ষণার্থী মনোনয়ন দিন, ফলাফল ট্র্যাক করুন"
+        },
+        "trainer": {
+          "label": "প্রশিক্ষক / অধ্যাপক",
+          "description": "ক্লাস, উপস্থিতি ও মূল্যায়ন পরিচালনা করুন"
+        },
+        "employer": {
+          "label": "নিয়োগকর্তা / সমবায় সমিতি",
+          "description": "চাকরি প্রকাশ করুন, যাচাইকৃত দক্ষ প্রার্থী খুঁজুন"
+        },
+        "admin": {
+          "label": "NCCT প্রশাসক",
+          "description": "প্রতিষ্ঠান, কর্মসূচি ও জাতীয় ফলাফল তদারকি করুন"
+        },
+        "kiosk": {
+          "label": "ডিজিটাল কিয়স্ক স্টেশন",
+          "description": "উপস্থিতি ও সার্টিফিকেট যাচাইয়ের জন্য অফলাইন-প্রথম গ্রাম স্টেশন"
+        }
+      }
     },
     "features": {
       "title": "যে AI স্তর এই চক্রকে কার্যকর করে",
@@ -234,6 +360,426 @@
         "verifyCertificate": "সনদ যাচাই করুন",
         "ncctAdminLogin": "NCCT প্রশাসক লগইন"
       }
+    },
+    "loop": {
+      "stages": {
+        "registration": {
+          "label": "নিবন্ধন",
+          "description": "প্রশিক্ষণার্থী ও প্রতিষ্ঠানের অনবোর্ডিং"
+        },
+        "training": {
+          "label": "প্রশিক্ষণ",
+          "description": "সমবায় খাতের কর্মসূচি ও কোর্স"
+        },
+        "skills": {
+          "label": "দক্ষতা",
+          "description": "কর্মক্ষমতার তথ্য থেকে AI-অনুমিত দক্ষতা"
+        },
+        "certification": {
+          "label": "সার্টিফিকেশন",
+          "description": "যাচাইযোগ্য ডিজিটাল সার্টিফিকেট"
+        },
+        "jobMatching": {
+          "label": "চাকরির মিল",
+          "description": "AI দক্ষতাকে খালি পদের সঙ্গে মেলায়"
+        },
+        "employment": {
+          "label": "কর্মসংস্থান",
+          "description": "সমবায় নিয়োগকর্তাদের সঙ্গে নিয়োগ"
+        },
+        "employerFeedback": {
+          "label": "নিয়োগকর্তার মতামত",
+          "description": "কর্মস্থলের কর্মক্ষমতার সংকেত"
+        },
+        "newTraining": {
+          "label": "নতুন প্রশিক্ষণ",
+          "description": "মতামত ভবিষ্যৎ পাঠ্যক্রম নতুনভাবে গঠন করে"
+        }
+      },
+      "feedbackNote": "নিয়োগকর্তার মতামত সরাসরি পাঠ্যক্রম নকশায় ফিরে যায়, যা চক্রটি সম্পূর্ণ করে এবং প্রশিক্ষণকে প্রকৃত ও বর্তমান চাহিদার সঙ্গে সামঞ্জস্যপূর্ণ রাখে।"
+    },
+    "aboutPage": {
+      "hero": {
+        "badge": "SIH 2026 · PS 26087",
+        "title": "AI {name} সম্পর্কে",
+        "body": "সমবায় প্রশিক্ষণকে যাচাইযোগ্য দক্ষতা ও প্রকৃত কর্মসংস্থানের সঙ্গে যুক্ত করা একটি জাতীয় AI প্ল্যাটফর্ম — সমবায় মন্ত্রক ও জাতীয় সমবায় প্রশিক্ষণ পরিষদ (NCCT)-এর জন্য তৈরি।",
+        "joinTrainee": "প্রশিক্ষণার্থী হিসেবে যোগ দিন",
+        "browseProgrammes": "কর্মসূচি দেখুন"
+      },
+      "mission": {
+        "label": "আমাদের লক্ষ্য",
+        "title": "প্রশিক্ষণ ও জীবিকার মধ্যে চক্র সম্পূর্ণ করা",
+        "body": "ভারতের সমবায় খাত প্রতি বছর হাজার হাজার মানুষকে প্রশিক্ষণ দেয়, তবুও ফলাফল অদৃশ্য থাকে — প্রতিষ্ঠানগুলোতে বিক্ষিপ্ত, যেখানে প্রশিক্ষণার্থীর শেখার যাত্রাকে কর্মসংস্থানের সঙ্গে যুক্ত করার কোনো ডিজিটাল সূত্র নেই। CoopSetu AI সেটাই বদলে দেয়।",
+        "passportBody": "আমরা প্রতিটি প্রশিক্ষণার্থীকে একটি সজীব, AI-চালিত {passport} দিই, যা নিয়োগকর্তারা বিশ্বাস করতে পারেন; প্রতিটি প্রতিষ্ঠানকে একটি রিয়েল-টাইম ড্যাশবোর্ড দিই; এবং NCCT-কে দক্ষতার সরবরাহ ও চাহিদার একটি জাতীয় বিশ্লেষণ দিই।",
+        "passport": "দক্ষতা পাসপোর্ট",
+        "tiles": {
+          "passports": "যাচাইকৃত দক্ষতা পাসপোর্ট",
+          "advisor": "AI ক্যারিয়ার উপদেষ্টা",
+          "analytics": "জাতীয় বিশ্লেষণ",
+          "kiosk": "QR কিয়স্ক উপস্থিতি"
+        }
+      },
+      "problem": {
+        "label": "সমস্যার বিবরণ · SIH 2026 PS 26087",
+        "title": "আমরা যে সমস্যার সমাধান করছি",
+        "intro": "সমবায় মন্ত্রক কর্তৃক জারি করা স্মার্ট ইন্ডিয়া হ্যাকাথন 2026 সমস্যা বিবৃতি 26087, সমবায় প্রশিক্ষণ ব্যবস্থার গুরুত্বপূর্ণ ফাঁকগুলো চিহ্নিত করে:",
+        "points": {
+          "0": "সমবায় প্রশিক্ষণের ফলাফলের কোনো একীভূত ডিজিটাল রেকর্ড নেই",
+          "1": "হাতে-কলমে, কাগজ-ভিত্তিক উপস্থিতি ও সার্টিফিকেশন",
+          "2": "প্রশিক্ষিত দক্ষতা ও নিয়োগকর্তাদের চাহিদার দক্ষতার মধ্যে ফাঁক",
+          "3": "নিয়োগকর্তারা দাবিকৃত সমবায় যোগ্যতা যাচাই করতে পারেন না",
+          "4": "জাতীয় প্রশিক্ষণ প্রবাহের রিয়েল-টাইম দৃশ্যমানতা NCCT-এর নেই"
+        },
+        "closing": "CoopSetu AI একটি সমন্বিত প্ল্যাটফর্মের মাধ্যমে এই প্রতিটি ফাঁক সরাসরি মোকাবিলা করে।"
+      },
+      "howItWorks": {
+        "label": "এটি কীভাবে কাজ করে",
+        "title": "চার ধাপে ভর্তি থেকে কর্মসংস্থান পর্যন্ত",
+        "steps": {
+          "enrol": {
+            "title": "নিবন্ধন ও ভর্তি",
+            "description": "প্রশিক্ষণার্থীরা সমবায় প্রতিষ্ঠানের মাধ্যমে নিবন্ধন করেন। NCCT অনুমোদন দেয়; VAMNICOM কর্মসূচি বরাদ্দের সমন্বয় করে।"
+          },
+          "train": {
+            "title": "প্রশিক্ষণ ও উপস্থিতি",
+            "description": "QR-ভিত্তিক কিয়স্ক উপস্থিতি, সরাসরি সময়সূচি এবং প্রশিক্ষকের মূল্যায়ন — সবকিছু রিয়েল-টাইমে নথিভুক্ত হয়।"
+          },
+          "passport": {
+            "title": "AI দক্ষতা পাসপোর্ট",
+            "description": "সম্পন্ন হওয়া প্রতিটি মডিউল, মূল্যায়ন ও নিয়োগকর্তার মতামত একটি জালিয়াতি-প্রতিরোধী ডিজিটাল দক্ষতা পাসপোর্টে সংকলিত হয়।"
+          },
+          "place": {
+            "title": "মেলানো ও নিয়োগ",
+            "description": "AI ক্যারিয়ার উপদেষ্টা যাচাইকৃত দক্ষতাকে সমবায় নিয়োগকর্তাদের চলতি চাকরির বিজ্ঞপ্তির সঙ্গে মেলায়। নিয়োগের চক্র সম্পূর্ণ হয়।"
+          }
+        }
+      },
+      "technology": {
+        "label": "প্রযুক্তি",
+        "title": "আধুনিক, উৎপাদন-মানের ভিত্তিতে নির্মিত",
+        "body": "আমাদের মনোরেপো একটি বাছাই করা প্রযুক্তি স্ট্যাক ব্যবহার করে, যা দ্রুত উন্নয়ন সম্ভব করে এবং লক্ষ লক্ষ প্রশিক্ষণার্থীর জন্য জাতীয় পর্যায়ের স্থাপনাতেও সম্প্রসারণযোগ্য থাকে।",
+        "features": {
+          "edge": {
+            "label": "এজ-প্রথম স্থাপত্য",
+            "description": "Next.js এজ রানটাইমের মাধ্যমে 100 ms-এর কম সাড়া"
+          },
+          "certificates": {
+            "label": "জালিয়াতি-প্রতিরোধী সার্টিফিকেট",
+            "description": "ব্লকচেইন-সমর্থিত QR যাচাই"
+          },
+          "kiosk": {
+            "label": "অফলাইন-প্রথম কিয়স্ক",
+            "description": "পুনরায় সংযুক্ত হলে Raspberry Pi QR উপস্থিতি সিঙ্ক হয়"
+          },
+          "multiRole": {
+            "label": "বহু-ভূমিকা প্ল্যাটফর্ম",
+            "description": "প্রশিক্ষণার্থী, প্রতিষ্ঠান, প্রশিক্ষক, নিয়োগকর্তা, NCCT প্রশাসক"
+          }
+        }
+      },
+      "partners": {
+        "label": "অংশীদার ও প্রতিষ্ঠান",
+        "title": "CoopSetu-কে শক্তি দিচ্ছে এমন ইকোসিস্টেম অংশীদার",
+        "names": {
+          "ncct": "জাতীয় সমবায় প্রশিক্ষণ পরিষদ",
+          "vamnicom": "বৈকুণ্ঠ মেহতা জাতীয় প্রতিষ্ঠান",
+          "ndri": "জাতীয় ডেয়ারি গবেষণা প্রতিষ্ঠান",
+          "iffco": "ভারতীয় কৃষক সার সমবায়",
+          "nafed": "জাতীয় কৃষি সমবায় বিপণন ফেডারেশন",
+          "moc": "সমবায় মন্ত্রক, ভারত সরকার"
+        },
+        "note": "এগুলো ডামি অংশীদার লোগো — প্রকৃত অংশীদার সংযোগ v2 লঞ্চের জন্য পরিকল্পিত।"
+      },
+      "cta": {
+        "title": "সমবায় প্রশিক্ষণে পরিবর্তন আনতে প্রস্তুত?",
+        "body": "ইতোমধ্যে 24,800+ প্রশিক্ষণার্থী, 112টি প্রতিষ্ঠান এবং 7,380 জন কর্মসংস্থান পাওয়া প্রাক্তন শিক্ষার্থী প্ল্যাটফর্মে যুক্ত রয়েছেন।",
+        "getStarted": "বিনামূল্যে শুরু করুন",
+        "verify": "সার্টিফিকেট যাচাই করুন",
+        "ministry": "সমবায় মন্ত্রক · জাতীয় সমবায় প্রশিক্ষণ পরিষদ",
+        "sih": "স্মার্ট ইন্ডিয়া হ্যাকাথন 2026 · সমস্যা বিবৃতি 26087"
+      }
+    },
+    "courseCatalog": {
+      "title": "স্ব-গতির ও প্রশিক্ষক-পরিচালিত কোর্স",
+      "body": "ছোট, দক্ষতা-কেন্দ্রিক কোর্স যা যাচাইকৃত প্রমাণ হিসেবে সরাসরি আপনার AI দক্ষতা পাসপোর্টে যুক্ত হয়।",
+      "demoTag": "ডেমোর জন্য নমুনা কোর্স তালিকা",
+      "searchPlaceholder": "কোর্স বা দক্ষতা খুঁজুন…",
+      "allCategories": "সব বিভাগ",
+      "countOne": "{count}টি কোর্স পাওয়া গেছে",
+      "countMany": "{count}টি কোর্স পাওয়া গেছে",
+      "byInstructor": "{name} দ্বারা",
+      "hours": "{count} ঘণ্টা",
+      "viewCourse": "কোর্স দেখুন",
+      "skillImpact": "দক্ষতার প্রভাব"
+    },
+    "jobCatalog": {
+      "title": "সমবায় নিয়োগকর্তাদের চাকরি",
+      "body": "ডেয়ারি ইউনিয়ন, ক্রেডিট সোসাইটি, FPO এবং অন্যান্য সমবায় নিয়োগকর্তাদের সরাসরি প্রকাশিত পদ; সাইন ইন করার পর আপনার যাচাইকৃত দক্ষতা পাসপোর্ট অনুযায়ী সাজানো।",
+      "demoTag": "ডেমোর জন্য নমুনা চাকরির তালিকা",
+      "searchPlaceholder": "চাকরি, নিয়োগকর্তা বা দক্ষতা খুঁজুন…",
+      "allSectors": "সব খাত",
+      "allTypes": "সব ধরন",
+      "jobTypes": {
+        "Full-time": "পূর্ণকালীন",
+        "Part-time": "খণ্ডকালীন",
+        "Contract": "চুক্তিভিত্তিক",
+        "Apprenticeship": "শিক্ষানবিশি"
+      },
+      "new": "নতুন",
+      "match": "{percent}% মিল",
+      "postedToday": "আজ প্রকাশিত",
+      "postedOne": "{count} দিন আগে প্রকাশিত",
+      "postedMany": "{count} দিন আগে প্রকাশিত",
+      "openingOne": "{count}টি পদ",
+      "openingMany": "{count}টি পদ",
+      "resultsOne": "{count}টি পদ পাওয়া গেছে",
+      "resultsMany": "{count}টি পদ পাওয়া গেছে",
+      "viewDetails": "বিস্তারিত দেখুন",
+      "apply": "আবেদন করুন"
+    },
+    "jobDetails": {
+      "backToJobs": "চাকরিতে ফিরে যান",
+      "match": "{percent}% মিল",
+      "applicationSubmittedBadge": "আবেদন জমা হয়েছে",
+      "viewInApplications": "আবেদনগুলোতে দেখুন",
+      "applyWithPassport": "দক্ষতা পাসপোর্ট দিয়ে আবেদন করুন",
+      "saved": "সংরক্ষিত",
+      "save": "সংরক্ষণ করুন",
+      "applyTitle": "{title}-এর জন্য আবেদন করুন",
+      "submittedTitle": "আবেদন জমা হয়েছে!",
+      "submittedBodyBefore": "আপনার যাচাইকৃত দক্ষতা পাসপোর্ট ও যোগাযোগের তথ্য পাঠানো হয়েছে",
+      "submittedBodyAfter": "। আপনার আবেদন কেন্দ্রে পর্যালোচনার অগ্রগতি দেখতে পারবেন।",
+      "done": "সম্পন্ন",
+      "goToApplications": "আবেদনগুলোতে যান",
+      "passportAttached": "যাচাইকৃত দক্ষতা পাসপোর্ট সংযুক্ত ({percent}% চাকরির মিল)",
+      "includesSkills": "আপনার NCCT-প্রত্যয়িত দক্ষতা অন্তর্ভুক্ত: {skills}।",
+      "applicantDetails": "আবেদনকারীর বিবরণ",
+      "candidate": "প্রার্থী:",
+      "email": "ইমেল:",
+      "noteToEmployer": "নিয়োগকর্তার জন্য নোট (ঐচ্ছিক)",
+      "notePlaceholder": "আপনার বাস্তব সমবায় অভিজ্ঞতা বা প্রাপ্যতা সম্পর্কে একটি সংক্ষিপ্ত নোট লিখুন...",
+      "cancel": "বাতিল",
+      "submitting": "জমা দেওয়া হচ্ছে...",
+      "confirmApply": "নিশ্চিত করে আবেদন করুন",
+      "tabs": {
+        "overview": "সংক্ষিপ্ত বিবরণ",
+        "requirements": "প্রয়োজনীয়তা",
+        "skills": "দক্ষতা",
+        "match": "আপনি কেন মেলেন",
+        "company": "প্রতিষ্ঠান"
+      },
+      "aboutRole": "এই পদ সম্পর্কে",
+      "whatYoullDo": "আপনি কী করবেন",
+      "whatYoullNeed": "আপনার যা প্রয়োজন হবে",
+      "salary": "বেতন",
+      "openings": "শূন্য পদ",
+      "sector": "খাত",
+      "posted": "প্রকাশিত",
+      "today": "আজ",
+      "postedAgo": "{count} দিন আগে",
+      "skillsRequired": "প্রয়োজনীয় দক্ষতা",
+      "basedOnPassport": "আপনার যাচাইকৃত দক্ষতা পাসপোর্টের ভিত্তিতে",
+      "matchedSkills": "মিলে যাওয়া দক্ষতা ({matched}/{total})",
+      "missingSkills": "অনুপস্থিত দক্ষতা",
+      "recommendedCourse": "প্রস্তাবিত কোর্স",
+      "copy": {
+        "responsibilities": {
+          "0": "{employer}-এর {sector} কার্যক্রম জুড়ে {title} সংক্রান্ত প্রতিদিনের দায়িত্ব নিজে বহন করা।",
+          "1": "{location} ও আশপাশের সদস্য সমিতি ও মাঠকর্মীদের সঙ্গে সমন্বয় করে কাজ সময়মতো রাখা।",
+          "2": "{skill}-এর সর্বোত্তম অনুশীলন প্রয়োগ করা এবং ফলাফল সমবায় পরিষদে জানানো।",
+          "3": "{employer} দল বাড়ার সঙ্গে নতুন কর্মীদের অনবোর্ডিং ও প্রশিক্ষণে সহায়তা করা।"
+        },
+        "requirements": {
+          "0": "{skills} সম্পর্কে কার্যকর জ্ঞান।",
+          "1": "{location}-এ থাকতে বা নিয়মিত সেখানে যাতায়াত করতে সম্মত হওয়া।",
+          "2One": "{count}টি পদসহ {type} কাজে উপলব্ধতা।",
+          "2Many": "{count}টি পদসহ {type} কাজে উপলব্ধতা।",
+          "3": "সমবায় খাত বা গ্রামীণ উন্নয়নে পূর্ব অভিজ্ঞতা কাম্য, বাধ্যতামূলক নয়।"
+        },
+        "companyBlurb": "{employer} হলো {location} থেকে পরিচালিত {sector} খাতের একটি সমবায় নিয়োগকর্তা। তারা CoopSetu-তে সরাসরি যাচাইকৃত পদ প্রকাশ করে এবং কেবল রিজিউমে কীওয়ার্ড নয়, বরং AI-ক্রমানুসারে সাজানো, দক্ষতা-পাসপোর্ট-সমর্থিত প্রার্থী মিলের ভিত্তিতে নিয়োগ দেয়।"
+      }
+    },
+    "courseLearning": {
+      "backToLearning": "আমার শিক্ষায় ফিরে যান",
+      "savedOffline": "অফলাইনের জন্য সংরক্ষিত",
+      "removeOfflineTitle": "অফলাইন ক্যাশে থেকে সরান",
+      "remove": "সরান",
+      "savingOffline": "IndexedDB-তে সংরক্ষণ হচ্ছে...",
+      "downloadOffline": "অফলাইনের জন্য ডাউনলোড করুন",
+      "offlineMode": "অফলাইন মোড",
+      "percentComplete": "{percent}% সম্পন্ন",
+      "progressCount": "{done}/{total} পাঠ",
+      "tabs": {
+        "course": "কোর্স",
+        "quiz": "দ্রুত কুইজ",
+        "notes": "অফলাইন নোট",
+        "discussion": "আলোচনা",
+        "resources": "সম্পদ"
+      },
+      "courseContent": "কোর্সের বিষয়বস্তু",
+      "lessonCount": "{count} পাঠ",
+      "minutesShort": "{count} মি",
+      "minutes": "{count} মিনিট",
+      "play": "চালান",
+      "pause": "বিরতি",
+      "completed": "সম্পন্ন",
+      "markedCompleted": "সম্পন্ন হিসেবে চিহ্নিত",
+      "markComplete": "সম্পন্ন হিসেবে চিহ্নিত করুন",
+      "finishCourse": "কোর্স শেষ করুন",
+      "nextLesson": "পরবর্তী পাঠ",
+      "lessonBody": "“{title}”-এর পেছনের মূল বিষয়গুলো শিখুন এবং দেখুন বাস্তব সমবায় পরিস্থিতিতে এটি কীভাবে প্রয়োগ হয়; {category} অনুশীলন থেকে নেওয়া বাস্তব উদাহরণসহ।",
+      "curriculum": {
+        "modules": {
+          "0": {
+            "title": "ভূমিকা",
+            "lessons": {
+              "0": "{topic} কী",
+              "1": "{topic}-এর ইতিহাস ও মূলনীতি",
+              "2": "এটি কেন গুরুত্বপূর্ণ: {topic}"
+            }
+          },
+          "1": {
+            "title": "মূল ধারণা",
+            "lessons": {
+              "0": "{topic} বোঝা",
+              "1": "{topic}-এর মূল কাঠামো",
+              "2": "{topic} প্রয়োগ"
+            }
+          },
+          "2": {
+            "title": "বাস্তব প্রয়োগ",
+            "lessons": {
+              "0": "হাতে-কলমে অনুশীলন: {topic}",
+              "1": "কেস স্টাডি: {topic}",
+              "2": "মাঠ অনুশীলন: {topic}"
+            }
+          },
+          "3": {
+            "title": "মূল্যায়ন ও পর্যালোচনা",
+            "lessons": {
+              "0": "{topic} পর্যালোচনা",
+              "1": "{topic}-এর সাধারণ ভুল",
+              "2": "{topic} সমাপ্ত করা"
+            }
+          }
+        }
+      },
+      "quiz": {
+        "title": "অফলাইন জ্ঞান যাচাই",
+        "intro": "{title} সম্পর্কে আপনার বোঝাপড়া যাচাই করুন। অনলাইনে থাকলে জমা দেওয়া স্বয়ংক্রিয়ভাবে সিঙ্ক হবে।",
+        "questionOf": "প্রশ্ন 1 / 1",
+        "question": "ভারতের প্রাথমিক সমবায় সমিতিতে উপবিধি গ্রহণ ও বাজেট অনুমোদনের জন্য দায়ী প্রধান শাসক কর্তৃপক্ষ কোনটি?",
+        "options": {
+          "0": "সদস্যদের সাধারণ সভা (সকল প্রাথমিক শেয়ারধারী সদস্য)",
+          "1": "বহিরাগত বাণিজ্যিক ব্যাংকিং সিন্ডিকেট",
+          "2": "পৌর কর্পোরেশনের কমিশনার",
+          "3": "স্বাধীন তৃতীয় পক্ষের নিরীক্ষা সংস্থা"
+        },
+        "recorded": "উত্তর অফলাইন সিঙ্ক সারিতে নথিভুক্ত হয়েছে!",
+        "score": "স্কোর: {score} • সার্ভার সিঙ্কের জন্য সিঙ্ক বা সারিবদ্ধ করা হয়েছে।",
+        "submit": "উত্তর জমা দিন"
+      },
+      "notes": {
+        "title": "পাঠ অধ্যয়ন নির্দেশিকা ও নোট",
+        "storedLocally": "অফলাইনে যেকোনো সময় পড়ার জন্য আপনার ডিভাইসে স্থানীয়ভাবে সংরক্ষিত।",
+        "focusArea": "মূল বিষয়:",
+        "focusBody": "{category}-এ {title}।",
+        "principle": "গণতান্ত্রিক সমবায় উদ্যোগে, যত শেয়ারই থাকুক না কেন, প্রতিটি সদস্যের একটি ভোট থাকে। স্বচ্ছ হিসাবরক্ষণ, নিয়মিত নিরীক্ষা ও সঠিক মজুত হিসাব সদস্যদের কল্যাণ সুরক্ষিত রাখে।",
+        "checklistTitle": "মূল সমবায় উপবিধি তালিকা",
+        "checklist": {
+          "0": "আর্থিক বছর শেষ হওয়ার ছয় মাসের মধ্যে বাধ্যতামূলক বার্ষিক সাধারণ সভা (AGM)।",
+          "1": "শেয়ার নিবন্ধন, লভ্যাংশ বণ্টন হিসাব ও সদস্যদের উপস্থিতির লগ যথাযথভাবে রাখা।",
+          "2": "বিধিবদ্ধ সংরক্ষিত তহবিল বরাদ্দ মেনে চলা (সাধারণত পৃষ্ঠপোষকতা ফেরতের আগে নিট লাভের 25%)।"
+        }
+      },
+      "discussion": {
+        "title": "এখনও কোনো আলোচনা থ্রেড নেই",
+        "body": "এই কোর্সের জন্য সহপাঠী ও প্রশিক্ষকের আলোচনা একটি পরবর্তী বিল্ড পর্যায়ে আসবে।"
+      },
+      "resources": {
+        "title": "এখনও ডাউনলোডযোগ্য সম্পদ নেই",
+        "body": "এই কোর্সের স্লাইড ডেক, টেমপ্লেট ও রেফারেন্স শিট একটি পরবর্তী বিল্ড পর্যায়ে আসবে।"
+      }
+    },
+    "demo": {
+      "badge": "স্মার্ট ইন্ডিয়া হ্যাকাথন 2026 মূল্যায়ন কেন্দ্র",
+      "title": "CoopSetu AI ডেমো কেন্দ্র",
+      "body": "সমবায় দক্ষতা ইকোসিস্টেমের প্রতিটি ফিচার পরীক্ষা করুন। নিচের 6টি ভূমিকার যেকোনো একটি বেছে নিয়ে পূর্বনির্ধারিত প্রোফাইল, সক্রিয় কোর্স, যাচাইকৃত সার্টিফিকেট ও সরাসরি ড্যাশবোর্ড সহ প্রবেশ করুন।",
+      "guideTitle": "প্রতিটি ভূমিকায় মূল্যায়নকারীরা কী পরীক্ষা করতে পারেন",
+      "guideBody": "উপরের সুইচার বার ব্যবহার করে যেকোনো সময় ভূমিকা বদলান",
+      "pillars": {
+        "skillPassport": {
+          "title": "1. দক্ষতা পাসপোর্ট ও বন্ধ চক্র",
+          "detail": "প্রশিক্ষণ কীভাবে যাচাইযোগ্য, সূক্ষ্ম-প্রত্যয়িত দক্ষতায় পৌঁছায়, যা নিয়োগকর্তারা সরাসরি খোঁজেন, তা যাচাই করুন।"
+        },
+        "offline": {
+          "title": "2. অফলাইন-প্রথম ও সহনশীল",
+          "detail": "কোর্স স্থানীয়ভাবে ডাউনলোড, অফলাইন QR উপস্থিতি সারি ও IndexedDB সিঙ্ক পরীক্ষা করুন।"
+        },
+        "institutional": {
+          "title": "3. প্রাতিষ্ঠানিক কার্যপ্রবাহ",
+          "detail": "প্রশিক্ষণার্থী মনোনয়ন অনুমোদন, ব্যাচ ব্যবস্থাপনা ও জাতীয় ফলাফল ট্র্যাকিং যাচাই করুন।"
+        },
+        "multiRole": {
+          "title": "4. বহু-ভূমিকা ইকোসিস্টেম",
+          "detail": "এক ক্লিকে প্রশিক্ষণার্থী, প্রশিক্ষক, নিয়োগকর্তা, প্রশাসক ও কিয়স্কের মধ্যে সহজে যান।"
+        }
+      }
+    },
+    "login": {
+      "badge": "CoopSetu AI ডেমো ও প্রোডাকশন অ্যাক্সেস",
+      "title": "প্রবেশের জন্য আপনার ভূমিকা বেছে নিন",
+      "body": "আমাদের 6টি ইকোসিস্টেম ভূমিকার যেকোনো একটি হিসেবে CoopSetu AI অন্বেষণ করুন। সম্পূর্ণ অবস্থা ও পূর্বপূরিত তথ্য নিয়ে তাৎক্ষণিক লগ ইন করতে নিচের যেকোনো ভূমিকা বেছে নিন।",
+      "credentialsTitle": "আপনার কি লগইন তথ্য বা কাস্টম তথ্য আছে?",
+      "credentialsBody": "আপনার ইমেল দিয়ে স্ট্যান্ডার্ড প্রমাণীকরণ পোর্টালের মাধ্যমে লগ ইন করুন।",
+      "standardSignIn": "স্ট্যান্ডার্ড সাইন-ইন"
+    },
+    "verify": {
+      "title": "সার্টিফিকেট যাচাই",
+      "body": "CoopSetu AI-এর জারি করা যেকোনো সার্টিফিকেটের সত্যতা তাৎক্ষণিকভাবে যাচাই করুন। ফলাফল {ledger}-এর সঙ্গে মিলিয়ে দেখা হয়।",
+      "trySample": "নমুনা সার্টিফিকেট দেখুন",
+      "searchPlaceholder": "সার্টিফিকেট আইডি লিখুন, যেমন CST-2026-DAI-00842",
+      "submit": "যাচাই করুন",
+      "status": {
+        "valid": {
+          "label": "যাচাইকৃত ও বৈধ",
+          "message": "এই সার্টিফিকেটটি প্রামাণিক এবং বর্তমানে বৈধ। এতে NCCT Apex Ledger ক্রিপ্টোগ্রাফিকভাবে স্বাক্ষর করেছে।"
+        },
+        "expired": {
+          "label": "প্রামাণিক — মেয়াদোত্তীর্ণ",
+          "message": "এই সার্টিফিকেটটি আসল ছিল, কিন্তু এর বৈধতার মেয়াদ শেষ হয়েছে। নবায়নের জন্য প্রদানকারী প্রতিষ্ঠানের সঙ্গে যোগাযোগ করুন।"
+        },
+        "revoked": {
+          "label": "প্রত্যাহৃত",
+          "message": "এই সার্টিফিকেটটি প্রদানকারী প্রতিষ্ঠান আনুষ্ঠানিকভাবে প্রত্যাহার করেছে এবং এটি আর বৈধ নয়।"
+        }
+      },
+      "certificateId": "সার্টিফিকেট আইডি:",
+      "qrAlt": "সার্টিফিকেট QR কোড",
+      "scanToVerify": "যাচাই করতে স্ক্যান করুন",
+      "fields": {
+        "holder": "সার্টিফিকেট ধারক",
+        "issuer": "প্রদানকারী প্রতিষ্ঠান",
+        "issueDate": "প্রদানের তারিখ",
+        "validUntil": "বৈধ পর্যন্ত",
+        "grade": "প্রদত্ত গ্রেড",
+        "programme": "কর্মসূচি"
+      },
+      "skillsCertified": "প্রত্যয়িত দক্ষতা",
+      "crypto": {
+        "title": "ক্রিপ্টোগ্রাফিক যাচাই — NCCT Apex Ledger",
+        "hash": "যাচাই হ্যাশ",
+        "algorithm": "অ্যালগরিদম",
+        "registry": "রেজিস্ট্রি",
+        "issuerDid": "ইস্যুকারীর DID"
+      },
+      "print": "প্রিন্ট / PDF সংরক্ষণ",
+      "viewFull": "পূর্ণ সার্টিফিকেট দেখুন",
+      "watermark": "🔒 {date} IST-এ যাচাইকৃত · CoopSetu AI সার্টিফিকেট রেজিস্ট্রি · NCCT Apex Ledger",
+      "notFound": {
+        "title": "“{id}”-এর জন্য কোনো সার্টিফিকেট পাওয়া যায়নি",
+        "body": "আপনার নথিতে মুদ্রিত সার্টিফিকেট আইডি আবার পরীক্ষা করুন, অথবা নিচের নমুনা সার্টিফিকেটগুলোর একটি চেষ্টা করুন।"
+      }
     }
   },
   "common": {
@@ -250,7 +796,8 @@
     "delete": "মুছে ফেলুন",
     "view": "দেখুন",
     "export": "রপ্তানি করুন",
-    "noData": "কোনো তথ্য নেই"
+    "noData": "কোনো তথ্য নেই",
+    "close": "বন্ধ করুন"
   },
   "trainee": {
     "attendance": {
@@ -813,38 +1360,77 @@
       "kpiCourses": "সক্রিয় কোর্সসমূহ"
     },
     "aiInterview": {
-      "enterRoleHint": "starting",
-      "privacyNote": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "description": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "fallbackQuestions": "Interview transcript",
-      "transcriptTitle": "Interview transcript",
-      "differentRole": "font-normal text-muted-foreground",
-      "title": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "orEnterBelow": "No skills listed on your profile yet.",
-      "getFeedback": "Get Practice Feedback",
-      "welcomeTitle": "Welcome to your AI mock interview for {role}.",
-      "cameraNote": "Interview transcript",
-      "noMessages": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "startInterview": "starting",
-      "feedbackFailed": "Could not generate your practice feedback.",
-      "practiceHeading": "PRACTICE FEEDBACK — not shared with employers, not a hiring decision",
-      "newInterview": "starting",
-      "fromProfile": "From your profile.",
-      "emptyIdle": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "practiceComplete": "Practice ended. The camera and microphone are off.",
-      "sendFailed": "Your answer could not be sent. Please try again.",
-      "noTargetRole": "No skills listed on your profile yet.",
-      "optional": "font-normal text-muted-foreground",
-      "startFailed": "Could not start the interview.",
-      "starting": "starting",
-      "practisingFor": "Check the role you are practising for, then start. The interviewer's questions will appear here.",
-      "setRoleLink": "No skills listed on your profile yet.",
-      "practiceEnded": "Practice ended. The camera and microphone are off.",
+      "title": "AI Mock Interview",
+      "description": "Practise interview questions tailored to cooperative roles. Get real-time AI feedback and dimension scores.",
+      "practisingFor": "Target Role",
+      "fromProfile": "From your profile",
+      "skillsLabel": "Skills",
       "noSkills": "No skills listed on your profile yet.",
-      "rolePlaceholder": "font-normal text-muted-foreground",
-      "skillsLabel": "From your profile.",
+      "noTargetRole": "No target role set on profile.",
+      "setRoleLink": "Set a role",
+      "orEnterBelow": "or enter one below:",
+      "differentRole": "Role to practice",
+      "optional": "(Optional)",
+      "rolePlaceholder": "e.g., Data Engineer, PACS Manager, Dairy Procurement Specialist",
+      "enterRoleHint": "Enter a target role to practice.",
+      "startInterview": "Start Interview",
+      "starting": "Starting...",
+      "newInterview": "New Interview",
+      "cameraNote": "Camera preview is local and optional.",
+      "cameraIdle": "Camera preview will appear here during the interview (Optional)",
+      "cameraPreview": "Camera preview",
+      "waitingPermission": "Requesting camera and microphone access...",
+      "elapsed": "Elapsed: {time}",
+      "transcriptTitle": "Interview Transcript",
+      "fallbackQuestions": "Standard Question Bank",
+      "emptyIdle": "Select or type a role above and click 'Start Interview' to begin.",
+      "practiceEnded": "Interview stopped. Camera and mic are off.",
+      "practiceComplete": "Interview complete. Camera and mic are off.",
+      "getFeedback": "Get Evaluation & Feedback",
+      "practiceHeading": "PRACTICE FEEDBACK",
+      "welcomeTitle": "Welcome to your AI mock interview for {role}.",
+      "welcomeBody": "I will ask you role-specific interview questions and assess your responses. Take your time and respond thoughtfully.",
+      "noMessages": "No messages yet.",
+      "sendFailed": "Your answer could not be sent. Please try again.",
+      "startFailed": "Could not start the interview. Please try again.",
+      "feedbackFailed": "Could not generate practice feedback.",
+      "privacyNote": "Your video and audio are processed locally and never recorded or sent to employers.",
+      "live": "Live Interview",
+      "endInterview": "End Interview",
+      "listening": "Listening...",
+      "sendAnswer": "Send Answer",
+      "sending": "Sending...",
+      "placeholderEnded": "Interview ended",
+      "placeholderType": "Type your answer... (Ctrl+Enter to send)",
+      "answerLabel": "Your answer",
+      "stopListening": "Stop listening",
+      "speakAnswer": "Speak answer",
+      "voiceUnsupported": "Voice input is not supported in this browser.",
       "loadRoleFailed": "Could not load your target role.",
-      "welcomeBody": "I will ask you real interview questions and listen to your answers. Please speak clearly. Take your time."
+      "aiInterviewer": "AI Interviewer",
+      "you": "You",
+      "generating": "Generating evaluation...",
+      "employerHeading": "EVALUATION SUMMARY",
+      "fallbackBadge": "Standard Question Bank",
+      "scores": "Performance Dimensions",
+      "dimCommunication": "Communication",
+      "dimDomainKnowledge": "Domain Knowledge",
+      "dimProblemSolving": "Problem Solving",
+      "dimCoopSector": "Cooperative Sector Knowledge",
+      "notScored": "Not scored",
+      "strengths": "Observed Strengths",
+      "gaps": "Areas for Improvement",
+      "followUp": "Suggested Follow-up Practice Topics",
+      "noneNoted": "None noted",
+      "noneSuggested": "None suggested",
+      "camUnsupported": "This browser cannot access a camera. You can still answer by typing.",
+      "camDenied": "Camera or microphone permission was denied. Allow access in your browser settings and restart the interview, or continue by typing your answers.",
+      "camNotFound": "No camera or microphone was found. You can still answer by typing.",
+      "camError": "The camera could not be started. You can still answer by typing.",
+      "speechUnsupported": "Voice answers are not supported in this browser. Type your answer instead.",
+      "speechBlocked": "Microphone access for speech recognition was blocked. Type your answer instead.",
+      "speechStopped": "Speech recognition stopped ({code}). Type your answer or try again.",
+      "speechCouldNotStart": "Speech recognition could not start. Type your answer instead."
     },
     "profile": {
       "notifAssessmentsDesc": "Notification Preferences",
@@ -1049,5 +1635,19 @@
       "title": "Courses",
       "enrolled": "Enrolled"
     }
+  },
+  "auth": {
+    "signIn": {
+      "backHome": "হোমে ফিরে যান",
+      "footer": "CoopSetu AI · জাতীয় সমবায় দক্ষতা বিকাশ ও কর্মসংস্থান প্ল্যাটফর্ম · SIH 2026"
+    },
+    "signUp": {
+      "disabledTitle": "সাইন আপ নিষ্ক্রিয়",
+      "disabledBody": "এই ডেমো শুধুমাত্র মক প্রমাণীকরণ ব্যবহার করে।"
+    }
+  },
+  "brand": {
+    "logoAlt": "CoopSetu AI - শিখুন, দক্ষতা, কাজ, একসঙ্গে বেড়ে উঠুন",
+    "emblemAlt": "CoopSetu AI প্রতীক"
   }
 }

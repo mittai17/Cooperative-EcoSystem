@@ -297,7 +297,17 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
               const isNCCT = role === "admin";
               const effectiveName = userName || (isNCCT ? t("shell.adminUser") : currentUser.name);
               const effectiveSubtitle = userSubtitle || (isNCCT ? t("nav.roles.admin") : currentUser.roleTitle);
-              const effectiveInitials = isNCCT ? "AD" : currentUser.initials;
+              const effectiveInitials = isNCCT
+                ? "AD"
+                : userName
+                  ? userName
+                      .split(" ")
+                      .filter(Boolean)
+                      .map((p) => p[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()
+                  : currentUser.initials;
 
               return (
                 <DropdownMenu>

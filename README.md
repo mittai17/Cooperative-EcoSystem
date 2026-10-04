@@ -1,415 +1,472 @@
 # NURVEX
 
-> AI-powered learning, skill intelligence, certification, and employment ecosystem for India's cooperative sector.
-
 <p align="center">
   <img src="https://img.shields.io/badge/NURVEX-AI%20Learning%20%26%20Employment-E31B23?style=for-the-badge" alt="NURVEX">
-  <img src="https://img.shields.io/badge/Smart%20India%20Hackathon-2026-111827?style=for-the-badge" alt="Smart India Hackathon 2026">
 </p>
 
 <p align="center">
-  <strong>Learn → Prove → Certify → Build Skills → Get Matched → Get Hired → Improve the Ecosystem</strong>
+  <strong>Learn. Prove. Grow. Work.</strong>
 </p>
 
 <p align="center">
-  NURVEX brings training, learning analytics, assessments, verified skills, career guidance, employers, and employment feedback into one measurable platform.
+  A unified digital ecosystem that connects cooperative-sector training, measurable learning outcomes, verified skills, career intelligence, and employment.
+</p>
+
+<p align="center">
+  <a href="https://github.com/mittai17/Cooperative-EcoSystem">Repository</a>
+  ·
+  <a href="#getting-started">Getting started</a>
+  ·
+  <a href="#architecture">Architecture</a>
+  ·
+  <a href="#contributing">Contributing</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Web-Next.js-111827?logo=nextdotjs&logoColor=white" alt="Next.js">
+  <img src="https://img.shields.io/badge/Mobile-Expo-111827?logo=expo&logoColor=white" alt="Expo">
+  <img src="https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Data-PostgreSQL%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/AI-Gemini-4285F4?logo=google&logoColor=white" alt="Gemini">
+  <img src="https://img.shields.io/badge/License-Not%20specified-6B7280" alt="License not specified">
 </p>
 
 ---
 
-## Why NURVEX?
+## The idea
 
-Traditional training systems often stop at course completion. NURVEX is designed around what happens after learning.
+Most digital training systems end when a learner completes a course.
 
-A trainee can move through a continuous evidence-backed journey:
+**NURVEX is designed around the complete outcome.**
+
+Learning becomes evidence. Evidence becomes verified skills. Skills become career opportunities. Employment creates feedback that can improve future training.
 
 ```text
-Registration
-    ↓
-Nomination
-    ↓
-Training
-    ↓
-Learning
-    ↓
-Attendance
-    ↓
-Assessment
-    ↓
-Certification
-    ↓
-Skill Passport
-    ↓
-Skill Gap Analysis
-    ↓
-Personalized Learning
-    ↓
-Job Matching
-    ↓
-Application
-    ↓
-Interview
-    ↓
-Offer / Employment
-    ↓
-Employer Feedback
-    ↓
-Skill Demand Intelligence
-    ↓
-Training Recommendations
+TRAINING
+   │
+   ├── Registration
+   ├── Nomination
+   ├── Enrollment
+   └── Attendance
+          │
+          ▼
+LEARNING
+   │
+   ├── Courses
+   ├── Lessons
+   ├── Assessments
+   └── Progress
+          │
+          ▼
+PROOF
+   │
+   ├── Competency Evidence
+   ├── Certification
+   └── Skill Passport
+          │
+          ▼
+CAREER
+   │
+   ├── Skill Gap Analysis
+   ├── Career Guidance
+   └── Personalized Learning
+          │
+          ▼
+EMPLOYMENT
+   │
+   ├── Job Matching
+   ├── Applications
+   ├── Interviews
+   └── Offers
+          │
+          ▼
+FEEDBACK
+   │
+   ├── Employer Feedback
+   ├── Employment Outcomes
+   └── Skill Demand Intelligence
+          │
+          └──────────────► Better Training
 ```
 
-This creates a closed-loop training-to-employment ecosystem instead of a collection of disconnected portals.
+The result is a **closed-loop training-to-employment platform**, rather than a set of disconnected portals.
 
 ---
 
-## What NURVEX Solves
+# Product
 
-- Digital programme registration, nomination, admission, and enrollment
-- Institution and trainee profiles
-- Cohort and self-paced learning
-- Integrated learning content and progress tracking
-- QR-based attendance with face-recognition integration points
-- Timetables, hostel, and logistics workflows
-- Assessments, grading, competency evidence, and certification
-- Tamper-evident certificate verification
-- AI-assisted career guidance
-- Evidence-backed Skill Passport
-- Skill-gap analysis and learning recommendations
-- Explainable job and candidate matching
-- Employer candidate discovery
-- Applications, interviews, offers, and talent pools
-- Employer feedback after hiring
-- Skill-demand intelligence and analytics
-- PWA/mobile experiences and offline-capable workflows
-- Role-specific dashboards for trainees, trainers, institutions, employers, and administrators
+## One platform. Multiple workspaces.
+
+NURVEX is organized around the people and organizations that operate the training ecosystem.
+
+| Workspace | What it does |
+|---|---|
+| **Trainee** | Learn, attend, assess, certify, build a Skill Passport, discover careers and apply for jobs |
+| **Trainer** | Manage classes, attendance, assessments, learning content, trainee progress and skill evidence |
+| **Institution** | Operate programmes, batches, trainers, timetables, hostel, logistics and analytics |
+| **Employer** | Define roles, discover verified candidates, match skills, run hiring workflows and provide feedback |
+| **Administrator / NCCT** | Manage the ecosystem, institutions, programmes, employers, analytics, reporting and platform governance |
 
 ---
 
-## Core Product Modules
+# What makes NURVEX different?
 
-### Trainee
+### 01 · Evidence-backed skills
 
-- Programme discovery, nomination, admission, and enrollment
+A course completion is only one signal.
+
+NURVEX can combine:
+
+```text
+Course completion
+Assessment performance
+Trainer evidence
+Certificate
+Employment feedback
+        ↓
+Verified skill evidence
+```
+
+A Skill Passport can therefore represent not only **what a learner says they know**, but the evidence available for that skill.
+
+---
+
+### 02 · Skill Graph
+
+Skills are connected to the learning and employment ecosystem:
+
+```text
+Skills
+  ↕
+Courses
+  ↕
+Assessments
+  ↕
+Certificates
+  ↕
+Jobs
+  ↕
+Career Paths
+```
+
+This enables more useful recommendations than a simple course catalogue.
+
+---
+
+### 03 · Skill Gap Intelligence
+
+For a target role, NURVEX can compare a learner's current evidence against role requirements.
+
+```text
+Current learner profile
+          ↓
+Target role requirements
+          ↓
+────────────────────────
+Matched skills
+Missing skills
+Weak / developing skills
+────────────────────────
+          ↓
+Recommended learning
+```
+
+---
+
+### 04 · Explainable job matching
+
+Core matching can remain deterministic.
+
+Possible signals include:
+
+- Required skills
+- Skill proficiency
+- Education
+- Certifications
+- Experience
+- Semantic similarity where appropriate
+
+AI can explain the result without becoming the sole authority for eligibility.
+
+---
+
+### 05 · Closed-loop employment feedback
+
+A hire is not the end of the data lifecycle.
+
+Employer feedback can become structured evidence about real-world skill demand.
+
+```text
+Employer feedback
+      ↓
+Observed skill demand
+      ↓
+Demand intelligence
+      ↓
+Training recommendations
+      ↓
+Future learners
+```
+
+This creates a feedback mechanism between **training supply** and **employment demand**.
+
+---
+
+# Core capabilities
+
+## Learning
+
+- Programme discovery and enrollment
 - Self-paced and cohort learning
-- Lesson and course progress tracking
-- QR attendance and face-attendance integration
-- Assessments and certificates
-- Skill Passport and evidence history
+- Course/module/lesson structures
+- Learning progress
+- Integrated educational content
+- DIKSHA / Sunbird integration path
+- Assessment workflows
+- Learning analytics
+
+## Attendance
+
+- QR-based attendance
+- Face-recognition integration points
+- Attendance events
+- Kiosk/device workflows
+- Online and deferred synchronization
+
+## Assessment & certification
+
+- Structured assessments
+- Attempts and grading
+- Competency evidence
+- Digital certificates
+- Public certificate verification
+- Tamper-evident certificate integrity
+
+## Skill intelligence
+
+- Skill Passport
+- Skill evidence
+- Skill relationships
 - Skill-gap analysis
-- Career goals and recommended learning
-- Job recommendations and applications
-- Interview workflows
+- Career paths
+- Learning recommendations
 
-### Trainer
+## Employment
 
-- Assigned classes and batches
-- Timetable and calendar
-- Attendance sessions
-- QR attendance
-- Face-recognition integration
-- Trainee roster
-- Assessments and grading
-- Assignments and learning content
-- Skill evaluations
-- Evidence submission
-- Learning progress analytics
-- At-risk learner indicators based on measurable activity
-- Reports and communication
-
-### Institution
-
-- Programme management
-- Nomination review
-- Batch management
-- Trainee enrollment
-- Course and curriculum mapping
-- Trainer assignment
-- Timetable management
-- Hostel allocation
-- Logistics management
-- Attendance monitoring
-- Assessment reporting
-- Institution analytics
-- Announcements and communication
-
-### Employer
-
-NURVEX is not intended to be a generic job board. The employer experience is built around verified training evidence and skills.
-
-- Structured job creation
-- Skill and proficiency requirements
-- Education, certificate, and experience requirements
+- Structured job requirements
 - Candidate discovery
-- Skill Passport review
-- Evidence comparison
-- Explainable match scores
+- Explainable job matching
 - Applications
 - Interviews
-- Offers and hiring
+- Offers / hiring
 - Talent pools
-- Post-hire feedback
+- Employer feedback
 
-### Administrator / NCCT Workspace
+## Operations
 
-- Institutions, trainers, trainees, and employers
-- Programme and course management
-- Certification and placement analytics
-- Job and employment outcomes
-- Skill-demand monitoring
-- Reports and audit logs
-- Platform configuration
-
----
-
-## AI Intelligence
-
-NURVEX uses AI where it adds value while keeping authoritative decisions reproducible and evidence-backed.
-
-### AI Skill Passport
-
-A learner's Skill Passport can evolve from:
-
-```text
-Course Completion
-      +
-Assessment Result
-      +
-Trainer Evaluation
-      +
-Certificate
-      +
-Employment Feedback
-      ↓
-Verified Skill Evidence
-```
-
-Each skill can maintain:
-
-- Skill
-- Proficiency
-- Confidence
-- Verification state
-- Evidence source
-- Evidence reference
-- Last updated timestamp
-
-### Skill Gap Analysis
-
-```text
-Current Skills
-      vs
-Target Role Requirements
-      ↓
-Matched Skills
-Missing Skills
-Weak Skills
-      ↓
-Recommended Learning
-```
-
-### Skill Graph
-
-```text
-Skills ↔ Courses ↔ Assessments ↔ Certificates ↔ Jobs ↔ Career Paths
-```
-
-### Explainable Job Matching
-
-Core matching decisions are designed around deterministic scoring rather than opaque LLM-only decisions. Signals can include required skills, proficiency, education, certificates, experience, and semantic similarity where appropriate.
-
-LLMs can explain and personalize results, while authoritative eligibility and scoring remain deterministic.
-
-### AI Career Navigator
-
-The career assistant can answer questions such as:
-
-- What skills am I missing?
-- What should I learn next?
-- Which jobs fit me?
-- Why am I not matching this role?
-- What career path should I follow?
-- Which course will close my biggest skill gap?
-
-### AI-Assisted Interview
-
-The interview experience can combine:
-
-- Job-specific questions
-- Candidate Skill Passport context
-- Spoken questions
-- Candidate voice answers
-- Live transcription
-- Dynamic follow-up questions
-- Structured post-interview feedback
-
-The system should evaluate relevant dimensions such as relevance, answer quality, clarity, communication, and role-specific knowledge. It should not make unsupported claims about emotions or mental state from facial appearance.
+- Institution management
+- Trainer management
+- Programme management
+- Timetables
+- Hostel allocation
+- Logistics
+- Notifications
+- Audit logs
+- Analytics and reporting
 
 ---
 
-## Learning Content
+# AI architecture
 
-NURVEX is designed so learners can consume supported educational resources without being sent through a chain of unrelated websites.
+NURVEX follows a simple principle:
 
-The content layer can integrate permitted sources such as:
+> **Use AI for intelligence and interaction; keep important platform decisions evidence-backed and reproducible.**
 
-- DIKSHA / Sunbird
-- Officially embeddable video resources
-- Approved open educational resources
-- NURVEX-authored content
+### AI can power
 
-### DIKSHA / Sunbird Integration
+- Career guidance
+- Skill-gap explanations
+- Learning recommendations
+- Candidate explanations
+- Interview conversations
+- Natural-language assistance
+- Semantic retrieval
 
-```text
-DIKSHA / Sunbird
-       ↓
-Content API / Metadata
-       ↓
-NURVEX Backend
-       ↓
-NURVEX Learning Experience
-       ↓
-Progress Tracking
-       ↓
-Assessment
-       ↓
-Certificate
-       ↓
-Skill Passport
-```
+### Deterministic systems can own
 
-License information must be preserved for every external resource. NURVEX must not assume that every resource is freely redistributable; content should only be embedded, streamed, copied, translated, or stored where the applicable terms and license permit it.
+- Permissions
+- Certification integrity
+- Structured scoring
+- Skill evidence aggregation
+- State transitions
+- Validation
+- Auditability
+
+This separation makes AI easier to test, explain, and replace.
 
 ---
 
-## Attendance & Hardware
+# Learning content architecture
 
-NURVEX supports a digital attendance architecture suitable for institutional deployments.
-
-### Attendance methods
-
-- QR attendance
-- Face-recognition integration
-- Camera-based attendance workflows
-- Kiosk deployment
-- Online/offline synchronization
-
-Reference architecture:
+NURVEX is designed so the learning experience stays inside NURVEX whenever the source's technical and licensing conditions allow it.
 
 ```text
-Attendance Device / Kiosk
-          ↓
-      Edge Layer
-          ↓
-       FastAPI
-          ↓
-     PostgreSQL
-          ↓
- Attendance Events
-          ↓
- Training Analytics
+                    ┌────────────────────┐
+                    │ External content   │
+                    │ DIKSHA / Sunbird    │
+                    │ approved sources    │
+                    └─────────┬──────────┘
+                              │
+                              ▼
+                    ┌────────────────────┐
+                    │ NURVEX API layer   │
+                    │ normalization       │
+                    │ license metadata    │
+                    └─────────┬──────────┘
+                              │
+                              ▼
+                    ┌────────────────────┐
+                    │ NURVEX LMS         │
+                    │ player + progress  │
+                    └─────────┬──────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+            Learn          Assess          Certify
+              │               │               │
+              └───────────────┴───────────────┘
+                              │
+                              ▼
+                       Skill Passport
 ```
 
-Hardware-specific implementations remain modular so the platform is not tied to a single vendor.
+External content is **not assumed to be freely redistributable**. License, attribution, embedding, translation, and storage rules must be respected per resource.
 
 ---
 
-## Architecture
+# Attendance architecture
+
+NURVEX keeps hardware integrations modular.
+
+```text
+┌───────────────────────────┐
+│ Attendance terminal       │
+│ QR / camera / compatible  │
+│ biometric hardware        │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ Local edge / kiosk layer  │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ FastAPI                   │
+│ validation + authorization│
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ PostgreSQL                │
+│ attendance events         │
+└───────────────────────────┘
+```
+
+The platform is not designed around a single hardware vendor.
+
+---
+
+# Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Clients
-        WEB[Next.js Web / PWA]
-        MOBILE[Expo Mobile]
-        KIOSK[Attendance Kiosk]
+    subgraph Experience["Experience Layer"]
+        WEB["Next.js Web / PWA"]
+        MOBILE["Expo Mobile"]
+        KIOSK["Attendance Kiosk"]
     end
 
-    subgraph Backend["NURVEX Platform"]
-        API[FastAPI API Gateway]
-        AUTH[Clerk Authentication]
-        DOMAIN[Training + Skills + Jobs + Operations]
-        AI[AI Services]
-        SYNC[Offline Sync]
-        INTEGRATIONS[External Integrations]
+    subgraph Platform["NURVEX Platform"]
+        API["FastAPI API Gateway"]
+        AUTH["Authentication & RBAC"]
+        CORE["Domain Services"]
+        AI["AI & Intelligence"]
+        SYNC["Offline Sync"]
+        EXT["External Integrations"]
     end
 
     subgraph Data["Data Layer"]
-        PG[(PostgreSQL)]
-        VECTOR[(pgvector)]
-        OBJECT[(S3-compatible Storage)]
-        CACHE[IndexedDB / SQLite]
+        PG[("PostgreSQL")]
+        VECTOR[("pgvector")]
+        OBJECT[("Object Storage")]
+        LOCAL["IndexedDB / SQLite"]
     end
 
     WEB --> API
     MOBILE --> API
     KIOSK --> API
 
-    WEB <--> CACHE
-    MOBILE <--> CACHE
+    WEB <--> LOCAL
+    MOBILE <--> LOCAL
 
     API --> AUTH
-    API --> DOMAIN
+    API --> CORE
     API --> AI
     API --> SYNC
-    API --> INTEGRATIONS
+    API --> EXT
 
-    DOMAIN --> PG
-    DOMAIN --> VECTOR
-    DOMAIN --> OBJECT
+    CORE --> PG
+    CORE --> VECTOR
+    CORE --> OBJECT
 ```
 
-### Closed-loop lifecycle
+### Architecture principles
 
-```mermaid
-flowchart LR
-    A[Register] --> B[Nominate]
-    B --> C[Enroll]
-    C --> D[Learn]
-    D --> E[Attend]
-    E --> F[Assess]
-    F --> G[Certify]
-    G --> H[Skill Passport]
-    H --> I[Skill Gap]
-    I --> J[Recommended Learning]
-    J --> D
-    H --> K[Job Matching]
-    K --> L[Applications]
-    L --> M[Interview]
-    M --> N[Offer]
-    N --> O[Employment]
-    O --> P[Employer Feedback]
-    P --> Q[Skill Demand Intelligence]
-    Q --> J
-```
+**API-first**  
+Clients communicate through the backend rather than connecting directly to the database.
+
+**Domain-oriented**  
+Training, skills, employment, certification, analytics, and operations are modeled as connected domains.
+
+**Provider-agnostic**  
+External AI, content, jobs, and hardware providers are isolated behind integration boundaries.
+
+**Offline-aware**  
+The web and mobile clients can maintain local state for supported workflows and synchronize deferred operations.
+
+**Auditable**  
+Security-sensitive and important domain transitions can be logged and validated server-side.
 
 ---
 
-## Technology Stack
+# Technology stack
 
-| Layer | Technology | Role |
-|---|---|---|
-| Web | Next.js 16, React 19, TypeScript | Main web application |
-| UI | Tailwind CSS, Base UI, shadcn/ui, Lucide, Recharts | Interface and visualization |
-| PWA | Service Worker, IndexedDB | Web offline capabilities |
-| Mobile | Expo 57, React Native 0.86 | Mobile application |
-| Mobile State | TanStack Query, Expo SQLite, Secure Store | Cache, outbox, sessions |
-| API | FastAPI, Pydantic, Uvicorn | REST API and validation |
-| ORM | SQLAlchemy | Database access |
-| Database | PostgreSQL | Core relational data |
-| Vector Search | pgvector | Semantic retrieval / skill intelligence |
-| Migrations | Alembic | Schema versioning |
-| Authentication | Clerk | Identity and authorization foundation |
-| AI | Google Gemini and deterministic engines | Career, interview, recommendations |
-| Integrity | HMAC-SHA256 | Certificate integrity |
-| Testing | Pytest, ESLint, TypeScript, E2E scripts | Quality assurance |
-| Infrastructure | Docker | Reproducible backend deployment |
+| Layer | Technology |
+|---|---|
+| Web | Next.js 16, React 19, TypeScript |
+| UI | Tailwind CSS, Base UI, shadcn/ui, Lucide, Recharts |
+| PWA | Service Worker, IndexedDB |
+| Mobile | Expo 57, React Native 0.86 |
+| Mobile state | TanStack Query, Expo SQLite, Secure Store |
+| API | FastAPI, Pydantic, Uvicorn |
+| Persistence | SQLAlchemy, AsyncPG, Psycopg |
+| Database | PostgreSQL |
+| Vector search | pgvector |
+| Migrations | Alembic |
+| Authentication | Clerk |
+| AI | Google Gemini + deterministic engines |
+| Integrity | HMAC-SHA256 |
+| Containers | Docker |
+| Quality | Pytest, ESLint, TypeScript, E2E scripts |
 
 ---
 
-## Repository Structure
+# Repository
 
 ```text
 Cooperative-EcoSystem/
+│
 ├── apps/
 │   ├── web/
 │   │   ├── public/
@@ -446,165 +503,131 @@ Cooperative-EcoSystem/
 
 ---
 
-## Key Engineering Principles
+# API
 
-### Evidence before claims
-
-Training outcomes should be linked to evidence. A certificate should not exist merely because a learner clicked "complete".
-
-Evidence can include:
-
-- Assessed performance
-- Course completion
-- Trainer evaluation
-- Verified certificate
-- Employment feedback
-
-### Deterministic core, AI-assisted experience
-
-AI is used for recommendations, explanations, career assistance, and interview dialogue. Authoritative operations such as certification integrity, structured scoring, permissions, and core matching logic should remain reproducible wherever possible.
-
-### Privacy-aware design
-
-- Server-side secrets
-- Validated API inputs
-- Authenticated protected routes
-- Role-based access
-- Organization scoping
-- Audit logs
-- Least-privilege access
-- Explicit biometric consent where applicable
-
-### Graceful degradation
-
-Optional integrations should not cause the entire platform to fail. Integration capabilities should distinguish between:
-
-```text
-Configured
-Implemented
-Available
-```
-
----
-
-## Security Model
-
-Roles represented by the platform include:
-
-- `trainee`
-- `trainer`
-- `institution`
-- `employer`
-- `admin`
-- `ncct_admin`
-
-Security expectations:
-
-- Validate untrusted input at API boundaries.
-- Derive identity from authenticated claims rather than client-provided identity fields.
-- Enforce organization scope on protected resources.
-- Keep secrets out of `NEXT_PUBLIC_*` and `EXPO_PUBLIC_*`.
-- Protect certificate signing keys.
-- Avoid production use of demo/anonymous authentication.
-- Use explicit CORS allowlists.
-- Maintain audit trails for security-sensitive mutations.
-
-> Never enable demo authentication or anonymous actors against a production or remote database.
-
----
-
-## Certificates & Verification
-
-NURVEX can generate certificates with unique verification identifiers.
-
-Example:
-
-```text
-NUR-2026-XXXXXX
-```
-
-Certificate integrity can be protected using a server-side HMAC-SHA256 digest.
-
-Verification flow:
-
-```text
-Certificate
-    ↓
-Verification ID
-    ↓
-Public Verification Endpoint
-    ↓
-Recompute Integrity Digest
-    ↓
-VALID / INVALID / REVOKED
-```
-
----
-
-## Offline Architecture
-
-### Web
-
-- PWA shell
-- IndexedDB cache
-- Learning cache
-- Deferred mutations
-- Sync queue
-- Retry state
-
-### Mobile
-
-- Expo SQLite
-- Local outbox
-- Cached user/course data
-- Network-aware synchronization
-- Secure session storage
-
-Offline mode is feature-scoped. Authoritative authorization, some grading operations, and conflict-sensitive operations may remain online-only.
-
----
-
-## API Surface
-
-API routes are versioned under:
+The platform exposes a versioned REST API under:
 
 ```text
 /api/v1
 ```
 
-| Prefix | Purpose |
+| Domain | Prefix |
 |---|---|
-| `/auth` | Authentication and provisioning |
-| `/users` | User management |
-| `/organisations` | Organizations |
-| `/programmes` | Programmes, nominations, batches |
-| `/courses` | Courses |
-| `/learning` | Learning and progress |
-| `/content/diksha` | DIKSHA content integration |
-| `/assessments` | Assessments and attempts |
-| `/attendance` | Attendance |
-| `/face` | Face attendance integration |
-| `/certificates` | Certificate issuance and verification |
-| `/skills` | Skill Passport and evidence |
-| `/career` | Career intelligence |
-| `/jobs` | Jobs and matching |
-| `/employer` | Employer workflows |
-| `/analytics` | Analytics and reporting |
-| `/admin` | Administration |
-| `/timetable` | Timetable |
-| `/hostel` | Hostel |
-| `/logistics` | Logistics |
-| `/offline-sync` | Deferred synchronization |
-| `/notifications` | Notifications |
-| `/system` | Integration capability state |
+| Authentication | `/auth` |
+| Users | `/users` |
+| Organizations | `/organisations` |
+| Programmes | `/programmes` |
+| Courses | `/courses` |
+| Learning | `/learning` |
+| DIKSHA content | `/content/diksha` |
+| Assessments | `/assessments` |
+| Attendance | `/attendance` |
+| Face workflows | `/face` |
+| Certificates | `/certificates` |
+| Skills | `/skills` |
+| Career | `/career` |
+| Jobs | `/jobs` |
+| Employer | `/employer` |
+| Analytics | `/analytics` |
+| Administration | `/admin` |
+| Timetable | `/timetable` |
+| Hostel | `/hostel` |
+| Logistics | `/logistics` |
+| Synchronization | `/offline-sync` |
+| Notifications | `/notifications` |
+| Platform state | `/system` |
 
-The OpenAPI document at `/openapi.json` is the canonical machine-readable API contract.
+Interactive API documentation is available from the running service at:
+
+```text
+/docs
+/redoc
+/openapi.json
+```
 
 ---
 
-## Getting Started
+# Security
 
-### Prerequisites
+Security is treated as a platform capability, not a feature added at the end.
+
+Current design principles include:
+
+- Role-based authorization
+- Organization-scoped access
+- Server-side secret management
+- API boundary validation
+- Explicit CORS configuration
+- Audit logging
+- Protected certificate signing secrets
+- Fail-closed access rules
+- Development-only anonymous/demo modes
+- Privacy-aware biometric workflows
+
+### Roles
+
+```text
+trainee
+trainer
+institution
+employer
+admin
+ncct_admin
+```
+
+> Demo authentication and anonymous actors must never be enabled against production or remote data.
+
+---
+
+# Certificates
+
+Certificate issuance is connected to assessment and learning completion.
+
+```text
+Learning
+   ↓
+Assessment
+   ↓
+Pass
+   ↓
+Certificate
+   ↓
+Integrity digest
+   ↓
+Public verification
+```
+
+A verification identifier can be used to confirm certificate state without exposing unnecessary learner data.
+
+---
+
+# Offline-first capabilities
+
+Supported offline behavior is feature-scoped.
+
+### Web
+
+- PWA shell
+- IndexedDB caching
+- Cached learning state
+- Deferred mutations
+- Retry and synchronization
+
+### Mobile
+
+- SQLite-backed local state
+- Mutation outbox
+- Cached course/user data
+- Network-aware synchronization
+- Secure local session storage
+
+Offline operation does not imply that every action can be finalized without the server. Authoritative authorization and selected conflict-sensitive operations may remain online-only.
+
+---
+
+# Getting started
+
+## Requirements
 
 - Node.js 20+
 - npm 10+
@@ -614,14 +637,14 @@ The OpenAPI document at `/openapi.json` is the canonical machine-readable API co
 - Docker
 - Expo tooling for mobile development
 
-### Clone
+## Clone
 
 ```bash
 git clone https://github.com/mittai17/Cooperative-EcoSystem.git
 cd Cooperative-EcoSystem
 ```
 
-### Backend
+## Backend
 
 ```bash
 cd backend
@@ -638,7 +661,7 @@ python -m app.seed
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Useful endpoints:
+Backend endpoints:
 
 ```text
 http://localhost:8000/health
@@ -647,37 +670,44 @@ http://localhost:8000/redoc
 http://localhost:8000/openapi.json
 ```
 
-### Web
+## Web
 
 ```bash
 cd apps/web
+
 npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open:
 
-### Mobile
+```text
+http://localhost:3000
+```
+
+## Mobile
 
 ```bash
 cd apps/mobile
+
 npm ci
 npm run typecheck
 npm start
 ```
 
-For a physical device, point the client to a network-reachable backend rather than `localhost`.
+For a physical device, configure a backend address reachable from the device. `localhost` on a physical device refers to the device itself.
 
 ---
 
-## Environment Configuration
+# Configuration
 
-### Backend
+## Backend
 
-Typical variables include:
+Typical configuration includes:
 
 ```dotenv
 DATABASE_URL=
+
 APP_ENV=
 LOG_LEVEL=
 ALLOWED_ORIGINS=
@@ -702,53 +732,70 @@ MEDIA_BASE_URL=
 CRON_SECRET=
 ```
 
-Only configure variables required by the integrations you actually enable.
+Only configure integrations you actually use.
 
-### Web
+## Web
 
 ```dotenv
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_MOCK_API=false
 ```
 
-### Mobile
+## Mobile
 
 ```dotenv
 EXPO_PUBLIC_API_BASE_URL=http://192.168.1.10:8000
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=
 ```
 
-Never place server secrets in public client variables.
+Never put private credentials into `NEXT_PUBLIC_*` or `EXPO_PUBLIC_*` variables.
 
 ---
 
-## Database
+# Development workflow
 
-The database uses PostgreSQL with pgvector.
+A recommended development loop:
 
-Migration workflow:
+```text
+Change
+  ↓
+Typecheck / lint
+  ↓
+Unit tests
+  ↓
+API tests
+  ↓
+Database migration checks
+  ↓
+E2E flow
+  ↓
+Build
+```
+
+## Database migrations
 
 ```bash
 cd backend
+
 alembic current
 alembic upgrade head
 ```
 
-Create a migration only after an intentional schema change:
+Create a migration only after an intentional model change:
 
 ```bash
 alembic revision --autogenerate -m "describe_change"
 ```
 
-Always review generated migrations before applying them.
+Review generated migrations before applying them.
 
 ---
 
-## Testing
+# Testing
 
-### Backend
+## Backend
 
-Scratch-database testing reduces the risk of running tests against a remote or production database.
+The repository includes scratch-database testing to reduce the risk of testing against a remote or production database.
 
 ```bash
 docker run --name coopsetu-scratch-pg \
@@ -761,7 +808,7 @@ python scripts/scratch_backend.py alembic upgrade head
 python scripts/scratch_backend.py pytest -q
 ```
 
-### Web
+## Web
 
 ```bash
 cd apps/web
@@ -770,7 +817,7 @@ npx tsc --noEmit
 npm run build
 ```
 
-### Mobile
+## Mobile
 
 ```bash
 cd apps/mobile
@@ -779,7 +826,7 @@ npm run lint
 npx expo-doctor
 ```
 
-### Closed-loop E2E
+## End-to-end lifecycle
 
 ```bash
 API_URL=http://127.0.0.1:8000 \
@@ -789,179 +836,142 @@ python scripts/verify_e2e_loop.py
 
 ---
 
-## Data Model
+# Data model
 
-Core domain concepts include:
+NURVEX connects a broad domain model:
 
 ```text
-Users
-Organizations
-Institutions
-Trainers
-Trainees
-Employers
+Identity
+├── Users
+├── Organizations
+├── Institutions
+├── Trainers
+├── Trainees
+└── Employers
 
-Programmes
-Nominations
-Batches
-Enrollments
+Training
+├── Programmes
+├── Nominations
+├── Batches
+├── Enrollments
+├── Courses
+├── Modules
+├── Lessons
+├── Assessments
+└── Learning Progress
 
-Courses
-Modules
-Lessons
-Assessments
-Assessment Results
-Learning Progress
-
-Attendance
-Attendance Events
-Timetables
-Hostel
-Logistics
+Operations
+├── Attendance
+├── Attendance Events
+├── Timetables
+├── Hostel
+└── Logistics
 
 Skills
-Skill Relationships
-Trainee Skills
-Skill Evidence
-Skill Gaps
-Career Paths
+├── Skills
+├── Skill Relationships
+├── Trainee Skills
+├── Skill Evidence
+├── Skill Gaps
+└── Career Paths
 
-Jobs
-Job Requirements
-Job Matches
-Applications
-Interviews
-Offers
-Employer Feedback
+Employment
+├── Jobs
+├── Job Requirements
+├── Job Matches
+├── Applications
+├── Interviews
+├── Offers
+└── Employer Feedback
 
-Certificates
-Certificate Verification
-
-Analytics
-Skill Demand
-Employment Outcomes
-Notifications
-Audit Logs
-Offline Sync
+Trust & Analytics
+├── Certificates
+├── Certificate Verification
+├── Skill Demand
+├── Employment Outcomes
+├── Notifications
+├── Audit Logs
+└── Offline Sync
 ```
 
 ---
 
-## Deployment
+# Production readiness
 
-### Backend
+NURVEX is an actively evolving prototype. Before production deployment, validate at minimum:
 
-```bash
-docker build -t nurvex-api ./backend
-docker run --rm -p 8000:8000 --env-file backend/.env nurvex-api
-```
-
-Run migrations as a controlled release step.
-
-### Web
-
-```bash
-cd apps/web
-npm ci
-npm run build
-npm start
-```
-
-### Mobile
-
-```bash
-cd apps/mobile
-npx eas build --profile preview --platform android
-npx eas build --profile production --platform android
-```
+- [ ] Production authentication and session handling
+- [ ] HTTPS and trusted-origin CORS
+- [ ] Managed PostgreSQL + pgvector
+- [ ] Secret-manager integration
+- [ ] Certificate key protection and rotation plan
+- [ ] Database backups and restoration testing
+- [ ] External integration health checks
+- [ ] Biometric consent and retention policies
+- [ ] Physical attendance hardware
+- [ ] Offline conflict handling
+- [ ] Monitoring and alerting
+- [ ] Content licensing and attribution
+- [ ] Privacy and data-retention policies
+- [ ] High-impact AI governance and human review
 
 ---
 
-## Production Readiness Checklist
+# Roadmap
 
-- [ ] Disable anonymous/demo authentication
-- [ ] Complete production Clerk session integration
-- [ ] Configure HTTPS everywhere
-- [ ] Lock CORS to trusted origins
-- [ ] Store secrets in a managed secret store
-- [ ] Protect certificate signing keys
-- [ ] Configure managed PostgreSQL + pgvector
-- [ ] Configure backups and restoration testing
-- [ ] Validate external integrations
-- [ ] Validate biometric consent and processing policies
-- [ ] Test physical attendance hardware
-- [ ] Validate offline conflict handling
-- [ ] Add production monitoring
-- [ ] Review all third-party content licenses
-- [ ] Review privacy and data-retention policies
+### Learning platform
 
----
-
-## Current Limitations
-
-NURVEX is an actively evolving prototype. Current areas requiring additional production hardening include:
-
-- Complete production-grade Clerk session integration across every web route
-- Some presentation-heavy web screens still use local/demo data
-- Production web containerization needs a validated web Dockerfile
-- Face attendance requires separately supplied compatible model files and real-world validation
-- Some external provider credentials are modeled before all adapters are fully implemented
-- Native hardware workflows require physical-device validation
-- AI remains advisory and should not replace human review for high-impact decisions
-- Third-party educational content must be governed by source-specific licensing and usage terms
-
----
-
-## Roadmap
-
-### Phase 1 — Platform Foundation
-- [x] Multi-role web application
-- [x] FastAPI backend
-- [x] PostgreSQL + pgvector architecture
-- [x] Training and employment domain model
+- [x] Multi-role web experience
+- [x] FastAPI service layer
+- [x] PostgreSQL + pgvector foundation
+- [x] Learning and employment domain model
 - [x] Certificate integrity foundation
+- [ ] Expanded DIKSHA/Sunbird content integration
+- [ ] Richer learning telemetry
+- [ ] Adaptive learning
+- [ ] Advanced assessment analytics
 
-### Phase 2 — Learning Intelligence
-- [ ] Expand DIKSHA/Sunbird ingestion and playback
-- [ ] Unified learning progress events
-- [ ] Adaptive learning recommendations
-- [ ] Advanced Skill Graph
-- [ ] Richer assessment analytics
+### Employment intelligence
 
-### Phase 3 — Employment Intelligence
-- [ ] Expanded candidate intelligence
+- [x] Structured jobs
+- [x] Candidate matching foundation
+- [x] Employer workflows
 - [ ] Advanced interview workflows
-- [ ] Employer feedback analytics
+- [ ] Employer feedback intelligence
 - [ ] Skill-demand forecasting
-- [ ] Training-to-demand recommendations
+- [ ] Training-to-demand optimization
 
-### Phase 4 — Institutional Scale
-- [ ] Large-scale institution rollout
-- [ ] Kiosk/device management
+### Platform scale
+
+- [ ] Enterprise-grade observability
+- [ ] Device management
 - [ ] More robust offline synchronization
-- [ ] Production observability
-- [ ] Enterprise deployment hardening
+- [ ] Broader multilingual coverage
+- [ ] Production deployment automation
+- [ ] Accessibility hardening
 
 ---
 
-## Contributing
+# Contributing
 
-Contributions are welcome.
+NURVEX is built as a modular platform. Contributions should preserve clear boundaries between product domains and integrations.
 
-1. Create a focused branch.
-2. Keep changes modular.
-3. Follow the existing architecture.
-4. Add migrations for schema changes.
-5. Add regression tests for important behaviors.
-6. Validate authorization boundaries.
-7. Update documentation when behavior changes.
-8. Run lint, type checks, backend tests, and relevant E2E checks.
+### Guidelines
 
-Good contribution areas include:
+1. Keep changes focused and composable.
+2. Reuse existing domain services before introducing duplicates.
+3. Validate untrusted data at the API boundary.
+4. Enforce role and organization scope on protected operations.
+5. Add migrations for schema changes.
+6. Add regression tests for security-sensitive behavior and state transitions.
+7. Keep external provider logic behind integration boundaries.
+8. Update documentation when architecture or behavior changes.
 
-- DIKSHA/Sunbird integration
+Areas that benefit from contributions include:
+
+- DIKSHA / Sunbird integration
 - Learning-player instrumentation
-- Skill Graph enhancements
+- Skill Graph intelligence
 - Assessment analytics
 - Employer intelligence
 - Offline synchronization
@@ -971,52 +981,65 @@ Good contribution areas include:
 
 ---
 
-## Smart India Hackathon
+# Smart India Hackathon
 
 **Smart India Hackathon 2026**  
-**Problem Statement: 26087**  
-**Theme: Smart Education**  
-**Domain: Cooperative training, ERP, LMS, skills, and employment ecosystem**
+**Problem Statement:** 26087  
+**Theme:** Smart Education  
+**Focus:** Cooperative training, ERP, LMS, skills, and employment ecosystem
 
-NURVEX is designed around the challenge of connecting cooperative-sector capacity building with digital learning, measurable outcomes, skill development, and employment.
-
----
-
-## License
-
-No license file is currently present in this repository.
-
-Until a license is explicitly added by the maintainers, the repository remains subject to applicable default copyright restrictions.
-
-Do not assume the code or third-party assets are available for unrestricted redistribution.
+NURVEX is being developed to demonstrate how cooperative-sector training can move from fragmented processes toward a connected digital lifecycle spanning learning, certification, skills, and employment outcomes.
 
 ---
 
-## Vision
+# Project status
 
-> **Make learning measurable, skills verifiable, hiring explainable, and employment outcomes visible.**
+**Active development · Prototype**
+
+Repository:
 
 ```text
-Learn
+https://github.com/mittai17/Cooperative-EcoSystem
+```
+
+The repository name is retained for development continuity; **NURVEX** is the product identity.
+
+---
+
+# Licensing
+
+This repository currently does not contain an explicit open-source license.
+
+Until a license is added by the maintainers, default copyright restrictions apply. Third-party services, libraries, educational resources, media, and datasets remain subject to their own licenses and terms.
+
+---
+
+# Vision
+
+> **A learner should not have to navigate five disconnected systems to learn, prove their skills, and find the right opportunity.**
+
+NURVEX aims to make that entire journey measurable:
+
+```text
+LEARN
   ↓
-Demonstrate
+PROVE
   ↓
-Certify
+CERTIFY
   ↓
-Build Skills
+BUILD SKILLS
   ↓
-Discover Opportunities
+DISCOVER OPPORTUNITIES
   ↓
-Get Hired
+GET HIRED
   ↓
-Capture Employer Feedback
+LEARN FROM EMPLOYMENT OUTCOMES
   ↓
-Understand Skill Demand
-  ↓
-Improve Training
+IMPROVE TRAINING
   ↺
 ```
 
 <p align="center">
-  <strong>NURVEX — Learn. Prove. Grow. Work.</strong>
+  <strong>NURVEX</strong><br>
+  <sub>Learn. Prove. Grow. Work.</sub>
 </p>

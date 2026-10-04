@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Pencil,
@@ -188,6 +188,17 @@ type TabType = "overview" | "learning" | "certificates" | "skills" | "jobs" | "a
 
 export default function TraineeProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab") as TabType | null;
+      if (tab && ["overview", "learning", "certificates", "skills", "jobs", "activity", "settings"].includes(tab)) {
+        setActiveTab(tab);
+      }
+    }
+  }, []);
+
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [copied, setCopied] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);

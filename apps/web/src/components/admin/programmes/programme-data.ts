@@ -16,13 +16,18 @@ export const PROGRAMME_MODES = [
   { value: "hybrid", label: "Hybrid" },
 ] as const;
 
-/** Labelled fallback rows, shown only when the live programmes API fails. */
+/** Labelled fallback rows, shown only when the live programmes API fails or is empty. */
 export const DEMO_PROGRAMMES: Programme[] = [
-  { id: "demo-prog-1", title: "Dairy Management", sector: "Dairy & Livestock", level: null, mode: "offline", duration_weeks: 12, seats_total: 240, seats_filled: 198, organisation_name: null, start_date: null, status: "active" },
-  { id: "demo-prog-2", title: "Cooperative Management", sector: "Management", level: null, mode: "hybrid", duration_weeks: 24, seats_total: 180, seats_filled: 140, organisation_name: null, start_date: null, status: "active" },
-  { id: "demo-prog-3", title: "Agri Business", sector: "Agriculture", level: null, mode: "offline", duration_weeks: 16, seats_total: 120, seats_filled: 96, organisation_name: null, start_date: null, status: "active" },
-  { id: "demo-prog-4", title: "Digital Skills", sector: "ICT", level: null, mode: "online", duration_weeks: 8, seats_total: 310, seats_filled: 244, organisation_name: null, start_date: null, status: "inactive" },
-  { id: "demo-prog-5", title: "Rural Development", sector: "Community", level: null, mode: "offline", duration_weeks: 12, seats_total: 200, seats_filled: 150, organisation_name: null, start_date: null, status: "active" },
+  { id: "ncct-prog-dairy-ops", title: "Dairy Cooperative Operations", sector: "Dairy & Livestock", level: "Intermediate", mode: "offline", duration_weeks: 10, seats_total: 120, seats_filled: 118, organisation_name: "Institute of Rural Management, Anand", start_date: "2026-04-06", status: "active" },
+  { id: "ncct-prog-bookkeeping", title: "Cooperative Bookkeeping & Audit Readiness", sector: "Accounting", level: "Foundation", mode: "hybrid", duration_weeks: 8, seats_total: 200, seats_filled: 164, organisation_name: "NCUI Training Centre, Delhi", start_date: "2026-02-09", status: "active" },
+  { id: "ncct-prog-poultry-lead", title: "Poultry & Small Livestock Cluster Leadership", sector: "Dairy & Livestock", level: "Foundation", mode: "offline", duration_weeks: 6, seats_total: 80, seats_filled: 76, organisation_name: "Tamil Nadu Cooperative Union", start_date: "2026-03-02", status: "active" },
+  { id: "ncct-prog-pacs-sec", title: "PACS Secretary Professional Foundation", sector: "Management", level: "Foundation", mode: "hybrid", duration_weeks: 12, seats_total: 250, seats_filled: 242, organisation_name: "VAMNICOM, Pune", start_date: "2026-01-12", status: "active" },
+  { id: "ncct-prog-fishery-val", title: "Fishery Collectives & Marine Value Chain", sector: "Agriculture", level: "Intermediate", mode: "offline", duration_weeks: 8, seats_total: 60, seats_filled: 55, organisation_name: "Kerala Rural Institute", start_date: "2026-05-04", status: "active" },
+  { id: "ncct-prog-handloom-mgmt", title: "Handloom Weaver Cooperative Management", sector: "Community", level: "Foundation", mode: "online", duration_weeks: 6, seats_total: 90, seats_filled: 84, organisation_name: "NCUI Delhi Handloom Cell", start_date: "2026-02-16", status: "active" },
+  { id: "ncct-prog-cold-chain", title: "Cooperative Cold Chain & Post-Harvest Logistics", sector: "Food Processing", level: "Advanced", mode: "offline", duration_weeks: 10, seats_total: 75, seats_filled: 68, organisation_name: "Haryana Agri Cooperative", start_date: "2026-03-09", status: "active" },
+  { id: "ncct-prog-urban-credit", title: "Urban Credit Cooperative Compliance & Audit", sector: "Accounting", level: "Advanced", mode: "online", duration_weeks: 4, seats_total: 110, seats_filled: 102, organisation_name: "Sahakar Bharati College", start_date: "2026-04-13", status: "active" },
+  { id: "ncct-prog-organic-fpo", title: "Organic Farm Aggregation & FPO Linkage", sector: "Agriculture", level: "Intermediate", mode: "hybrid", duration_weeks: 8, seats_total: 85, seats_filled: 79, organisation_name: "Assam Cooperative College", start_date: "2026-05-18", status: "active" },
+  { id: "ncct-prog-digital-skills", title: "Digital ERP & Cloud Records for Cooperatives", sector: "ICT", level: "Intermediate", mode: "online", duration_weeks: 8, seats_total: 310, seats_filled: 244, organisation_name: "NCDC Training Institute", start_date: "2026-01-19", status: "active" },
 ];
 
 export function durationLabel(weeks: number | null): string {

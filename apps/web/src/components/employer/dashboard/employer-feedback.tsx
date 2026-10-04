@@ -21,7 +21,7 @@ export function EmployerFeedbackCard({
         <SectionError onRetry={onRetry} />
       ) : loading || items === null ? (
         <SectionSkeleton rows={3} />
-      ) : items.length === 0 ? (
+      ) : !Array.isArray(items) || items.length === 0 ? (
         <SectionEmpty
           title="No post-hire feedback yet"
           body="Share feedback on hired trainees so training providers can see how skills perform on the job."

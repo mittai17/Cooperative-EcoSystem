@@ -78,10 +78,10 @@ function AIMatchingContent() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const jobs = useResource(() => listMyJobs(api), []);
-  const postingsMode: "api" | "demo" = jobs.error ? "demo" : "api";
+  const postingsMode: "api" | "demo" = jobs.error || (jobs.data && jobs.data.length === 0) ? "demo" : "api";
   const postings: PostingOption[] = useMemo(() => {
-    if (postingsMode === "demo") return demoPostingOptions();
-    return jobs.data ?? [];
+    if (postingsMode === "demo" || !jobs.data || jobs.data.length === 0) return demoPostingOptions();
+    return jobs.data;
   }, [postingsMode, jobs.data]);
 
   const activeJob = postings.some((posting) => posting.id === selectedJob) ? selectedJob : (postings[0]?.id ?? "");
@@ -93,7 +93,10 @@ function AIMatchingContent() {
     }
     try {
       const response = await getJobMatches(api, activeJob);
-      return { source: "api", response, reason: null };
+      if (response && response.matches && response.matches.length > 0) {
+        return { source: "api", response, reason: null };
+      }
+      return { source: "demo", response: demoJobMatches(activeJob), reason: null };
     } catch (err) {
       return { source: "demo", response: demoJobMatches(activeJob), reason: errorMessage(err) };
     }

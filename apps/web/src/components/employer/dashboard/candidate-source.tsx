@@ -32,7 +32,7 @@ export function CandidateSourceDonut({
         <SectionError onRetry={onRetry} />
       ) : loading || sources === null ? (
         <SectionSkeleton rows={4} />
-      ) : sources.length === 0 || total === 0 ? (
+      ) : !Array.isArray(sources) || sources.length === 0 || total === 0 ? (
         <SectionEmpty title="No sources yet" body="Source breakdown appears once candidates apply to your jobs." />
       ) : (
         <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-2">

@@ -1,3 +1,6 @@
+import { demoDashboard } from "@/components/employer/dashboard/demo-data";
+import type { FunnelRange, TimelineRange, EmployerJob } from "@/lib/employer/jobs-api";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 
@@ -164,11 +167,75 @@ async function mockFetch(path: string): Promise<unknown> {
     };
   }
 
+  // Employer dashboard & jobs mock
+  if (p === "/api/v1/employer/dashboard") {
+    const funnel = (qs.get("funnel_range") as FunnelRange) || "3m";
+    const timeline = (qs.get("timeline_range") as TimelineRange) || "6m";
+    return demoDashboard(funnel, timeline);
+  }
+  if (p === "/api/v1/employer/jobs") {
+    const mockEmployerJobs: EmployerJob[] = [
+      {
+        id: "job-01",
+        title: "Dairy Procurement Supervisor",
+        department: "Procurement",
+        employment_type: "Full-time",
+        location: "Anand, Gujarat",
+        status: "open",
+        salary_range: "₹30,000 - ₹45,000/mo",
+        openings: 3,
+        applications_count: 24,
+        shortlisted_count: 8,
+        interview_count: 4,
+        match_rate: 94,
+        posted_at: "2026-09-15",
+        deadline: "2026-10-30",
+      },
+      {
+        id: "job-02",
+        title: "Quality Control Executive",
+        department: "Quality Assurance",
+        employment_type: "Full-time",
+        location: "Vadodara, Gujarat",
+        status: "open",
+        salary_range: "₹25,000 - ₹35,000/mo",
+        openings: 2,
+        applications_count: 18,
+        shortlisted_count: 5,
+        interview_count: 3,
+        match_rate: 88,
+        posted_at: "2026-09-20",
+        deadline: "2026-10-25",
+      },
+      {
+        id: "job-03",
+        title: "PACS Management Trainee",
+        department: "Operations",
+        employment_type: "Internship",
+        location: "Mehsana, Gujarat",
+        status: "open",
+        salary_range: "₹18,000 - ₹22,000/mo",
+        openings: 5,
+        applications_count: 45,
+        shortlisted_count: 15,
+        interview_count: 6,
+        match_rate: 96,
+        posted_at: "2026-09-28",
+        deadline: "2026-11-15",
+      },
+    ];
+    return mockEmployerJobs;
+  }
+
+  // Trainee mock fallbacks
+  if (p === "/api/v1/courses/") return { courses: [] };
+  if (p === "/api/v1/jobs/") return { jobs: [] };
+
   // Users API (people-roster)
   if (p === "/api/v1/users/") return [];
   if (p === "/api/v1/users/batches") return [];
   
-  return {};
+  throw new Error(`API Error: 404 Not Found (mock endpoint ${p} not implemented)`);
 }
 
 export async function fetchWithAuth(path: string, options: RequestInit = {}) {

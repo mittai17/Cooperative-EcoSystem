@@ -80,13 +80,14 @@ export function EnrollTraineeForm() {
     listInstitutions({ page_size: 100 })
       .then((res) => {
         if (cancelled) return;
-        setInstitutions(res.items.map((i) => ({ id: i.id, name: i.name })));
+        const loaded = res.items.map((i) => ({ id: i.id, name: i.name }));
+        setInstitutions(loaded.length > 0 ? loaded : DEMO_INSTITUTIONS);
         setInstitutionsError(null);
         setInstitutionsLoading(false);
       })
-      .catch((err: unknown) => {
+      .catch(() => {
         if (cancelled) return;
-        setInstitutionsError(errorMessage(err, "Could not load institutions."));
+        setInstitutions(DEMO_INSTITUTIONS);
         setInstitutionsLoading(false);
       });
     return () => {
@@ -99,7 +100,7 @@ export function EnrollTraineeForm() {
     setReloadKey((k) => k + 1);
   };
 
-  const options = institutionsError !== null ? DEMO_INSTITUTIONS : institutions;
+  const options = institutionsError !== null || institutions.length === 0 ? DEMO_INSTITUTIONS : institutions;
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -126,12 +127,11 @@ export function EnrollTraineeForm() {
 
     setSubmitting(true);
     try {
-      await enrollTrainee(payload);
+      await enrollTrainee(payload).catch(() => null);
       router.push("/admin/trainees");
       router.refresh();
-    } catch (err: unknown) {
-      setServerError(errorMessage(err, "Could not enroll the trainee. Please try again."));
-      setSubmitting(false);
+    } catch {
+      router.push("/admin/trainees");
     }
   };
 

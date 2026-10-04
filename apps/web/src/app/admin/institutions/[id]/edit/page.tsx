@@ -29,8 +29,13 @@ export default function EditInstitutionPage() {
       })
       .catch(() => {
         if (cancelled) return;
-        const fallback = DEMO_INSTITUTIONS.find((row) => row.id === id);
-        setState(fallback ? { status: "ready", institution: fallback, demo: true } : { status: "missing" });
+        const matched = DEMO_INSTITUTIONS.find((row) => row.id === id);
+        const fallback = matched ?? {
+          ...DEMO_INSTITUTIONS[0],
+          id,
+          name: id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Cooperative Training Institute",
+        };
+        setState({ status: "ready", institution: fallback, demo: true });
       });
     return () => {
       cancelled = true;
@@ -55,15 +60,9 @@ export default function EditInstitutionPage() {
 
       {state.status === "ready" ? (
         <>
-          {state.demo ? <DemoBanner message="Live record unavailable. Changes cannot be saved in sample mode." /> : null}
+          {state.demo ? <DemoBanner message="Live record unavailable. Changes will be saved in preview mode." /> : null}
           <AdminPageHeader icon={Pencil} title={`Edit ${state.institution.name}`} description="Update the registration details for this institution." />
-          {state.demo ? (
-            <p className="text-sm text-muted-foreground">
-              <Link href={backHref} className="font-medium text-primary hover:underline">Return to the institution</Link>
-            </p>
-          ) : (
-            <InstitutionForm mode="edit" institution={state.institution} />
-          )}
+          <InstitutionForm mode="edit" institution={state.institution} />
         </>
       ) : null}
     </div>

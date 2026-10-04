@@ -14,10 +14,11 @@ const KPI_META: { key: KpiKey; label: string; icon: LucideIcon; tint: StatTint }
   { key: "hired", label: "Hired", icon: Trophy, tint: "amber" },
 ];
 
-export function trendText(kpi: KpiValue): { text: string; tone: "up" | "down" | "neutral" } {
-  if (kpi.delta > 0) return { text: `+${kpi.delta} ${kpi.period}`, tone: "up" };
-  if (kpi.delta < 0) return { text: `${kpi.delta} ${kpi.period}`, tone: "down" };
-  return { text: `No change ${kpi.period}`, tone: "neutral" };
+export function trendText(kpi?: KpiValue): { text: string; tone: "up" | "down" | "neutral" } {
+  if (!kpi) return { text: "No change", tone: "neutral" };
+  if (kpi.delta > 0) return { text: `+${kpi.delta} ${kpi.period || ""}`, tone: "up" };
+  if (kpi.delta < 0) return { text: `${kpi.delta} ${kpi.period || ""}`, tone: "down" };
+  return { text: `No change ${kpi.period || ""}`, tone: "neutral" };
 }
 
 export function KpiRow({
@@ -44,13 +45,13 @@ export function KpiRow({
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
       {KPI_META.map((meta) => {
-        const kpi = kpis[meta.key];
+        const kpi = kpis?.[meta.key];
         const trend = trendText(kpi);
         return (
           <StatCard
             key={meta.key}
             label={meta.label}
-            value={String(kpi.value)}
+            value={kpi ? String(kpi.value) : "0"}
             icon={meta.icon}
             tint={meta.tint}
             trend={trend.text}

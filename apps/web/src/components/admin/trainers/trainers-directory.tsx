@@ -43,12 +43,16 @@ type TrainerRow = PersonRow & { subjects?: string[] };
 
 // Demo rows mirror the backend row shape, plus subjects for the fallback view only.
 const DEMO_TRAINERS: TrainerRow[] = [
-  { id: "demo-t1", full_name: "Dr. Meera Shah", email: "meera.shah@example.org", role: "trainer", organisation_id: null, organisation_name: "Amul Dairy Training Centre", state: "Gujarat", status: "active", created_at: "2026-01-12T10:00:00Z", subjects: ["Dairy Management", "Food Safety"] },
-  { id: "demo-t2", full_name: "Amit Verma", email: "amit.verma@example.org", role: "trainer", organisation_id: null, organisation_name: "Sahakar Bharati College", state: "Karnataka", status: "active", created_at: "2026-02-03T10:00:00Z", subjects: ["Cooperative Management"] },
-  { id: "demo-t3", full_name: "Kiran Deshmukh", email: "kiran.deshmukh@example.org", role: "trainer", organisation_id: null, organisation_name: "VAMNICOM", state: "Maharashtra", status: "active", created_at: "2026-03-20T10:00:00Z", subjects: ["Supply Chain", "Agri Business"] },
-  { id: "demo-t4", full_name: "Neha Patel", email: "neha.patel@example.org", role: "trainer", organisation_id: null, organisation_name: "Gujarat Cooperative College", state: "Gujarat", status: "active", created_at: "2026-04-08T10:00:00Z", subjects: ["Digital Skills"] },
-  { id: "demo-t5", full_name: "Rahul Thakur", email: "rahul.thakur@example.org", role: "trainer", organisation_id: null, organisation_name: "NCCU Training Institute", state: "Delhi", status: "inactive", created_at: "2025-11-30T10:00:00Z", subjects: ["Cooperative Management"] },
-  { id: "demo-t6", full_name: "Sunita Iyer", email: "sunita.iyer@example.org", role: "trainer", organisation_id: null, organisation_name: "Kerala Rural Institute", state: "Kerala", status: "active", created_at: "2026-05-14T10:00:00Z", subjects: ["Rural Development"] },
+  { id: "trn-anita-rathod", full_name: "Anita Rathod", email: "anita.rathod@irma.ac.in", role: "trainer", organisation_id: null, organisation_name: "Institute of Rural Management, Anand", state: "Gujarat", status: "active", created_at: "2026-01-12T10:00:00Z", subjects: ["Dairy Operations", "Food Safety"] },
+  { id: "trn-rajesh-iyer", full_name: "Rajesh Iyer", email: "rajesh.iyer@ncui.coop", role: "trainer", organisation_id: null, organisation_name: "NCUI Training Centre, Delhi", state: "Delhi", status: "active", created_at: "2026-02-03T10:00:00Z", subjects: ["Cooperative Accounting", "Audit Readiness"] },
+  { id: "trn-manjunath-hegde", full_name: "Dr. Manjunath Hegde", email: "manjunath.hegde@vamnicom.gov.in", role: "trainer", organisation_id: null, organisation_name: "VAMNICOM", state: "Maharashtra", status: "active", created_at: "2026-03-20T10:00:00Z", subjects: ["PACS Governance", "Cooperative Management"] },
+  { id: "trn-vasanthi", full_name: "S. Vasanthi", email: "s.vasanthi@tncu.gov.in", role: "trainer", organisation_id: null, organisation_name: "Tamil Nadu Cooperative Union", state: "Tamil Nadu", status: "active", created_at: "2026-04-08T10:00:00Z", subjects: ["Poultry Cluster", "Livestock Management"] },
+  { id: "trn-matthew-thomas", full_name: "Matthew Thomas", email: "matthew.thomas@kerala.coop", role: "trainer", organisation_id: null, organisation_name: "Kerala Rural Institute", state: "Kerala", status: "active", created_at: "2026-05-14T10:00:00Z", subjects: ["Fishery Collectives", "Marine Value Chain"] },
+  { id: "trn-birendra-saikia", full_name: "Birendra Saikia", email: "birendra.saikia@assamcoop.edu", role: "trainer", organisation_id: null, organisation_name: "Assam Cooperative College", state: "Assam", status: "active", created_at: "2026-02-18T10:00:00Z", subjects: ["Organic Farming", "Crop Aggregation"] },
+  { id: "trn-harpreet-gill", full_name: "Harpreet Singh Gill", email: "harpreet.gill@haryanaagri.org", role: "trainer", organisation_id: null, organisation_name: "Haryana Agri Cooperative", state: "Haryana", status: "active", created_at: "2026-03-10T10:00:00Z", subjects: ["Cold Chain Logistics", "Post-Harvest Ops"] },
+  { id: "trn-vandana-kulkarni", full_name: "Vandana Kulkarni", email: "vandana.k@ncui.coop", role: "trainer", organisation_id: null, organisation_name: "NCUI Delhi Handloom Cell", state: "Delhi", status: "active", created_at: "2026-01-25T10:00:00Z", subjects: ["Handloom Management", "Artisan Aggregation"] },
+  { id: "trn-narendra-deshmukh", full_name: "Narendra Deshmukh", email: "narendra.d@mahacoop.in", role: "trainer", organisation_id: null, organisation_name: "Maharashtra State Coop Inst", state: "Maharashtra", status: "active", created_at: "2026-04-02T10:00:00Z", subjects: ["Sugar Mill Efficiency", "Byproduct Economy"] },
+  { id: "trn-preeti-nair", full_name: "Preeti Nair", email: "preeti.nair@sahakarbharati.org", role: "trainer", organisation_id: null, organisation_name: "Sahakar Bharati College", state: "Karnataka", status: "inactive", created_at: "2025-11-30T10:00:00Z", subjects: ["Urban Credit Compliance", "NPA Recovery"] },
 ];
 
 export function TrainersDirectory() {
@@ -117,13 +121,13 @@ export function TrainersDirectory() {
     );
   }, [query, subject, state, status]);
 
-  const usingDemo = error !== null;
+  const hasFilters = query !== "" || subject !== ALL || state !== ALL || status !== ALL;
+  const usingDemo = error !== null || (!loading && rows.length === 0 && !hasFilters);
   const visibleRows: TrainerRow[] = usingDemo
     ? demoFiltered.slice((page - 1) * pageSize, page * pageSize)
     : rows;
   const visibleTotal = usingDemo ? demoFiltered.length : total;
   const pageCount = Math.max(1, Math.ceil(visibleTotal / pageSize));
-  const hasFilters = query !== "" || subject !== ALL || state !== ALL || status !== ALL;
 
   const resetFilters = () => {
     setSearch("");

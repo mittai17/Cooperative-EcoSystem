@@ -31,6 +31,7 @@ import type {
   TransportRequest,
   Incident,
   TripExpense,
+  AuditEvent,
 } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -800,3 +801,74 @@ export const EXPENSES: TripExpense[] = Array.from(
     institutionId: DEMO_INSTITUTION_ID,
   }),
 );
+
+// ---------------------------------------------------------------------------
+// Default Audit Events
+// ---------------------------------------------------------------------------
+export const DEFAULT_AUDIT_LOG: AuditEvent[] = [
+  {
+    id: "AUD-001",
+    entityType: "TransportPlan",
+    entityId: "PLN-2026-0001",
+    actor: "Admin (VAMNICOM)",
+    actorRole: "Logistics Officer",
+    action: "PLAN_APPROVED",
+    before: { status: "Draft" },
+    after: { status: "Approved" },
+    reason: "Vehicle capacity and driver shifts verified for dairy field visit.",
+    createdAt: "2026-10-02T14:30:00+05:30",
+    institutionId: DEMO_INSTITUTION_ID,
+  },
+  {
+    id: "AUD-002",
+    entityType: "Trip",
+    entityId: "TRP-2026-0142",
+    actor: "Rajendra More",
+    actorRole: "Fleet Supervisor",
+    action: "VEHICLE_ASSIGNED",
+    before: { vehicleId: null },
+    after: { vehicleId: "VEH-001" },
+    reason: "Assigned 40-seater BharatBenz coach for batch CMF-01.",
+    createdAt: "2026-10-02T16:15:00+05:30",
+    institutionId: DEMO_INSTITUTION_ID,
+  },
+  {
+    id: "AUD-003",
+    entityType: "Trip",
+    entityId: "TRP-2026-0143",
+    actor: "Suresh Patil",
+    actorRole: "Driver",
+    action: "TRIP_STARTED",
+    before: { status: "Scheduled" },
+    after: { status: "In-Transit" },
+    reason: "Departed Pune Railway Station with 36 trainees on board.",
+    createdAt: "2026-10-03T08:10:00+05:30",
+    institutionId: DEMO_INSTITUTION_ID,
+  },
+  {
+    id: "AUD-004",
+    entityType: "Incident",
+    entityId: "INC-001",
+    actor: "Suresh Patil",
+    actorRole: "Driver",
+    action: "INCIDENT_LOGGED",
+    before: null,
+    after: { severity: "Low", category: "Traffic" },
+    reason: "15 min delay due to highway maintenance near Hadapsar bypass.",
+    createdAt: "2026-10-03T08:45:00+05:30",
+    institutionId: DEMO_INSTITUTION_ID,
+  },
+  {
+    id: "AUD-005",
+    entityType: "TripExpense",
+    entityId: "EXP-001",
+    actor: "Finance Officer",
+    actorRole: "Accounts",
+    action: "EXPENSE_APPROVED",
+    before: { approvalStatus: "Pending" },
+    after: { approvalStatus: "Approved" },
+    reason: "Toll receipt and fuel voucher verified against vehicle log.",
+    createdAt: "2026-10-03T11:20:00+05:30",
+    institutionId: DEMO_INSTITUTION_ID,
+  },
+];

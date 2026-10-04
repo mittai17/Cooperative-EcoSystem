@@ -359,6 +359,7 @@ export default function KioskStatusPage() {
     status: "idle",
     message: "Not probed yet.",
   });
+  const [simulateCameraHardware, setSimulateCameraHardware] = useState(false);
   const [pendingAction, setPendingAction] = useState<DeviceActionSpec | null>(null);
   const [confirmText, setConfirmText] = useState("");
   const [actionBusy, setActionBusy] = useState(false);
@@ -661,13 +662,19 @@ export default function KioskStatusPage() {
             detail: "Simulated outage. Every write is being held in the queue below.",
           },
       camera:
-        camera.status === "ready"
-          ? { state: "ok", reading: "Video input present", detail: camera.message }
+        simulateCameraHardware || camera.status === "ready"
+          ? {
+              state: "ok",
+              reading: "OV5647 1080p · Hardware Ready",
+              detail: simulateCameraHardware
+                ? "Simulated USB camera hardware active. Sensor online @ 30 FPS."
+                : camera.message,
+            }
           : camera.status === "checking"
             ? { state: "idle", reading: "Probing", detail: camera.message }
             : { state: "warn", reading: "No usable camera", detail: camera.message },
     }),
-    [camera.message, camera.status, linkOnline],
+    [camera.message, camera.status, linkOnline, simulateCameraHardware],
   );
 
   const healthSummary = useMemo(() => {
@@ -724,6 +731,21 @@ export default function KioskStatusPage() {
               <Activity className="size-3" />
               {clockLabel} · {dateLabel}
             </span>
+            <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+              <Switch
+                checked={simulateCameraHardware}
+                onCheckedChange={(checked) => {
+                  setSimulateCameraHardware(checked);
+                  pushEvent(
+                    "info",
+                    checked
+                      ? "Simulated USB camera hardware attached (OV5647 1080p sensor online)"
+                      : "Simulated camera hardware detached",
+                  );
+                }}
+              />
+              <span>Simulate Camera HW</span>
+            </label>
             <Button
               type="button"
               variant="outline"
@@ -881,6 +903,19 @@ export default function KioskStatusPage() {
                 <CloudUpload className="size-4" />
                 Sync now
               </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="min-h-11 text-xs"
+                onClick={() => {
+                  applyQueue(seedQueueRows());
+                  pushEvent("info", "Operator reset mock sync batches to initial state");
+                }}
+              >
+                <RefreshCw className="mr-1.5 size-3.5" />
+                Reset Mock Queue
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -888,7 +923,7 @@ export default function KioskStatusPage() {
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
               <p className="font-medium text-foreground">
-                {doneCount} of {queue.length} batches pushed
+                {doneCount} of {queue.length} batches pushed ({queue.length > 0 ? Math.round((doneCount / queue.length) * 100) : 100}%)
               </p>
               <p className="font-mono text-xs text-muted-foreground">
                 {pendingCount} queued · {syncingCount} in flight · {formatBytes(outstandingBytes)}{" "}
@@ -896,7 +931,7 @@ export default function KioskStatusPage() {
               </p>
             </div>
             <Progress
-              value={doneCount}
+              value={queue.length > 0 ? Math.round((doneCount / queue.length) * 100) : 100}
               aria-label="Sync progress"
               className="[&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:rounded-full"
             />
@@ -909,6 +944,19 @@ export default function KioskStatusPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Nothing is waiting to reach the server on this device.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-3 min-h-11"
+                onClick={() => {
+                  applyQueue(seedQueueRows());
+                  pushEvent("info", "Operator replenished mock sync queue");
+                }}
+              >
+                <RefreshCw className="mr-1.5 size-3.5" />
+                Repopulate Mock Queue
+              </Button>
             </div>
           ) : (
             <Table>

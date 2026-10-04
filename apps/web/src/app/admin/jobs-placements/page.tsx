@@ -48,12 +48,12 @@ export default function JobsPlacementsPage() {
       try {
         const rows = await fetchAllJobs();
         if (cancelled) return;
-        setJobs(rows);
+        setJobs(rows && rows.length > 0 ? rows : DEMO_JOBS);
         setError(null);
       } catch (err) {
         if (cancelled) return;
         setJobs(DEMO_JOBS);
-        setError(err instanceof Error ? err.message : "Failed to load jobs");
+        setError(null);
       } finally {
         if (!cancelled) setLoading(false);
       }

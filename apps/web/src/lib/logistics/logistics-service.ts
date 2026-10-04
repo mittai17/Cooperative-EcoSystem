@@ -27,6 +27,7 @@ import {
   DEMO_CAMPUS_ID,
   PROGRAMMES,
   BATCHES,
+  DEFAULT_AUDIT_LOG,
 } from "./mock-data";
 import type {
   TransportPlan,
@@ -132,7 +133,13 @@ class LogisticsService {
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) return JSON.parse(stored) as LogisticsState;
+        if (stored) {
+          const parsed = JSON.parse(stored) as LogisticsState;
+          if (!parsed.auditLog || parsed.auditLog.length === 0) {
+            parsed.auditLog = [...DEFAULT_AUDIT_LOG];
+          }
+          return parsed;
+        }
       } catch {
         // ignore corrupt storage
       }
@@ -148,7 +155,7 @@ class LogisticsService {
       passengers: [...PASSENGER_ASSIGNMENTS],
       expenses: [...EXPENSES],
       vendors: [...VENDORS],
-      auditLog: [],
+      auditLog: [...DEFAULT_AUDIT_LOG],
     };
   }
 

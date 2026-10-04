@@ -119,6 +119,17 @@ const DEMO_ASSESSMENTS: AssessmentSummary[] = [
     best_score: 88,
     attempts_left: 1,
   },
+  {
+    id: "assess-coop-audit-past",
+    title: "Statutory Cooperative Audit & Inspection Quiz",
+    duration_minutes: 20,
+    passing_score: 75,
+    due_date: new Date(Date.now() - 86400000 * 3).toISOString(),
+    status: "upcoming",
+    open_attempt_id: null,
+    best_score: null,
+    attempts_left: 2,
+  },
 ];
 
 const DEMO_QUESTIONS: Question[] = [
@@ -186,7 +197,11 @@ const DEMO_QUESTIONS: Question[] = [
     setLoadError(null);
     try {
       const data = await api.get<{ assessments: AssessmentSummary[] }>("/api/v1/assessments/my");
-      setAssessments(data.assessments);
+      if (data?.assessments && data.assessments.length > 0) {
+        setAssessments(data.assessments);
+      } else {
+        setAssessments(DEMO_ASSESSMENTS);
+      }
     } catch {
       // In demo mode or offline, fall back to rich demo assessments
       setAssessments(DEMO_ASSESSMENTS);

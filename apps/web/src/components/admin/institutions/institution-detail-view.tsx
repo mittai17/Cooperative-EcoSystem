@@ -48,9 +48,14 @@ export function InstitutionDetailView({ id }: { id: string }) {
       })
       .catch(() => {
         if (cancelled) return;
-        const fallback = DEMO_INSTITUTIONS.find((row) => row.id === id) ?? null;
+        const matched = DEMO_INSTITUTIONS.find((row) => row.id === id);
+        const fallback = matched ?? {
+          ...DEMO_INSTITUTIONS[0],
+          id,
+          name: id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Cooperative Training Institute",
+        };
         setInstitution(fallback);
-        setStatus(fallback ? "demo" : "missing");
+        setStatus("demo");
       });
     return () => {
       cancelled = true;

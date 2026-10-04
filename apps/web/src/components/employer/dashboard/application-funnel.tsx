@@ -119,7 +119,7 @@ export function ApplicationFunnel({
         <SectionError onRetry={onRetry} />
       ) : loading || stages === null ? (
         <SectionSkeleton rows={2} />
-      ) : stages.length === 0 || stages[0].count === 0 ? (
+      ) : !Array.isArray(stages) || stages.length === 0 || stages[0].count === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">No applications in this period yet.</p>
       ) : (
         <div className={cn("flex flex-col gap-4", busy && "opacity-60")} aria-busy={busy}>

@@ -154,41 +154,63 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
     return `/api/v1/users/?${params.toString()}`;
   }
 
+  const DEFAULT_TRAINEES: RosterPerson[] = [
+    { id: "tr1", full_name: "Anjali Rathore", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Cooperative Management Fundamentals", batch: "Batch A", email: "anjali.rathore@coop.org" },
+    { id: "tr2", full_name: "Vikram Solanki", role: "trainee", is_active: true, pending_clerk_link: true, programme: "Cooperative Bookkeeping & Statutory Audit Readiness", batch: "Batch C", email: "vikram.solanki@coop.org" },
+    { id: "tr3", full_name: "Farida Khatoon", role: "trainee", is_active: false, pending_clerk_link: false, programme: "Cooperative Management Fundamentals", batch: "Batch A", email: "farida.k@coop.org" },
+    { id: "tr4", full_name: "Deepak Chauhan", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Dairy Cooperative Operations", batch: "Batch D", email: "deepak.c@coop.org" },
+    { id: "tr5", full_name: "Priya Mehta", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Agricultural Credit Cooperative Management", batch: "Batch B", email: "priya.mehta@coop.org" },
+    { id: "tr6", full_name: "Ramesh Singh", role: "trainee", is_active: true, pending_clerk_link: true, programme: "Cooperative Bookkeeping & Statutory Audit Readiness", batch: "Batch C", email: "ramesh.singh@coop.org" },
+    { id: "tr7", full_name: "Sunita Yadav", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Handloom & Handicraft Cooperative Enterprise", batch: "Batch E", email: "sunita.yadav@coop.org" },
+    { id: "tr8", full_name: "Amit Verma", role: "trainee", is_active: false, pending_clerk_link: false, programme: "Agricultural Credit Cooperative Management", batch: "Batch B", email: "amit.verma@coop.org" }
+  ];
+
+  const DEFAULT_TRAINERS: RosterPerson[] = [
+    { id: "tn1", full_name: "Dr. Hema Yadav", role: "trainer", is_active: true, pending_clerk_link: false, qualification: "Ph.D., MBA", expertise: ["Cooperative Law", "Apex Governance", "Strategic Management"], email: "director@vamnicom.gov.in" },
+    { id: "tn2", full_name: "Dr. Meera Kulkarni", role: "trainer", is_active: true, pending_clerk_link: false, qualification: "Ph.D., M.Com", expertise: ["Cooperative Principles", "Board Governance", "Bylaws"], email: "meera.k@vamnicom.gov.in" },
+    { id: "tn3", full_name: "CA Ramesh Iyer", role: "trainer", is_active: true, pending_clerk_link: false, qualification: "FCA, DISA", expertise: ["Statutory Audit", "Financial Accounting", "PACS ERP"], email: "ramesh.iyer@vamnicom.gov.in" },
+    { id: "tn4", full_name: "Dr. Suresh Patil", role: "trainer", is_active: true, pending_clerk_link: false, qualification: "Ph.D. (Dairy Tech), M.Sc", expertise: ["Dairy Operations", "Cold Chain Logistics", "Quality Testing"], email: "suresh.patil@vamnicom.gov.in" },
+    { id: "tn5", full_name: "Priya Nair", role: "trainer", is_active: true, pending_clerk_link: true, qualification: "MBA (Agri-Business), B.Sc", expertise: ["Credit Appraisal", "Kisan Credit Scheme", "Risk Management"], email: "priya.nair@vamnicom.gov.in" },
+    { id: "tn6", full_name: "Anita Sharma", role: "trainer", is_active: false, pending_clerk_link: false, qualification: "M.Des, PGD Coop", expertise: ["Handloom Marketing", "Brand Identity", "GI Tagging"], email: "anita.sharma@vamnicom.gov.in" }
+  ];
+
+  function getFallbackMock(): RosterPerson[] {
+    const base = role === "trainee" ? DEFAULT_TRAINEES : DEFAULT_TRAINERS;
+    let list = [...base];
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(`coopsetu_mock_${role}s`);
+      if (stored) {
+        try {
+          const userCreated = JSON.parse(stored) as RosterPerson[];
+          list = [...userCreated, ...list];
+        } catch {}
+      }
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((m) =>
+        m.full_name?.toLowerCase().includes(q) ||
+        m.programme?.toLowerCase().includes(q) ||
+        m.batch?.toLowerCase().includes(q) ||
+        m.expertise?.some(e => e.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }
+
   async function load() {
     try {
       const data = await api.get<RosterPerson[]>(rosterQuery());
-      setRows(data);
-      setLoadError(null);
-    } catch (err) {
-      // Fallback to mock data for demo since backend is not available
-      setTimeout(() => {
-        const mockData: RosterPerson[] = role === "trainee" ? [
-          { id: "tr1", full_name: "Anjali Rathore", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Cooperative Management Fundamentals", batch: "Batch A" },
-          { id: "tr2", full_name: "Vikram Solanki", role: "trainee", is_active: true, pending_clerk_link: true, programme: "Cooperative Bookkeeping & Statutory Audit Readiness", batch: "Batch C" },
-          { id: "tr3", full_name: "Farida Khatoon", role: "trainee", is_active: false, pending_clerk_link: false, programme: "Cooperative Management Fundamentals", batch: "Batch A" },
-          { id: "tr4", full_name: "Deepak Chauhan", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Dairy Cooperative Operations", batch: "Batch D" }
-        ] : [
-          { id: "tn1", full_name: "Rajesh Kumar", role: "trainer", is_active: true, pending_clerk_link: false, qualification: "MBA, Ph.D.", expertise: ["Cooperative Law", "Management"] },
-          { id: "tn2", full_name: "Meera Desai", role: "trainer", is_active: true, pending_clerk_link: true, qualification: "M.Com", expertise: ["Bookkeeping", "Audit"] },
-          { id: "tn3", full_name: "Suresh Patel", role: "trainer", is_active: false, pending_clerk_link: false, qualification: "B.Sc Agriculture", expertise: ["Dairy Operations"] }
-        ];
-        
-        let filteredMock = mockData;
-        if (search.trim()) {
-          const q = search.toLowerCase();
-          filteredMock = mockData.filter(m => m.full_name?.toLowerCase().includes(q));
-        }
-        
-        const stored = localStorage.getItem(`coopsetu_mock_${role}s`);
-        if (stored) {
-           try {
-             filteredMock = [...JSON.parse(stored), ...filteredMock];
-           } catch {}
-        }
-        
-        setRows(filteredMock);
+      if (data && data.length > 0) {
+        setRows(data);
         setLoadError(null);
-      }, 500);
+        return;
+      }
+      setRows(getFallbackMock());
+      setLoadError(null);
+    } catch {
+      setRows(getFallbackMock());
+      setLoadError(null);
     }
   }
 

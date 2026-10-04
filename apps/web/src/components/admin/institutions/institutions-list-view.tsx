@@ -156,13 +156,15 @@ export function InstitutionsListView() {
   );
   const demoPage = demoFiltered.slice((page - 1) * pageSize, page * pageSize);
 
-  const usingDemo = error;
+  const hasFilters = Boolean(debouncedSearch || state || type || trackedStatus);
+  const backendEmpty = (!loading && rows.length === 0 && !hasFilters) || (counts !== null && counts.total === 0);
+  const usingDemo = error || backendEmpty;
   const visibleRows = usingDemo ? demoPage : rows;
   const visibleTotal = usingDemo ? demoFiltered.length : total;
   const pageCount = Math.max(1, Math.ceil(visibleTotal / pageSize));
 
-  const kpiCounts: Counts = usingDemo || !counts ? DEMO_INSTITUTION_STATS : counts;
-  const kpiLive = !usingDemo && counts !== null;
+  const kpiCounts: Counts = usingDemo || !counts || counts.total === 0 ? DEMO_INSTITUTION_STATS : counts;
+  const kpiLive = !usingDemo && counts !== null && counts.total > 0;
 
   const selected = visibleRows.find((row) => row.id === selectedId) ?? visibleRows[0] ?? null;
 

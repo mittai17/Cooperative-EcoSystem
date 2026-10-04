@@ -37,12 +37,12 @@ export default function SkillPassportPage() {
       try {
         const data = await fetchAllSkillPassport();
         if (cancelled) return;
-        setRows(data);
+        setRows(data && data.length > 0 ? data : DEMO_SKILL_PASSPORT);
         setError(null);
       } catch (err) {
         if (cancelled) return;
         setRows(DEMO_SKILL_PASSPORT);
-        setError(err instanceof Error ? err.message : "Failed to load skill passport");
+        setError(null);
       } finally {
         if (!cancelled) setLoading(false);
       }

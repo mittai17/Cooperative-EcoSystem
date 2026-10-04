@@ -70,9 +70,18 @@ export function ReportsView() {
     try {
       const p = qs();
       p.set("fmt", "csv");
-      const res = await fetch(`${API_BASE}/api/v1/trainer/reports/${type}?${p}`);
-      if (!res.ok) throw new Error(`Export failed (HTTP ${res.status})`);
-      const blob = await res.blob();
+      let blob: Blob;
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/trainer/reports/${type}?${p}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        blob = await res.blob();
+      } catch {
+        // Fallback: generate CSV client-side from trainerFetch report data
+        const rep = report?.type === type ? report : await trainerFetch<ReportData>(`/reports/${type}?${qs()}`);
+        const header = rep.columns.join(",");
+        const rows = rep.rows.map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+        blob = new Blob([`${header}\n${rows}`], { type: "text/csv;charset=utf-8;" });
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

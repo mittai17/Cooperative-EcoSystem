@@ -50,7 +50,7 @@ export function TodayPanel({
         </div>
       ) : loading || items === null ? (
         <SectionSkeleton rows={3} />
-      ) : items.length === 0 ? (
+      ) : !Array.isArray(items) || items.length === 0 ? (
         <SectionEmpty title="Nothing scheduled today" body="Interviews and team reviews you schedule will appear here." />
       ) : (
         <ol className="flex flex-col gap-4">

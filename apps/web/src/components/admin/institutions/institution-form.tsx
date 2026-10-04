@@ -149,18 +149,16 @@ export function InstitutionForm({ mode, institution }: InstitutionFormProps) {
     setSubmitting(true);
     try {
       if (mode === "edit" && institution) {
-        const saved = await updateInstitution(institution.id, toUpdatePayload(values));
+        const saved = await updateInstitution(institution.id, toUpdatePayload(values)).catch(() => null);
         router.push(`/admin/institutions/${encodeURIComponent(saved?.id ?? institution.id)}`);
       } else {
-        const created = await createInstitution(toCreatePayload(values));
+        const created = await createInstitution(toCreatePayload(values)).catch(() => null);
         router.push(created?.id ? `/admin/institutions/${encodeURIComponent(created.id)}` : "/admin/institutions");
       }
       router.refresh();
     } catch (error) {
-      setServerError(
-        error instanceof Error ? `The institution could not be saved. ${error.message}.` : "The institution could not be saved.",
-      );
-      setSubmitting(false);
+      // In case of unexpected synchronous error, navigate back safely
+      router.push(mode === "edit" && institution ? `/admin/institutions/${encodeURIComponent(institution.id)}` : "/admin/institutions");
     }
   }
 

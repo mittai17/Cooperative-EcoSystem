@@ -27,7 +27,8 @@ export function useProgrammes() {
     listProgrammes({ page_size: 100 })
       .then((res: { items: Programme[] }) => {
         if (cancelled) return;
-        setProgrammes(res.items.map((p) => ({ id: p.id, name: p.title })));
+        const loaded = res.items.map((p) => ({ id: p.id, name: p.title }));
+        setProgrammes(loaded.length > 0 ? loaded : DEMO_PROGRAMMES);
         setError(null);
         setLoading(false);
       })
@@ -42,10 +43,10 @@ export function useProgrammes() {
   }, [reloadKey]);
 
   return {
-    programmes: error !== null ? DEMO_PROGRAMMES : programmes,
+    programmes: error !== null || programmes.length === 0 ? DEMO_PROGRAMMES : programmes,
     loading,
     error,
-    usingDemo: error !== null,
+    usingDemo: error !== null || programmes.length === 0,
     retry: () => {
       setLoading(true);
       setReloadKey((k) => k + 1);

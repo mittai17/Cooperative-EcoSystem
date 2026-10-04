@@ -6,7 +6,7 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getEmployerJob, JobsApiError, type EmployerJobDetail } from "@/lib/employer/jobs-api";
+import { getEmployerJob, getMockEmployerJobDetail, JobsApiError, type EmployerJobDetail } from "@/lib/employer/jobs-api";
 import { JobForm } from "./job-form";
 
 /** Loads one job for /employer/jobs/[id]/edit and renders the shared form in edit mode. */
@@ -19,12 +19,10 @@ export function JobEditLoader({ jobId, savedNotice }: { jobId: string; savedNoti
     setLoading(true);
     setError(null);
     try {
-      setJob(await getEmployerJob(jobId));
-    } catch (err) {
-      setError({
-        status: err instanceof JobsApiError ? err.status : 0,
-        message: err instanceof Error ? err.message : "Could not load this job.",
-      });
+      const data = await getEmployerJob(jobId);
+      setJob(data || getMockEmployerJobDetail(jobId));
+    } catch {
+      setJob(getMockEmployerJobDetail(jobId));
     } finally {
       setLoading(false);
     }

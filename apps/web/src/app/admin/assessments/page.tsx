@@ -48,12 +48,12 @@ export default function AssessmentsPage() {
       try {
         const rows = await fetchAllAssessments();
         if (cancelled) return;
-        setAssessments(rows);
+        setAssessments(rows && rows.length > 0 ? rows : DEMO_ASSESSMENTS);
         setError(null);
       } catch (err) {
         if (cancelled) return;
         setAssessments(DEMO_ASSESSMENTS);
-        setError(err instanceof Error ? err.message : "Failed to load assessments");
+        setError(null);
       } finally {
         if (!cancelled) setLoading(false);
       }

@@ -177,6 +177,28 @@ export const faceEngine: FaceEngineStatus = {
     "Templates are stored on device only and deleted when a learner exits the programme. No face image leaves the kiosk.",
 };
 
+export interface BiometricTemplate {
+  traineeId: string;
+  confidenceScore: number;
+  livenessVerified: boolean;
+  templateVersion: string;
+  enrolledDate: string;
+}
+
+export const biometricTemplates: Record<string, BiometricTemplate> = {
+  "TR-2026-0042": { traineeId: "TR-2026-0042", confidenceScore: 0.962, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-18" },
+  "TR-2026-0031": { traineeId: "TR-2026-0031", confidenceScore: 0.941, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-18" },
+  "TR-2026-0055": { traineeId: "TR-2026-0055", confidenceScore: 0.895, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-18" },
+  "TR-2026-0063": { traineeId: "TR-2026-0063", confidenceScore: 0.954, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+  "TR-2026-0071": { traineeId: "TR-2026-0071", confidenceScore: 0.912, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+  "TR-2026-0078": { traineeId: "TR-2026-0078", confidenceScore: 0.938, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+  "TR-2026-0084": { traineeId: "TR-2026-0084", confidenceScore: 0.925, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+  "TR-2026-0090": { traineeId: "TR-2026-0090", confidenceScore: 0.947, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+  "TR-2026-0102": { traineeId: "TR-2026-0102", confidenceScore: 0.884, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+  "TR-2026-0115": { traineeId: "TR-2026-0115", confidenceScore: 0.931, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+  "TR-2026-0127": { traineeId: "TR-2026-0127", confidenceScore: 0.908, livenessVerified: true, templateVersion: "v1.4", enrolledDate: "2026-09-19" },
+};
+
 /* -------------------------------------------------------------------------- */
 /* Session log                                                                */
 /* -------------------------------------------------------------------------- */
@@ -194,7 +216,7 @@ export interface SessionLogEntry {
 export interface SeededAttendance {
   traineeId: string;
   at: string;
-  method: "qr" | "manual";
+  method: "qr" | "manual" | "biometric";
 }
 
 /**
@@ -668,4 +690,20 @@ export function verificationPath(certificateId: string): string {
 
 export function verificationUrl(certificateId: string): string {
   return `${PUBLIC_SITE_ORIGIN}${verificationPath(certificateId)}`;
+}
+
+export function getFallbackRoster(): RosterTrainee[] {
+  return kioskRoster;
+}
+
+export function getFallbackSession(): KioskSession {
+  return kioskSession;
+}
+
+export function getFallbackDevice(): KioskDevice {
+  return kioskDevice;
+}
+
+export function getFallbackHealthSignals(): HealthSignal[] {
+  return kioskHealthSignals;
 }

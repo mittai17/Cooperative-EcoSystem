@@ -90,7 +90,6 @@ function toMatchResult(match: CandidateMatch, posting: EmployerPosting): MatchRe
 export function demoJobMatches(jobId: string): JobMatchesResponse {
   const posting = employerPostings.find((item) => item.id === jobId) ?? employerPostings[0];
   const matches = employerMatchCandidates
-    .filter((candidate) => candidate.jobId === posting.id)
     .map((candidate) => toMatchResult(buildMatch(candidate, posting), posting))
     .sort((a, b) => b.score - a.score);
   return {

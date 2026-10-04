@@ -89,7 +89,7 @@ export default function ApplicationsPage() {
         title={t("trainee.applications.title")}
         description={t("trainee.applications.description")}
         action={
-          <Link className="contents" href="/jobs"><Button   nativeButton={false}><Plus className="mr-1.5 size-4" /> {t("trainee.applications.exploreJobs")}</Button></Link>
+          <Link className="contents" href="/trainee/jobs"><Button nativeButton={false}><Plus className="mr-1.5 size-4" /> {t("trainee.applications.exploreJobs")}</Button></Link>
         }
       />
 
@@ -148,45 +148,60 @@ export default function ApplicationsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {list.map((app) => (
-                  <tr key={app.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-foreground">{app.title}</span>
-                        <span className="text-xs text-muted-foreground flex items-center mt-1">
-                          <Building2 className="size-3 mr-1" /> {app.employer}
-                          {app.location && <span className="ml-2">&middot; {app.location}</span>}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-muted-foreground">
-                      <div className="flex items-center text-xs">
-                        <Calendar className="size-3 mr-1.5" /> {app.date}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      {getStatusBadge(app.status)}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link className="contents" href={app.jobId ? `/jobs/${app.jobId}` : "/jobs"}><Button
-                          variant="outline"
-                          size="sm"
-                          
-                         nativeButton={false}><FileText className="size-3.5 mr-1" /> {t("trainee.common.view")}</Button></Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleWithdraw(app.id)}
-                          className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title={t("trainee.applications.withdraw")}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </div>
+                {list.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                      <p className="text-sm font-medium">No applications found.</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 text-xs"
+                        onClick={() => setList(DEFAULT_APPLICATIONS)}
+                      >
+                        Reset Demo Applications
+                      </Button>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  list.map((app) => (
+                    <tr key={app.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground">{app.title}</span>
+                          <span className="text-xs text-muted-foreground flex items-center mt-1">
+                            <Building2 className="size-3 mr-1" /> {app.employer}
+                            {app.location && <span className="ml-2">&middot; {app.location}</span>}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-muted-foreground">
+                        <div className="flex items-center text-xs">
+                          <Calendar className="size-3 mr-1.5" /> {app.date}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        {getStatusBadge(app.status)}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link className="contents" href="/trainee/jobs"><Button
+                            variant="outline"
+                            size="sm"
+                            nativeButton={false}><FileText className="size-3.5 mr-1" /> {t("trainee.common.view")}</Button></Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleWithdraw(app.id)}
+                            className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            title={t("trainee.applications.withdraw")}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

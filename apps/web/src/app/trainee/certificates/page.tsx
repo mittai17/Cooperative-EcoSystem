@@ -16,39 +16,51 @@ export default function CertificatesPage() {
         description="View and download your verified certificates."
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {certList.map((c) => (
-          <Card key={c.id}>
-            <CardHeader>
-              <CardTitle className="text-lg leading-tight">{c.programmeTitle}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">Issued by: {c.issuer}</p>
-              <div className="flex justify-between items-center text-sm">
-                <span>Issue Date:</span>
-                <span className="font-medium">{c.issueDate}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span>ID:</span>
-                <span className="font-mono text-xs">{c.id}</span>
-              </div>
-              <div className="mt-2">
-                <Badge variant={c.status === "Valid" ? "default" : "secondary"}>
-                  {c.status}
-                </Badge>
-              </div>
-            </CardContent>
-            <CardFooter className="flex gap-2">
-              <Button render={<Link href={`/verify-certificate/${c.id}?print=1`} />} variant="outline" className="flex-1" size="sm">
-                <Download className="mr-2 size-4" /> Download
-              </Button>
-              <Button render={<Link href={`/verify-certificate/${c.id}`} />} variant="secondary" className="flex-1" size="sm">
-                <ShieldCheck className="mr-2 size-4" /> Verify
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      {certList.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border p-12 text-center text-muted-foreground">
+          <p className="text-base font-semibold">No certificates issued yet</p>
+          <p className="text-sm mt-1">Complete your enrolled programmes and assessments to receive certified credentials.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {certList.map((c) => (
+            <Card key={c.id}>
+              <CardHeader>
+                <Link href={`/trainee/certificates/${c.id}`} className="hover:underline">
+                  <CardTitle className="text-lg leading-tight text-foreground">{c.programmeTitle}</CardTitle>
+                </Link>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground">Issued by: {c.issuer}</p>
+                <div className="flex justify-between items-center text-sm">
+                  <span>Issue Date:</span>
+                  <span className="font-medium">{c.issueDate}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span>ID:</span>
+                  <span className="font-mono text-xs">{c.id}</span>
+                </div>
+                <div className="mt-2">
+                  <Badge variant={c.status === "Valid" ? "default" : "secondary"}>
+                    {c.status}
+                  </Badge>
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-wrap gap-2">
+                <Button render={<Link href={`/trainee/certificates/${c.id}`} />} variant="outline" className="flex-1 min-w-[90px]" size="sm">
+                  Details
+                </Button>
+                <Button render={<Link href={`/verify-certificate/${c.id}?print=1`} />} variant="outline" className="flex-1 min-w-[90px]" size="sm">
+                  <Download className="mr-1.5 size-3.5" /> Download
+                </Button>
+                <Button render={<Link href={`/verify-certificate/${c.id}`} />} variant="secondary" className="flex-1 min-w-[90px]" size="sm">
+                  <ShieldCheck className="mr-1.5 size-3.5" /> Verify
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

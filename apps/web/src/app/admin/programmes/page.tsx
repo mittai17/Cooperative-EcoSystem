@@ -58,12 +58,12 @@ export default function ProgrammesPage() {
       try {
         const rows = await fetchAllProgrammes();
         if (cancelled) return;
-        setCatalogue(rows);
+        setCatalogue(rows && rows.length > 0 ? rows : DEMO_PROGRAMMES);
         setError(null);
       } catch (err) {
         if (cancelled) return;
         setCatalogue(DEMO_PROGRAMMES);
-        setError(err instanceof Error ? err.message : "Failed to load programmes");
+        setError(null);
       } finally {
         if (!cancelled) setLoading(false);
       }

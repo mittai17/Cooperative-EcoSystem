@@ -2,9 +2,9 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-import { Menu, Bell, Search, ChevronDown, LogOut, MessageSquare } from "lucide-react";
+import { Menu, Bell, Search, ChevronDown, LogOut, MessageSquare, Settings, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/brand/logo";
@@ -194,6 +194,7 @@ function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => v
 }
 
 export function AppShell({ role, userName, userSubtitle, children }: AppShellProps) {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const meta = roleNav[role];
   const t = useT();
@@ -297,6 +298,7 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
               const isNCCT = role === "admin";
               const effectiveName = userName || (isNCCT ? t("shell.adminUser") : currentUser.name);
               const effectiveSubtitle = userSubtitle || (isNCCT ? t("nav.roles.admin") : currentUser.roleTitle);
+              const effectiveEmail = userSubtitle?.includes("@") ? userSubtitle : currentUser.email;
               const effectiveInitials = isNCCT
                 ? "AD"
                 : userName
@@ -308,6 +310,27 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                       .join("")
                       .toUpperCase()
                   : currentUser.initials;
+
+              const roleProfileRoutes: Record<UserRole, string> = {
+                trainee: "/trainee/profile",
+                employer: "/employer/profile",
+                trainer: "/trainer/profile",
+                institution: "/institution/profile",
+                admin: "/admin/profile",
+                kiosk: "/kiosk/status",
+              };
+
+              const roleSettingsRoutes: Record<UserRole, string> = {
+                trainee: "/trainee/profile?tab=settings",
+                employer: "/employer/settings",
+                trainer: "/trainer/settings",
+                institution: "/institution/settings",
+                admin: "/admin/settings",
+                kiosk: "/kiosk/status",
+              };
+
+              const profileHref = roleProfileRoutes[role] || `/${role}/profile`;
+              const settingsHref = roleSettingsRoutes[role] || `/${role}/settings`;
 
               return (
                 <DropdownMenu>
@@ -333,17 +356,34 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                   <DropdownMenuContent align="end" className="w-60">
                     <DropdownMenuLabel>
                       <p className="font-semibold text-foreground">{effectiveName}</p>
-                      <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
+                      <p className="text-xs text-muted-foreground truncate">{effectiveEmail}</p>
                       <span className="mt-1.5 inline-block rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-red-600 capitalize">
                         {t("shell.roleWorkspace").replace("{role}", t(`nav.roles.${role}`))}
                       </span>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
+                      render={<Link href={profileHref} />}
+                      onClick={() => router.push(profileHref)}
+                      className="cursor-pointer"
+                    >
+                      <UserCircle className="mr-2 size-4" />
+                      <span>{t("shell.myProfile", "My Profile")}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      render={<Link href={settingsHref} />}
+                      onClick={() => router.push(settingsHref)}
+                      className="cursor-pointer"
+                    >
+                      <Settings className="mr-2 size-4" />
+                      <span>{t("shell.settings", "Settings")}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
                       onClick={() => signOutDemo()}
                       className="text-destructive focus:text-destructive cursor-pointer"
                     >
-                      <LogOut className="mr-2 size-3.5" />
+                      <LogOut className="mr-2 size-4" />
                       <span>{t("shell.signOut")}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>

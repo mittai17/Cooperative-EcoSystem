@@ -25,7 +25,7 @@ export function SkillMatchInsights({
         <SectionError onRetry={onRetry} />
       ) : loading || items === null ? (
         <SectionSkeleton rows={5} />
-      ) : items.length === 0 ? (
+      ) : !Array.isArray(items) || items.length === 0 ? (
         <SectionEmpty
           title="No skill matches yet"
           body="Once candidates are scored against your active jobs, the most in-demand skills appear here."

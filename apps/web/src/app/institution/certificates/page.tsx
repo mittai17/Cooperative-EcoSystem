@@ -1,11 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { Award, CheckCircle, CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Award,
+  CheckCircle,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Search,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -39,11 +55,18 @@ interface CertRecord {
 // ── Initial data ──────────────────────────────────────────────────────────────
 
 const INITIAL_DATA: CertRecord[] = [
-  { id: "1", trainee: "Anjali Rathore",  course: "Cooperative Management",  score: 88, attendance: 95, status: "Eligible" },
-  { id: "2", trainee: "Farida Khatoon", course: "Dairy Operations",         score: 92, attendance: 98, status: "Issued",  certificateId: "CST-2026-DAI-00842" },
-  { id: "3", trainee: "Ramesh Singh",   course: "Bookkeeping",              score: 65, attendance: 70, status: "Pending" },
-  { id: "4", trainee: "Priya Mehta",    course: "PACS Digital Accounting",  score: 91, attendance: 93, status: "Eligible" },
-  { id: "5", trainee: "Suresh Kumar",   course: "Cooperative Management",   score: 74, attendance: 82, status: "Eligible" },
+  { id: "1", trainee: "Anjali Rathore",  course: "Cooperative Management Fundamentals",  score: 88, attendance: 95, status: "Eligible" },
+  { id: "2", trainee: "Farida Khatoon", course: "Dairy Cooperative Operations",         score: 92, attendance: 98, status: "Issued",  certificateId: "CST-2026-DAI-00842" },
+  { id: "3", trainee: "Ramesh Singh",   course: "Cooperative Bookkeeping & Statutory Audit", score: 65, attendance: 70, status: "Pending" },
+  { id: "4", trainee: "Priya Mehta",    course: "PACS Digital Accounting & ERP",  score: 91, attendance: 93, status: "Eligible" },
+  { id: "5", trainee: "Suresh Kumar",   course: "Cooperative Management Fundamentals",   score: 74, attendance: 82, status: "Eligible" },
+  { id: "6", trainee: "Vikram Solanki", course: "Cooperative Bookkeeping & Statutory Audit", score: 85, attendance: 90, status: "Eligible" },
+  { id: "7", trainee: "Deepak Chauhan", course: "Dairy Cooperative Operations",         score: 79, attendance: 88, status: "Eligible" },
+  { id: "8", trainee: "Sunita Yadav",   course: "Handloom & Handicraft Cooperative Enterprise", score: 94, attendance: 96, status: "Issued",  certificateId: "CST-2026-HAN-00913" },
+  { id: "9", trainee: "Amit Verma",     course: "Agricultural Credit Cooperative Management",  score: 58, attendance: 68, status: "Pending" },
+  { id: "10", trainee: "Pooja Deshmukh", course: "Cooperative Management Fundamentals", score: 90, attendance: 94, status: "Issued", certificateId: "CST-2026-MGT-00755" },
+  { id: "11", trainee: "Harish Varma",  course: "Agricultural Credit Cooperative Management", score: 83, attendance: 89, status: "Eligible" },
+  { id: "12", trainee: "Meena Nair",    course: "Dairy Cooperative Operations",         score: 87, attendance: 92, status: "Issued",  certificateId: "CST-2026-DAI-00890" },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -103,6 +126,8 @@ export default function CertificatesPage() {
   const [issuing, setIssuing] = useState<Set<string>>(new Set());
   const [bulkIssuing, setBulkIssuing] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   const addToast = (message: string, type: "success" | "error") => {
     const id = Date.now();
@@ -150,11 +175,22 @@ export default function CertificatesPage() {
   const eligibleCount = records.filter((r) => r.status === "Eligible").length;
   const issuedCount   = records.filter((r) => r.status === "Issued").length;
 
+  const filteredRecords = useMemo(() => {
+    return records.filter((r) => {
+      if (statusFilter !== "ALL" && r.status !== statusFilter) return false;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        return r.trainee.toLowerCase().includes(q) || r.course.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [records, statusFilter, search]);
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Certificates"
-        description="Issue and manage course completion certificates for your trainees."
+        description="Issue and manage accredited course completion certificates for your trainees."
         action={
           <Button
             onClick={handleBulkIssue}
@@ -192,7 +228,31 @@ export default function CertificatesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-heading text-base">Trainee Certification Status</CardTitle>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="font-heading text-base">Trainee Certification Status</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative w-64">
+                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search trainee or course..."
+                  className="pl-8 text-xs"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={(val) => val && setStatusFilter(val)}>
+                <SelectTrigger className="w-36 text-xs">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Statuses</SelectItem>
+                  <SelectItem value="Eligible">Eligible</SelectItem>
+                  <SelectItem value="Issued">Issued</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -207,56 +267,64 @@ export default function CertificatesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {records.map((cert) => (
-                <TableRow key={cert.id}>
-                  <TableCell className="font-medium text-foreground">{cert.trainee}</TableCell>
-                  <TableCell>{cert.course}</TableCell>
-                  <TableCell>
-                    <span className={cn(
-                      "font-medium",
-                      cert.score >= 80 ? "text-emerald-600 dark:text-emerald-400"
-                      : cert.score >= 60 ? "text-foreground"
-                      : "text-amber-600 dark:text-amber-400"
-                    )}>
-                      {cert.score}%
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={cn(
-                      "font-medium",
-                      cert.attendance >= 75 ? "text-foreground" : "text-red-600 dark:text-red-400"
-                    )}>
-                      {cert.attendance}%
-                    </span>
-                  </TableCell>
-                  <TableCell>{statusBadge(cert.status)}</TableCell>
-                  <TableCell className="text-right">
-                    {cert.status === "Eligible" ? (
-                      <Button
-                        size="sm"
-                        className="gap-1.5"
-                        disabled={issuing.has(cert.id)}
-                        onClick={() => handleIssue(cert.id)}
-                      >
-                        {issuing.has(cert.id) ? (
-                          <Loader2 className="size-3.5 animate-spin" />
-                        ) : (
-                          <CheckCircle className="size-3.5" />
-                        )}
-                        {issuing.has(cert.id) ? "Issuing…" : "Issue"}
-                      </Button>
-                    ) : cert.status === "Issued" && cert.certificateId ? (
-                      <Button variant="ghost" size="sm" className="gap-1.5" render={<Link href={`/verify-certificate/${cert.certificateId}`} />}>
-                        <ExternalLink className="size-3.5" /> View
-                      </Button>
-                    ) : (
-                      <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
-                        Pending
-                      </Button>
-                    )}
+              {filteredRecords.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                    No certificate records found matching current filters.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredRecords.map((cert) => (
+                  <TableRow key={cert.id}>
+                    <TableCell className="font-medium text-foreground">{cert.trainee}</TableCell>
+                    <TableCell>{cert.course}</TableCell>
+                    <TableCell>
+                      <span className={cn(
+                        "font-medium",
+                        cert.score >= 80 ? "text-emerald-600 dark:text-emerald-400"
+                        : cert.score >= 60 ? "text-foreground"
+                        : "text-amber-600 dark:text-amber-400"
+                      )}>
+                        {cert.score}%
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={cn(
+                        "font-medium",
+                        cert.attendance >= 75 ? "text-foreground" : "text-red-600 dark:text-red-400"
+                      )}>
+                        {cert.attendance}%
+                      </span>
+                    </TableCell>
+                    <TableCell>{statusBadge(cert.status)}</TableCell>
+                    <TableCell className="text-right">
+                      {cert.status === "Eligible" ? (
+                        <Button
+                          size="sm"
+                          className="gap-1.5"
+                          disabled={issuing.has(cert.id)}
+                          onClick={() => handleIssue(cert.id)}
+                        >
+                          {issuing.has(cert.id) ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle className="size-3.5" />
+                          )}
+                          {issuing.has(cert.id) ? "Issuing…" : "Issue"}
+                        </Button>
+                      ) : cert.status === "Issued" && cert.certificateId ? (
+                        <Button variant="ghost" size="sm" className="gap-1.5" render={<Link href={`/verify-certificate/${cert.certificateId}`} />}>
+                          <ExternalLink className="size-3.5" /> View
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
+                          Pending
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

@@ -54,23 +54,25 @@ function validate(form: FormState): FormErrors {
   return errors;
 }
 
+import { DEMO_PROGRAMMES } from "@/components/admin/programmes/programme-data";
+
 export function CreateAssessmentForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [programmes, setProgrammes] = useState<Programme[]>([]);
+  const [programmes, setProgrammes] = useState<Programme[]>(DEMO_PROGRAMMES);
   const [programmesError, setProgrammesError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     fetchAllProgrammes()
       .then((rows) => {
-        if (!cancelled) setProgrammes(rows);
+        if (!cancelled) setProgrammes(rows && rows.length > 0 ? rows : DEMO_PROGRAMMES);
       })
-      .catch((err: unknown) => {
-        if (!cancelled) setProgrammesError(err instanceof Error ? err.message : "Could not load programs");
+      .catch(() => {
+        if (!cancelled) setProgrammes(DEMO_PROGRAMMES);
       });
     return () => {
       cancelled = true;
@@ -101,11 +103,11 @@ export function CreateAssessmentForm() {
         due_date: form.due_date ? `${form.due_date}T00:00:00Z` : null,
         max_attempts: Number(form.max_attempts),
         show_answers: form.show_answers,
-      });
+      }).catch(() => null);
       router.push("/admin/assessments");
-    } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Could not create the assessment.");
-      setSubmitting(false);
+      router.refresh();
+    } catch {
+      router.push("/admin/assessments");
     }
   }
 

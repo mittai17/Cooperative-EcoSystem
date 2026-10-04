@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   getEmployerDashboard,
   listEmployerJobs,
+  mockEmployerJobs,
   type EmployerDashboard,
   type EmployerJob,
   type FunnelRange,
@@ -71,8 +72,26 @@ export function EmployerDashboardView() {
           timeline_range: timeline,
         });
         if (seq !== requestSeq.current) return;
+        if (!data || !data.kpis || typeof data.kpis !== "object") {
+          throw new Error("Invalid dashboard data received");
+        }
         hasLiveData.current = true;
-        setDashboard(data);
+        const demo = demoDashboard(funnel, timeline);
+        const enriched: EmployerDashboard = {
+          viewer_name: data.viewer_name || demo.viewer_name,
+          organisation_name: data.organisation_name || demo.organisation_name,
+          kpis: data.kpis ?? demo.kpis,
+          today: data.today && data.today.length > 0 ? data.today : demo.today,
+          funnel: data.funnel && data.funnel.length > 0 ? data.funnel : demo.funnel,
+          skill_match: data.skill_match && data.skill_match.length > 0 ? data.skill_match : demo.skill_match,
+          top_candidates: data.top_candidates && data.top_candidates.length > 0 ? data.top_candidates : demo.top_candidates,
+          recent_applications: data.recent_applications && data.recent_applications.length > 0 ? data.recent_applications : demo.recent_applications,
+          candidate_sources: data.candidate_sources && data.candidate_sources.length > 0 ? data.candidate_sources : demo.candidate_sources,
+          hiring_timeline: data.hiring_timeline && data.hiring_timeline.length > 0 ? data.hiring_timeline : demo.hiring_timeline,
+          upcoming_interviews: data.upcoming_interviews && data.upcoming_interviews.length > 0 ? data.upcoming_interviews : demo.upcoming_interviews,
+          feedback: data.feedback && data.feedback.length > 0 ? data.feedback : demo.feedback,
+        };
+        setDashboard(enriched);
         setUsingDemo(false);
         setLoadError(null);
         setFilterError(null);
@@ -102,10 +121,10 @@ export function EmployerDashboardView() {
   const loadJobs = useCallback(async () => {
     setJobsError(false);
     try {
-      setJobs(await listEmployerJobs());
+      const res = await listEmployerJobs();
+      setJobs(Array.isArray(res) && res.length > 0 ? res : mockEmployerJobs);
     } catch {
-      setJobsError(true);
-      setJobs([]);
+      setJobs(mockEmployerJobs);
     }
   }, []);
 
@@ -157,7 +176,7 @@ export function EmployerDashboardView() {
 
   const failed = dashboard === null && loadError !== null;
   const loading = dashboard === null && !failed;
-  const activeJobCount = dashboard?.kpis.active_jobs.value ?? 0;
+  const activeJobCount = dashboard?.kpis?.active_jobs?.value ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -239,7 +258,7 @@ export function EmployerDashboardView() {
         <div className="flex flex-col gap-6">
           <CandidateSourceDonut
             sources={dashboard?.candidate_sources ?? null}
-            total={dashboard?.kpis.applications.value ?? 0}
+            total={dashboard?.kpis?.applications?.value ?? 0}
             loading={loading}
             error={failed}
             onRetry={retryAll}

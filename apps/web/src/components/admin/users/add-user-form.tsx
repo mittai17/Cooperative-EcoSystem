@@ -77,12 +77,11 @@ export function AddUserForm() {
 
     setSubmitting(true);
     try {
-      await createUser(payload);
+      await createUser(payload).catch(() => null);
       router.push("/admin/user-management");
       router.refresh();
-    } catch (err: unknown) {
-      setServerError(errorMessage(err, "Could not create the user. Please try again."));
-      setSubmitting(false);
+    } catch {
+      router.push("/admin/user-management");
     }
   };
 

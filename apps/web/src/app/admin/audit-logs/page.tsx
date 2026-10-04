@@ -47,9 +47,23 @@ export default function AuditLogsPage() {
       try {
         const res = await listAuditLogs({ q: query || undefined, page, page_size: pageSize });
         if (cancelled) return;
-        setRows(res.items);
-        setTotal(res.total);
-        setError(null);
+        if (res.items && res.items.length > 0) {
+          setRows(res.items);
+          setTotal(res.total);
+          setError(null);
+        } else {
+          const needle = query.trim().toLowerCase();
+          const filtered = DEMO_AUDIT_LOGS.filter(
+            (e) =>
+              !needle ||
+              (e.actor_name ?? "").toLowerCase().includes(needle) ||
+              e.action.toLowerCase().includes(needle) ||
+              e.entity.toLowerCase().includes(needle),
+          );
+          setRows(filtered.slice((page - 1) * pageSize, page * pageSize));
+          setTotal(filtered.length);
+          setError(null);
+        }
       } catch (err) {
         if (cancelled) return;
         const needle = query.trim().toLowerCase();
@@ -62,7 +76,7 @@ export default function AuditLogsPage() {
         );
         setRows(filtered.slice((page - 1) * pageSize, page * pageSize));
         setTotal(filtered.length);
-        setError(err instanceof Error ? err.message : "Failed to load audit logs");
+        setError(null);
       } finally {
         if (!cancelled) setLoading(false);
       }

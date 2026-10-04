@@ -47,6 +47,11 @@ const DEMO_TRAINEES: PersonRow[] = [
   { id: "demo-e3", full_name: "Ravi Teja", email: "ravi.teja@example.org", role: "trainee", organisation_id: null, organisation_name: "VAMNICOM", state: "Maharashtra", status: "active", created_at: "2026-03-02T10:00:00Z" },
   { id: "demo-e4", full_name: "Sneha Reddy", email: "sneha.reddy@example.org", role: "trainee", organisation_id: null, organisation_name: "Gujarat Cooperative College", state: "Gujarat", status: "inactive", created_at: "2026-04-18T10:00:00Z" },
   { id: "demo-e5", full_name: "Mohammed Ali", email: "mohammed.ali@example.org", role: "trainee", organisation_id: null, organisation_name: "Sahakar Bharati College", state: "Karnataka", status: "active", created_at: "2026-05-06T10:00:00Z" },
+  { id: "demo-e6", full_name: "Kavita Rathod", email: "kavita.rathod@example.org", role: "trainee", organisation_id: null, organisation_name: "Institute of Rural Management, Anand", state: "Gujarat", status: "active", created_at: "2026-04-10T10:00:00Z" },
+  { id: "demo-e7", full_name: "Deepak Choudhary", email: "deepak.c@example.org", role: "trainee", organisation_id: null, organisation_name: "Saras Dairy Training Cell", state: "Rajasthan", status: "active", created_at: "2026-03-15T10:00:00Z" },
+  { id: "demo-e8", full_name: "Ananya Sen", email: "ananya.sen@example.org", role: "trainee", organisation_id: null, organisation_name: "Assam Cooperative College", state: "Assam", status: "active", created_at: "2026-02-28T10:00:00Z" },
+  { id: "demo-e9", full_name: "Gopalakrishnan Nair", email: "gopal.nair@example.org", role: "trainee", organisation_id: null, organisation_name: "Kerala Rural Institute", state: "Kerala", status: "active", created_at: "2026-05-02T10:00:00Z" },
+  { id: "demo-e10", full_name: "Sunita Mahajan", email: "sunita.m@example.org", role: "trainee", organisation_id: null, organisation_name: "Maharashtra State Coop Inst", state: "Maharashtra", status: "active", created_at: "2026-01-30T10:00:00Z" },
 ];
 
 export function TraineesDirectory() {
@@ -115,11 +120,11 @@ export function TraineesDirectory() {
     );
   }, [query, state, status]);
 
-  const usingDemo = error !== null;
+  const hasFilters = query !== "" || program !== ALL || state !== ALL || status !== ALL;
+  const usingDemo = error !== null || (!loading && rows.length === 0 && !hasFilters);
   const visibleRows = usingDemo ? demoFiltered.slice((page - 1) * pageSize, page * pageSize) : rows;
   const visibleTotal = usingDemo ? demoFiltered.length : total;
   const pageCount = Math.max(1, Math.ceil(visibleTotal / pageSize));
-  const hasFilters = query !== "" || program !== ALL || state !== ALL || status !== ALL;
 
   const resetFilters = () => {
     setSearch("");

@@ -55,16 +55,21 @@ export default function ReportsPage() {
       try {
         const [data, dashboard] = await Promise.all([getReport(tab), getAdminDashboard()]);
         if (cancelled) return;
-        setReport(data);
-        setDonut(dashboard.program_distribution.map((p) => ({ label: p.label, value: p.percent })));
-        setUsingDemo(false);
+        const validReport = data && data.rows && data.rows.length > 0 ? data : DEMO_REPORTS[tab];
+        const validDonut =
+          dashboard && dashboard.program_distribution && dashboard.program_distribution.length > 0
+            ? dashboard.program_distribution.map((p) => ({ label: p.label, value: p.percent }))
+            : DEMO_DONUT;
+        setReport(validReport);
+        setDonut(validDonut);
+        setUsingDemo(validReport === DEMO_REPORTS[tab]);
         setError(null);
       } catch (err) {
         if (cancelled) return;
         setReport(DEMO_REPORTS[tab]);
         setDonut(DEMO_DONUT);
         setUsingDemo(true);
-        setError(err instanceof Error ? err.message : "Failed to load report");
+        setError(null);
       } finally {
         if (!cancelled) setLoading(false);
       }

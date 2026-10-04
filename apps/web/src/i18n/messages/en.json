@@ -146,6 +146,8 @@
     "languageSwitcher": "Change language",
     "messages": "Messages",
     "userMenu": "User account menu",
+    "myProfile": "My Profile",
+    "settings": "Settings",
     "adminUser": "Admin User",
     "roleWorkspace": "{role} workspace",
     "workspaceTag": "{role} workspace · demo",

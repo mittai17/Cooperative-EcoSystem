@@ -63,7 +63,7 @@ export function HiringTimeline({
         <SectionError onRetry={onRetry} />
       ) : loading || points === null ? (
         <SectionSkeleton rows={3} />
-      ) : points.length === 0 ? (
+      ) : !Array.isArray(points) || points.length === 0 ? (
         <SectionEmpty title="No timeline data" body="Monthly applications, interviews and hires show here." />
       ) : (
         <div className="flex flex-col gap-3" aria-busy={busy}>

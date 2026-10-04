@@ -28,7 +28,7 @@ export function UpcomingInterviews({
   const [removed, setRemoved] = useState<Set<string>>(new Set());
   const [cancelTarget, setCancelTarget] = useState<UpcomingInterview | null>(null);
 
-  const visible = (items ?? []).filter((item) => !removed.has(item.id) && item.status === "scheduled").slice(0, 4);
+  const visible = (Array.isArray(items) ? items : []).filter((item) => !removed.has(item.id) && item.status === "scheduled").slice(0, 4);
 
   return (
     <SectionCard title="Upcoming Interviews" icon={CalendarClock} action={{ label: "View All", href: "/employer/interviews" }}>

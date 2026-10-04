@@ -32,11 +32,14 @@ const PAGE_SIZE = 10;
 // Demo rows mirror the backend row shape. Only company-level fields are shown here;
 // candidate data is never part of this screen.
 const DEMO_EMPLOYERS: PersonRow[] = [
-  { id: "demo-emp-1", full_name: "Amul Dairy Products", email: "", role: "employer", organisation_id: null, organisation_name: "Amul Dairy Products", state: "Gujarat", status: "active", created_at: "2026-01-09T10:00:00Z" },
-  { id: "demo-emp-2", full_name: "NCDC Partner Network", email: "", role: "employer", organisation_id: null, organisation_name: "NCDC Partner Network", state: "Delhi", status: "active", created_at: "2026-02-17T10:00:00Z" },
-  { id: "demo-emp-3", full_name: "Saras Dairy Co-op", email: "", role: "employer", organisation_id: null, organisation_name: "Saras Dairy Co-op", state: "Rajasthan", status: "active", created_at: "2026-03-25T10:00:00Z" },
-  { id: "demo-emp-4", full_name: "GCMMF Logistics", email: "", role: "employer", organisation_id: null, organisation_name: "GCMMF Logistics", state: "Maharashtra", status: "active", created_at: "2026-04-30T10:00:00Z" },
-  { id: "demo-emp-5", full_name: "Karnataka Agri Hub", email: "", role: "employer", organisation_id: null, organisation_name: "Karnataka Agri Hub", state: "Karnataka", status: "inactive", created_at: "2025-12-02T10:00:00Z" },
+  { id: "demo-emp-1", full_name: "Amul Dairy Products (GCMMF)", email: "careers@amul.coop", role: "employer", organisation_id: null, organisation_name: "Amul Dairy Products", state: "Gujarat", status: "active", created_at: "2026-01-09T10:00:00Z" },
+  { id: "demo-emp-2", full_name: "NCDC Partner Network", email: "contact@ncdc.gov.in", role: "employer", organisation_id: null, organisation_name: "NCDC Partner Network", state: "Delhi", status: "active", created_at: "2026-02-17T10:00:00Z" },
+  { id: "demo-emp-3", full_name: "Saras Dairy Co-op Federation", email: "jobs@sarasdairy.org", role: "employer", organisation_id: null, organisation_name: "Saras Dairy Co-op", state: "Rajasthan", status: "active", created_at: "2026-03-25T10:00:00Z" },
+  { id: "demo-emp-4", full_name: "IFFCO Agro-Chemicals & Logistics", email: "talent@iffco.in", role: "employer", organisation_id: null, organisation_name: "IFFCO Logistics", state: "Uttar Pradesh", status: "active", created_at: "2026-04-30T10:00:00Z" },
+  { id: "demo-emp-5", full_name: "KRIBHCO Fertilizer Cooperative", email: "hr@kribhco.net", role: "employer", organisation_id: null, organisation_name: "KRIBHCO Agri Hub", state: "Delhi", status: "active", created_at: "2025-12-02T10:00:00Z" },
+  { id: "demo-emp-6", full_name: "Campco Chocolate & Arecanut Co-op", email: "info@campco.org", role: "employer", organisation_id: null, organisation_name: "Campco Co-op", state: "Karnataka", status: "active", created_at: "2026-02-14T10:00:00Z" },
+  { id: "demo-emp-7", full_name: "NAFED Commodity Trading Hub", email: "recruitment@nafed.gov.in", role: "employer", organisation_id: null, organisation_name: "NAFED Operations", state: "Delhi", status: "active", created_at: "2026-03-01T10:00:00Z" },
+  { id: "demo-emp-8", full_name: "Milma Kerala Dairy Federation", email: "hr@milma.com", role: "employer", organisation_id: null, organisation_name: "Milma Dairy", state: "Kerala", status: "active", created_at: "2026-05-10T10:00:00Z" },
 ];
 
 function formatJoined(value: string | null): string {
@@ -97,7 +100,7 @@ export function EmployersDirectory() {
     );
   }, [query]);
 
-  const usingDemo = error !== null;
+  const usingDemo = error !== null || (!loading && rows.length === 0 && !query);
   const visibleRows = usingDemo ? demoFiltered.slice((page - 1) * pageSize, page * pageSize) : rows;
   const visibleTotal = usingDemo ? demoFiltered.length : total;
   const pageCount = Math.max(1, Math.ceil(visibleTotal / pageSize));

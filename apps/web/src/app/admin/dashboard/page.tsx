@@ -22,6 +22,29 @@ type DashboardState =
   | { status: "live"; data: AdminDashboard }
   | { status: "demo"; data: AdminDashboard };
 
+function mergeDashboard(data?: Partial<AdminDashboard>): AdminDashboard {
+  if (!data) return DEMO_DASHBOARD;
+  const kpis = data.kpis;
+  return {
+    kpis: {
+      institutions: kpis?.institutions || DEMO_DASHBOARD.kpis.institutions,
+      trainers: kpis?.trainers || DEMO_DASHBOARD.kpis.trainers,
+      trainees: kpis?.trainees || DEMO_DASHBOARD.kpis.trainees,
+      certified: kpis?.certified || DEMO_DASHBOARD.kpis.certified,
+      employers: kpis?.employers || DEMO_DASHBOARD.kpis.employers,
+      deltas: kpis?.deltas ?? DEMO_DASHBOARD.kpis.deltas,
+    },
+    enrollment_trend: data.enrollment_trend && data.enrollment_trend.length > 0 ? data.enrollment_trend : DEMO_DASHBOARD.enrollment_trend,
+    institutions_by_state: data.institutions_by_state && data.institutions_by_state.length > 0 ? data.institutions_by_state : DEMO_DASHBOARD.institutions_by_state,
+    program_distribution: data.program_distribution && data.program_distribution.length > 0 ? data.program_distribution : DEMO_DASHBOARD.program_distribution,
+    placement_overview: data.placement_overview && data.placement_overview.length > 0 ? data.placement_overview : DEMO_DASHBOARD.placement_overview,
+    top_institutions: data.top_institutions && data.top_institutions.length > 0 ? data.top_institutions : DEMO_DASHBOARD.top_institutions,
+    recent_activity: data.recent_activity && data.recent_activity.length > 0 ? data.recent_activity : DEMO_DASHBOARD.recent_activity,
+    recent_placements: data.recent_placements && data.recent_placements.length > 0 ? data.recent_placements : DEMO_DASHBOARD.recent_placements,
+    ai_insights: data.ai_insights && data.ai_insights.length > 0 ? data.ai_insights : DEMO_DASHBOARD.ai_insights,
+  };
+}
+
 export default function AdminDashboardPage() {
   const [state, setState] = useState<DashboardState>({ status: "loading" });
 
@@ -29,7 +52,7 @@ export default function AdminDashboardPage() {
     let cancelled = false;
     getAdminDashboard()
       .then((data) => {
-        if (!cancelled) setState({ status: "live", data });
+        if (!cancelled) setState({ status: "live", data: mergeDashboard(data) });
       })
       .catch(() => {
         if (!cancelled) setState({ status: "demo", data: DEMO_DASHBOARD });

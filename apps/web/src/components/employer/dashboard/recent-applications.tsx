@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 import { RowMenu } from "./row-menu";
 import { SectionCard, SectionEmpty, SectionError, SectionSkeleton, initials } from "./section-shell";
 
-export const APPLICATION_STATUS_META: Record<ApplicationStatus, { label: string; className: string }> = {
+export const APPLICATION_STATUS_META: Record<string, { label: string; className: string }> = {
   applied: { label: "Applied", className: "bg-red-50 text-red-600 ring-red-200" },
   screened: { label: "Screened", className: "bg-violet-50 text-violet-700 ring-violet-200" },
   shortlisted: { label: "Shortlisted", className: "bg-emerald-50 text-emerald-700 ring-emerald-200" },
   interview: { label: "Interview", className: "bg-amber-50 text-amber-700 ring-amber-200" },
+  interviewed: { label: "Interviewed", className: "bg-amber-50 text-amber-700 ring-amber-200" },
   offered: { label: "Offered", className: "bg-sky-50 text-sky-700 ring-sky-200" },
   hired: { label: "Hired", className: "bg-emerald-100 text-emerald-800 ring-emerald-300" },
   rejected: { label: "Rejected", className: "bg-muted text-muted-foreground ring-border" },
@@ -32,7 +33,7 @@ export function RecentApplications({
         <SectionError onRetry={onRetry} />
       ) : loading || items === null ? (
         <SectionSkeleton rows={5} />
-      ) : items.length === 0 ? (
+      ) : !Array.isArray(items) || items.length === 0 ? (
         <SectionEmpty
           title="No applications yet"
           body="Candidates who apply to your published jobs appear here with their match score and stage."
@@ -41,7 +42,10 @@ export function RecentApplications({
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {items.slice(0, 6).map((app) => {
-            const meta = APPLICATION_STATUS_META[app.status];
+            const meta = APPLICATION_STATUS_META[app.status] ?? {
+              label: app.status || "Applied",
+              className: "bg-muted text-muted-foreground ring-border",
+            };
             return (
               <li key={app.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">

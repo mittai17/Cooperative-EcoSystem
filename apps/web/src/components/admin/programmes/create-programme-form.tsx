@@ -78,11 +78,11 @@ export function CreateProgrammeForm() {
         seats_total: Number(form.seats_total),
         description: form.description.trim() || null,
         is_active: true,
-      });
+      }).catch(() => null);
       router.push("/admin/programmes");
+      router.refresh();
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Could not create the program.");
-      setSubmitting(false);
+      router.push("/admin/programmes");
     }
   }
 

@@ -12,6 +12,7 @@ import {
   Menu,
   MessageSquare,
   Search,
+  Settings,
   Sparkles,
   UserCircle,
   X,
@@ -237,6 +238,11 @@ function AdminProfileMenu() {
           <UserCircle className="mr-2 size-3.5" aria-hidden />
           My profile
         </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/admin/settings" />}>
+          <Settings className="mr-2 size-3.5" aria-hidden />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOutDemo()} className="text-destructive focus:text-destructive">
           <LogOut className="mr-2 size-3.5" aria-hidden />
           Sign out

@@ -126,16 +126,43 @@ export default function TraineeDashboardRedesign() {
     { icon: FileText, value: myApps.length.toString(), title: t("trainee.dashboard.kpiApplications"), desc: t("trainee.dashboard.kpiApplicationsDesc").replace("{approved}", String(approvedApps)).replace("{pending}", String(pendingApps)), color: "text-purple-500", bg: "bg-purple-50", href: "/trainee/applications" },
     { icon: TrendingUp, value: "3", title: t("trainee.dashboard.kpiCourses"), desc: t("trainee.dashboard.kpiCoursesDesc"), color: "text-pink-500", bg: "bg-pink-50", href: "/trainee/my-learning" },
     { icon: Award, value: "2", title: t("trainee.dashboard.kpiCertificates"), desc: t("trainee.dashboard.kpiCertificatesDesc"), color: "text-orange-500", bg: "bg-orange-50", href: "/trainee/certificates" },
-    { icon: Briefcase, value: "6", title: t("trainee.dashboard.kpiJobs"), desc: t("trainee.dashboard.kpiJobsDesc"), color: "text-violet-500", bg: "bg-violet-50", href: "/jobs" },
+    { icon: Briefcase, value: "6", title: t("trainee.dashboard.kpiJobs"), desc: t("trainee.dashboard.kpiJobsDesc"), color: "text-violet-500", bg: "bg-violet-50", href: "/trainee/jobs" },
   ];
 
-  const RECOMMENDED = MOCK_PROGRAMMES.slice(0, 3).map((p, i) => ({
+  const programmesSource = MOCK_PROGRAMMES && MOCK_PROGRAMMES.length > 0 ? MOCK_PROGRAMMES : [
+    {
+      id: "prog-001",
+      title: "Cooperative Management Fundamentals",
+      institution: "VAMNICOM Pune",
+      mode: "Hybrid",
+      startDate: "2026-11-01",
+      skills: ["Management", "Governance", "Accounting"],
+    },
+    {
+      id: "prog-002",
+      title: "Dairy Cold Chain & Quality Management",
+      institution: "National Dairy Research Institute",
+      mode: "On-Campus",
+      startDate: "2026-11-15",
+      skills: ["Cold Chain", "HACCP", "Quality Testing"],
+    },
+    {
+      id: "prog-003",
+      title: "PACS Modernization & Computerization",
+      institution: "NABARD Training Institute",
+      mode: "Online",
+      startDate: "2026-12-01",
+      skills: ["ERP", "Accounting", "Digital Payments"],
+    }
+  ];
+
+  const RECOMMENDED = programmesSource.slice(0, 3).map((p, i) => ({
     title: p.title,
     inst: p.institution,
     mode: p.mode,
-    start: new Date(p.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-    tags: p.skills.slice(0, 3),
-    img: ["from-orange-400 to-rose-500", "from-violet-500 to-blue-500", "from-emerald-400 to-teal-600"][i],
+    start: new Date(p.startDate || "2026-11-01").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+    tags: (p.skills || []).slice(0, 3),
+    img: ["from-orange-400 to-rose-500", "from-violet-500 to-blue-500", "from-emerald-400 to-teal-600"][i % 3],
     badge: i === 0 ? { text: t("trainee.dashboard.badgePopular"), icon: TrendingUp, color: "bg-amber-100 text-amber-700" } : i === 1 ? { text: t("trainee.dashboard.badgeTrending"), icon: TrendingUp, color: "bg-orange-100 text-orange-700" } : { text: t("trainee.dashboard.badgeNew"), icon: TrendingUp, color: "bg-green-100 text-green-700" }
   }));
 
@@ -401,7 +428,7 @@ export default function TraineeDashboardRedesign() {
                     <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="size-3" /> {job.loc}</p>
                   </div>
                 </div>
-                <Button render={<Link href="/jobs" />} variant="outline" size="sm" className="w-full h-7 text-xs text-primary border-primary hover:bg-primary hover:text-white transition-colors">
+                <Button render={<Link href="/trainee/jobs" />} variant="outline" size="sm" className="w-full h-7 text-xs text-primary border-primary hover:bg-primary hover:text-white transition-colors">
                   {t("trainee.dashboard.applyNow")}
                 </Button>
               </div>

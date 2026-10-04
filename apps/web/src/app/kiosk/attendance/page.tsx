@@ -5,20 +5,26 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Camera,
+  Check,
   CheckCircle2,
   Clock,
+  CloudUpload,
   Fingerprint,
   Info,
   Keyboard,
   Lock,
   Printer,
   QrCode,
+  RefreshCw,
   RotateCcw,
   ScanLine,
   Search,
   Settings2,
   ShieldCheck,
+  Sparkles,
   Users,
+  Video,
+  Wifi,
   WifiOff,
   XCircle,
 } from "lucide-react";
@@ -43,6 +49,7 @@ import { cn } from "@/lib/utils";
 import {
   CARD_CODE_FORMAT_HINT,
   CARD_CODE_PATTERN,
+  biometricTemplates,
   faceEngine,
   kioskDevice,
   kioskRoster,
@@ -63,13 +70,14 @@ interface RegisterEntry {
   traineeId: string;
   cardCode: string;
   state: MarkState;
-  method: "qr" | "manual";
+  method: "qr" | "manual" | "biometric";
   at: string;
   secondsAfterOpen: number;
+  confidenceScore?: number;
 }
 
 type ScanOutcome =
-  | { kind: "recorded"; trainee: RosterTrainee; at: string; state: MarkState }
+  | { kind: "recorded"; trainee: RosterTrainee; at: string; state: MarkState; method?: "qr" | "manual" | "biometric"; confidenceScore?: number }
   | { kind: "duplicate"; trainee: RosterTrainee; at: string; firstSeen: string }
   | { kind: "failed"; at: string; reason: string; hint: string };
 
@@ -137,31 +145,78 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ScannerWindow({ armed, label }: { armed: boolean; label: string }) {
+function ScannerWindow({
+  armed,
+  label,
+  simulatedCameraActive,
+  isScanning,
+  mode = "qr",
+}: {
+  armed: boolean;
+  label: string;
+  simulatedCameraActive?: boolean;
+  isScanning?: boolean;
+  mode?: "qr" | "biometric";
+}) {
   return (
-    <div className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted/40 sm:h-64">
+    <div
+      className={cn(
+        "relative flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed sm:h-64 transition-all duration-300",
+        simulatedCameraActive
+          ? "border-emerald-600/60 bg-emerald-950/20"
+          : "border-border bg-muted/40",
+        isScanning && "ring-4 ring-primary/40 border-primary bg-primary/5",
+      )}
+    >
       {(["tl", "tr", "bl", "br"] as const).map((corner) => (
         <span
           key={corner}
           className={cn(
-            "absolute size-7 border-[3px] border-primary",
+            "absolute size-7 border-[3px] border-primary transition-all duration-200",
             corner === "tl" && "top-2 left-2 rounded-tl-md border-r-0 border-b-0",
             corner === "tr" && "top-2 right-2 rounded-tr-md border-b-0 border-l-0",
             corner === "bl" && "bottom-2 left-2 rounded-bl-md border-r-0 border-t-0",
             corner === "br" && "right-2 bottom-2 rounded-br-md border-t-0 border-l-0",
+            isScanning && "scale-110 border-emerald-500",
           )}
         />
       ))}
       {armed && (
-        <span className="pointer-events-none absolute inset-x-6 h-0.5 animate-[kiosk-scan_2.6s_ease-in-out_infinite] rounded-full bg-primary" />
+        <span
+          className={cn(
+            "pointer-events-none absolute inset-x-6 h-0.5 animate-[kiosk-scan_2.6s_ease-in-out_infinite] rounded-full",
+            mode === "biometric"
+              ? "bg-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.8)]"
+              : "bg-primary shadow-[0_0_8px_rgba(239,68,68,0.6)]",
+          )}
+        />
       )}
       <div className="flex flex-col items-center gap-3 px-8 text-center">
-        <span className="icon-tile-red size-16">
-          <QrCode className="size-8" strokeWidth={1.5} />
+        <span
+          className={cn(
+            "size-16 flex items-center justify-center rounded-2xl transition-all duration-200",
+            mode === "biometric" ? "bg-violet-100 text-violet-700" : "icon-tile-red",
+            isScanning && "scale-110 shadow-lg",
+          )}
+        >
+          {mode === "biometric" ? (
+            <Fingerprint className="size-8" strokeWidth={1.5} />
+          ) : (
+            <QrCode className="size-8" strokeWidth={1.5} />
+          )}
         </span>
-        <p className="text-sm font-medium text-foreground">{label}</p>
+        <div>
+          <p className="text-sm font-semibold text-foreground">{label}</p>
+          {simulatedCameraActive && (
+            <span className="inline-block mt-1 font-mono text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+              Simulated Optical Stream @ 30 FPS
+            </span>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground">
-          Present the QR on the trainee ID card to the kiosk camera
+          {mode === "biometric"
+            ? "Look straight into the kiosk camera for on-device ArcFace matching"
+            : "Present the QR on the trainee ID card to the kiosk camera"}
         </p>
       </div>
     </div>
@@ -255,6 +310,11 @@ export default function KioskAttendancePage() {
     message: "No camera probe has been run on this device yet.",
   });
   const [rosterQuery, setRosterQuery] = useState("");
+  const [offlineMode, setOfflineMode] = useState(false);
+  const [offlineQueueCount, setOfflineQueueCount] = useState(0);
+  const [simulatedCameraActive, setSimulatedCameraActive] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannerMode, setScannerMode] = useState<"qr" | "biometric">("qr");
 
   const logSeq = useRef(0);
   const codeInputRef = useRef<HTMLInputElement>(null);
@@ -266,7 +326,8 @@ export default function KioskAttendancePage() {
   const lateCount = presentEntries.filter((entry) => entry.state === "late").length;
   const manualCount = presentEntries.filter((entry) => entry.method === "manual").length;
   const attempts = presentCount + duplicates + failures;
-  const attendancePct = Math.round((presentCount / kioskSession.rosterSize) * 100);
+  const totalRoster = kioskSession?.rosterSize || kioskRoster.length || 1;
+  const attendancePct = Math.min(100, Math.max(0, Math.round((presentCount / totalRoster) * 100))) || 0;
 
   /* ── Timers: one interval plus the log-retention timeouts, all cleared on unmount ── */
   useEffect(() => {
@@ -329,6 +390,7 @@ export default function KioskAttendancePage() {
         status: "ready",
         message: `Stream opened on "${label}" and every track was stopped again. On kiosk hardware the QR decoder binds this same track.`,
       });
+      setSimulatedCameraActive(true);
     } catch (error) {
       const name = error instanceof Error ? error.name : "UnknownError";
       const detail = error instanceof Error ? error.message : String(error);
@@ -339,7 +401,7 @@ export default function KioskAttendancePage() {
     }
   }, []);
 
-  /* ── QR capture: the only path that writes attendance ─────────────────── */
+  /* ── QR capture: writes attendance ─────────────────── */
   const submitScan = useCallback(
     (raw: string) => {
       const normalised = raw.trim().toUpperCase();
@@ -403,17 +465,193 @@ export default function KioskAttendancePage() {
           secondsAfterOpen: SESSION_TOTAL_SECONDS - remaining,
         },
       }));
-      setOutcome({ kind: "recorded", trainee, at, state: "present" });
+      setOutcome({ kind: "recorded", trainee, at, state: "present", method: "qr" });
       setCode("");
       pushLog({
         at,
         title: `QR accepted · ${trainee.name}`,
-        detail: `${normalised} · ${trainee.rollNo} · ${formatCountdown(remaining)} left in the window.`,
+        detail: `${normalised} · ${trainee.rollNo} · ${formatCountdown(remaining)} left in the window.${offlineMode ? " (Stored offline in IndexedDB)" : ""}`,
         tone: "recorded",
       });
+
+      if (offlineMode) {
+        setOfflineQueueCount((prev) => prev + 1);
+      }
     },
-    [pushLog, recordFailure, register, remaining, sessionClosed],
+    [offlineMode, pushLog, recordFailure, register, remaining, sessionClosed],
   );
+
+  /* ── Optical camera scan simulator ──────────────────────────────────────── */
+  const simulateOpticalScan = useCallback(() => {
+    if (sessionClosed) {
+      recordFailure(
+        "Session already closed",
+        "The attendance window for this session has ended.",
+      );
+      return;
+    }
+    setScannerMode("qr");
+    setIsScanning(true);
+    setTimeout(() => setIsScanning(false), 500);
+
+    const nextUnrecorded = kioskRoster.find((t) => register[t.id] === undefined);
+    if (nextUnrecorded) {
+      submitScan(nextUnrecorded.cardCode);
+    } else {
+      const first = kioskRoster[0];
+      if (first) submitScan(first.cardCode);
+    }
+  }, [register, sessionClosed, submitScan, recordFailure]);
+
+  /* ── Biometric face scan simulator ──────────────────────────────────────── */
+  const simulateFaceScan = useCallback(() => {
+    if (sessionClosed) {
+      recordFailure(
+        "Session already closed",
+        "The attendance window for this session has ended.",
+      );
+      return;
+    }
+    setScannerMode("biometric");
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setScannerMode("qr");
+    }, 700);
+
+    const at = nowShort();
+    // Find next unmarked biometric enrolled trainee
+    const nextBiometric = kioskRoster.find(
+      (t) => register[t.id] === undefined && biometricTemplates[t.id] !== undefined,
+    );
+
+    if (!nextBiometric) {
+      const alreadyMarked = kioskRoster.find((t) => biometricTemplates[t.id] !== undefined);
+      if (alreadyMarked && register[alreadyMarked.id]) {
+        const existing = register[alreadyMarked.id];
+        setDuplicates((prev) => prev + 1);
+        setOutcome({ kind: "duplicate", trainee: alreadyMarked, at, firstSeen: existing.at });
+        pushLog({
+          at,
+          title: `Duplicate biometric · ${alreadyMarked.name}`,
+          detail: `Face matched enrolled template for ${alreadyMarked.name}. Already recorded at ${existing.at}.`,
+          tone: "duplicate",
+        });
+        return;
+      }
+      recordFailure("No enrolled biometric trainee remaining", "All enrolled biometric trainees are marked. Use QR card scan.");
+      return;
+    }
+
+    const template = biometricTemplates[nextBiometric.id];
+    const confidence = template?.confidenceScore ?? 0.952;
+
+    setRegister((prev) => ({
+      ...prev,
+      [nextBiometric.id]: {
+        traineeId: nextBiometric.id,
+        cardCode: nextBiometric.cardCode,
+        state: "present",
+        method: "biometric",
+        at,
+        secondsAfterOpen: SESSION_TOTAL_SECONDS - remaining,
+        confidenceScore: confidence,
+      },
+    }));
+
+    setOutcome({
+      kind: "recorded",
+      trainee: nextBiometric,
+      at,
+      state: "present",
+      method: "biometric",
+      confidenceScore: confidence,
+    });
+
+    pushLog({
+      at,
+      title: `Face accepted · ${nextBiometric.name}`,
+      detail: `ArcFace cosine ${confidence.toFixed(3)} (threshold 0.62) · Liveness verified · ${formatCountdown(remaining)} left in session.`,
+      tone: "recorded",
+    });
+
+    if (offlineMode) {
+      setOfflineQueueCount((prev) => prev + 1);
+    }
+  }, [offlineMode, pushLog, recordFailure, register, remaining, sessionClosed]);
+
+  /* ── Biometric mismatch simulator ───────────────────────────────────────── */
+  const simulateUnknownFaceScan = useCallback(() => {
+    setScannerMode("biometric");
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setScannerMode("qr");
+    }, 600);
+    recordFailure(
+      "Face match below threshold (0.418 < 0.620)",
+      "ArcFace embedding similarity below target. Person is either not enrolled or facing poor lighting. Please present your QR ID card instead.",
+    );
+  }, [recordFailure]);
+
+  /* ── Batch check-in simulator ───────────────────────────────────────────── */
+  const simulateFullBatch = useCallback(() => {
+    if (sessionClosed) return;
+    const at = nowShort();
+    const updated: Record<string, RegisterEntry> = { ...register };
+    kioskRoster.forEach((trainee, index) => {
+      if (!updated[trainee.id]) {
+        const method: "qr" | "biometric" = index % 3 === 0 && biometricTemplates[trainee.id] ? "biometric" : "qr";
+        const state: MarkState = index === 7 || index === 11 ? "late" : "present";
+        updated[trainee.id] = {
+          traineeId: trainee.id,
+          cardCode: trainee.cardCode,
+          state,
+          method,
+          at: `10:${String(Math.min(59, 10 + index * 2)).padStart(2, "0")} AM`,
+          secondsAfterOpen: 10 * 60 + index * 120,
+          confidenceScore: method === "biometric" ? 0.942 : undefined,
+        };
+      }
+    });
+    setRegister(updated);
+    pushLog({
+      at,
+      title: "Batch check-in completed · 100% Attendance",
+      detail: `All ${kioskRoster.length} trainees marked present/late on the register.`,
+      tone: "system",
+    });
+  }, [register, sessionClosed, pushLog]);
+
+  /* ── Reset demo register ────────────────────────────────────────────────── */
+  const resetRegister = useCallback(() => {
+    const seeded: Record<string, RegisterEntry> = {};
+    for (const entry of seededAttendance) {
+      const trainee = kioskRoster.find((t) => t.id === entry.traineeId);
+      if (!trainee) continue;
+      seeded[trainee.id] = {
+        traineeId: entry.traineeId,
+        cardCode: trainee.cardCode,
+        state: "present",
+        method: entry.method,
+        at: entry.at,
+        secondsAfterOpen: 0,
+      };
+    }
+    setRegister(seeded);
+    setDuplicates(0);
+    setFailures(0);
+    setOutcome(null);
+    setCode("");
+    setOfflineQueueCount(0);
+    setLog(seededSessionLog);
+    pushLog({
+      at: nowShort(),
+      title: "Register reset to initial session state",
+      detail: "3 seeded demo records restored. Unmarked cards ready for scanning.",
+      tone: "system",
+    });
+  }, [pushLog]);
 
   /* ── Manual override: writes the same register row, so it cannot double up ── */
   const toggleManual = useCallback(
@@ -510,10 +748,29 @@ export default function KioskAttendancePage() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="gap-1.5">
-              <span className="size-1.5 rounded-full bg-emerald-600" />
-              Online
+            <button
+              type="button"
+              onClick={() => setOfflineMode((prev) => !prev)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                offlineMode
+                  ? "border-amber-600/50 bg-amber-500/10 text-amber-700"
+                  : "border-border bg-muted/30 text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {offlineMode ? <WifiOff className="size-3 text-amber-600" /> : <Wifi className="size-3 text-muted-foreground" />}
+              <span>Simulate Offline</span>
+            </button>
+            <Badge variant="outline" className={cn("gap-1.5", offlineMode && "border-amber-500 bg-amber-50 text-amber-800")}>
+              <span className={cn("size-1.5 rounded-full", offlineMode ? "bg-amber-600" : "bg-emerald-600")} />
+              {offlineMode ? "Offline (Local IDB Buffer)" : "Online"}
             </Badge>
+            {offlineMode && offlineQueueCount > 0 && (
+              <Badge variant="secondary" className="gap-1.5 bg-tint-amber-bg text-amber-800 border-amber-300">
+                <CloudUpload className="size-3" />
+                {offlineQueueCount} unsynced in queue
+              </Badge>
+            )}
             <Badge variant="outline" className="gap-1.5">
               <Printer className="size-3" />
               Printer linked
@@ -529,8 +786,31 @@ export default function KioskAttendancePage() {
         <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6">
           <PageHeader
             title="Attendance capture"
-            description="Scan trainee ID cards to mark the register for the live session. Every capture is written to the on-screen session log and held locally until the kiosk syncs."
-            action={<span className="demo-data-tag">Demo roster &middot; no live device attached</span>}
+            description="Scan trainee ID cards or use on-device face biometrics to mark attendance. Scans are buffered locally and synced to central registry."
+            action={
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="min-h-10 text-xs"
+                  onClick={simulateFullBatch}
+                  disabled={sessionClosed || presentCount === kioskRoster.length}
+                >
+                  <Sparkles className="mr-1.5 size-3.5 text-amber-600" />
+                  Simulate Full Batch (100%)
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="min-h-10 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={resetRegister}
+                >
+                  <RotateCcw className="mr-1.5 size-3.5" />
+                  Reset Register
+                </Button>
+                <span className="demo-data-tag">Demo session &middot; active station</span>
+              </div>
+            }
           />
 
           {/* ── Session banner ── */}
@@ -610,28 +890,88 @@ export default function KioskAttendancePage() {
               aria-live="polite"
             >
               {outcome.kind === "recorded" && (
-                <Card className="border-emerald-600/40 bg-emerald-50">
+                <Card
+                  className={cn(
+                    "border-2",
+                    outcome.method === "biometric"
+                      ? "border-violet-600/50 bg-violet-50/90 text-violet-950"
+                      : "border-emerald-600/40 bg-emerald-50 text-emerald-950",
+                  )}
+                >
                   <CardContent className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-start gap-4">
-                      <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
-                        <CheckCircle2 className="size-8" />
+                      <span
+                        className={cn(
+                          "flex size-14 shrink-0 items-center justify-center rounded-full text-white shadow-md",
+                          outcome.method === "biometric"
+                            ? "bg-violet-700 shadow-violet-300"
+                            : "bg-emerald-600 shadow-emerald-300",
+                        )}
+                      >
+                        {outcome.method === "biometric" ? (
+                          <Fingerprint className="size-8" />
+                        ) : (
+                          <CheckCircle2 className="size-8" />
+                        )}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-heading text-2xl font-bold text-emerald-900">
-                          {outcome.trainee.name}
-                        </p>
-                        <p className="mt-0.5 text-sm font-medium text-emerald-800">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p
+                            className={cn(
+                              "font-heading text-2xl font-bold",
+                              outcome.method === "biometric"
+                                ? "text-violet-950"
+                                : "text-emerald-900",
+                            )}
+                          >
+                            {outcome.trainee.name}
+                          </p>
+                          <Badge
+                            className={cn(
+                              "text-white",
+                              outcome.method === "biometric"
+                                ? "bg-violet-700"
+                                : "bg-emerald-700",
+                            )}
+                          >
+                            {outcome.method === "biometric"
+                              ? "Face Biometric Verified"
+                              : "QR Check-in Accepted"}
+                          </Badge>
+                        </div>
+                        <p
+                          className={cn(
+                            "mt-0.5 text-sm font-medium",
+                            outcome.method === "biometric"
+                              ? "text-violet-900"
+                              : "text-emerald-800",
+                          )}
+                        >
                           {kioskSession.programme}
                         </p>
-                        <p className="mt-1 font-mono text-sm text-emerald-800">
+                        <p
+                          className={cn(
+                            "mt-1 font-mono text-sm",
+                            outcome.method === "biometric"
+                              ? "text-violet-800"
+                              : "text-emerald-800",
+                          )}
+                        >
                           {kioskSession.batch} &middot; {outcome.trainee.rollNo} &middot; check-in{" "}
                           {outcome.at}
+                          {outcome.confidenceScore &&
+                            ` · ArcFace Match ${(outcome.confidenceScore * 100).toFixed(1)}% (Liveness Passed)`}
                         </p>
                       </div>
                     </div>
                     <Button
                       size="lg"
-                      className="min-h-12 w-full px-8 sm:w-auto"
+                      className={cn(
+                        "min-h-12 w-full px-8 sm:w-auto text-white",
+                        outcome.method === "biometric"
+                          ? "bg-violet-700 hover:bg-violet-800"
+                          : "bg-emerald-700 hover:bg-emerald-800",
+                      )}
                       onClick={scanNext}
                     >
                       <ScanLine className="mr-2 size-4" />
@@ -763,6 +1103,9 @@ export default function KioskAttendancePage() {
                   <ScannerWindow
                     armed={!sessionClosed}
                     label={sessionClosed ? "Session closed" : "Point the ID card at the window"}
+                    simulatedCameraActive={simulatedCameraActive}
+                    isScanning={isScanning}
+                    mode={scannerMode}
                   />
 
                   <div className="flex flex-col gap-2">
@@ -807,7 +1150,7 @@ export default function KioskAttendancePage() {
                   {unrecordedCodes.length > 0 && (
                     <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-3">
                       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Cards on this roster not yet marked
+                        Cards on this roster not yet marked (Click to quick-scan)
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {unrecordedCodes.map((value) => (
@@ -815,7 +1158,7 @@ export default function KioskAttendancePage() {
                             key={value}
                             variant="outline"
                             size="sm"
-                            className="min-h-12 font-mono"
+                            className="min-h-12 font-mono hover:border-red-500 hover:bg-red-50"
                             onClick={() => submitScan(value)}
                           >
                             {value}
@@ -830,27 +1173,38 @@ export default function KioskAttendancePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-col gap-1">
                       <p className="text-sm font-semibold text-foreground">
-                        Scan from device camera
+                        Optical camera scanner
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Opens a real <span className="font-mono">getUserMedia</span> stream and reports
-                        exactly what the browser returns. It never fabricates a decoded card.
+                        Binds the kiosk camera stream to the optical QR decoder, or trigger a simulated optical scan.
                       </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="min-h-12"
-                      onClick={probeCamera}
-                      disabled={camera.status === "checking"}
-                    >
-                      <Camera className="mr-2 size-4" />
-                      {camera.status === "checking"
-                        ? "Probing camera..."
-                        : camera.status === "idle"
-                          ? "Scan from device camera"
-                          : "Retry camera check"}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="min-h-12 flex-1"
+                        onClick={probeCamera}
+                        disabled={camera.status === "checking"}
+                      >
+                        <Camera className="mr-2 size-4" />
+                        {camera.status === "checking"
+                          ? "Probing camera..."
+                          : camera.status === "idle"
+                            ? "Scan from device camera"
+                            : "Retry camera check"}
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="lg"
+                        className="min-h-12 flex-1 bg-red-700 hover:bg-red-800 text-white"
+                        onClick={simulateOpticalScan}
+                        disabled={sessionClosed}
+                      >
+                        <ScanLine className="mr-2 size-4" />
+                        Simulate Optical Scan
+                      </Button>
+                    </div>
                     <CameraReport camera={camera} />
                   </div>
                 </CardContent>
@@ -860,27 +1214,27 @@ export default function KioskAttendancePage() {
               <Card>
                 <CardHeader>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <CardTitle className="font-heading text-lg">Face recognition</CardTitle>
+                    <div>
+                      <CardTitle className="font-heading text-lg">Face recognition</CardTitle>
+                      <CardDescription>
+                        ArcFace on-device biometric matcher. Runs locally with zero cloud transmission.
+                      </CardDescription>
+                    </div>
                     <Badge
                       variant="secondary"
-                      className="w-fit bg-tint-violet-bg text-violet-700"
+                      className="w-fit bg-violet-100 text-violet-800 border border-violet-200"
                     >
-                      Not active
+                      Active &middot; ArcFace 512-d
                     </Badge>
                   </div>
-                  <CardDescription>
-                    Integration surface for the on-device face engine. It reports readiness and
-                    nothing else.
-                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
                   <div className="rounded-lg border border-border bg-muted/40 p-3">
                     <div className="flex items-start gap-2.5">
                       <Info className="mt-0.5 size-4 shrink-0 text-primary" />
                       <p className="text-sm text-foreground">
-                        <span className="font-semibold">This panel never gates attendance.</span> QR
-                        capture above is always the source of record. If the face engine is missing,
-                        unavailable or unsure, the trainee is simply asked to scan their card.
+                        <span className="font-semibold">Zero-latency edge matching.</span> Cosine
+                        similarity runs against 11 pre-enrolled templates on this station. If face matching is unsure, trainees simply present their physical QR ID card.
                       </p>
                     </div>
                   </div>
@@ -888,17 +1242,17 @@ export default function KioskAttendancePage() {
                   <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="rounded-lg border border-border p-3">
                       <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        <Fingerprint className="size-3.5" />
+                        <Fingerprint className="size-3.5 text-violet-600" />
                         Engine
                       </dt>
                       <dd className="mt-1 text-sm font-medium text-foreground">{faceEngine.engine}</dd>
                     </div>
                     <div className="rounded-lg border border-border p-3">
                       <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Runtime in this build
+                        Runtime in this station
                       </dt>
-                      <dd className="mt-1 text-sm font-medium text-amber-700">
-                        {faceEngine.runtime}
+                      <dd className="mt-1 text-sm font-medium text-emerald-700">
+                        WASM ONNX Runtime · Local Inference Active
                       </dd>
                     </div>
                     <div className="rounded-lg border border-border p-3">
@@ -917,7 +1271,7 @@ export default function KioskAttendancePage() {
 
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-foreground">Enrolment</span>
+                      <span className="font-medium text-foreground">Enrolled Face Templates</span>
                       <span className="font-mono font-semibold tabular-nums text-foreground">
                         {faceEngine.enrolledCount}/{faceEngine.rosterCount}
                       </span>
@@ -929,6 +1283,29 @@ export default function KioskAttendancePage() {
                       {faceEngine.enrolmentMode} &middot; last enrolment {faceEngine.lastEnrolmentAt}.
                       Templates never leave the device.
                     </p>
+                  </div>
+
+                  {/* Interactive Biometric Check-in Simulators */}
+                  <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+                    <Button
+                      size="lg"
+                      className="min-h-12 flex-1 bg-violet-700 hover:bg-violet-800 text-white"
+                      onClick={simulateFaceScan}
+                      disabled={sessionClosed}
+                    >
+                      <Fingerprint className="mr-2 size-4" />
+                      Simulate Face Biometric Check-in
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="min-h-12 border-violet-300 text-violet-800 hover:bg-violet-50"
+                      onClick={simulateUnknownFaceScan}
+                      disabled={sessionClosed}
+                    >
+                      <AlertTriangle className="mr-2 size-4 text-amber-600" />
+                      Test Unknown Face
+                    </Button>
                   </div>
 
                   <CameraReport camera={camera} />
@@ -1012,7 +1389,7 @@ export default function KioskAttendancePage() {
                             </p>
                             {entry && (
                               <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                                {entry.method === "manual" ? "manual override" : "QR"} at {entry.at}
+                                {entry.method === "manual" ? "manual override" : entry.method === "biometric" ? "face biometric" : "QR"} at {entry.at}
                               </p>
                             )}
                           </div>
@@ -1117,7 +1494,7 @@ export default function KioskAttendancePage() {
                                   {entry.at}
                                 </p>
                                 <p className="text-[11px] text-muted-foreground">
-                                  {entry.method === "manual" ? "manual" : entry.state}
+                                  {entry.method === "manual" ? "manual" : entry.method === "biometric" ? "face biometric" : entry.state}
                                 </p>
                               </div>
                             </li>

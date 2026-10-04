@@ -24,7 +24,7 @@ export function TopMatchedCandidates({
         <SectionError onRetry={onRetry} />
       ) : loading || items === null ? (
         <SectionSkeleton rows={4} />
-      ) : items.length === 0 ? (
+      ) : !Array.isArray(items) || items.length === 0 ? (
         <SectionEmpty
           title="No matched candidates yet"
           body="Publish a job with required skills to see the strongest matches from verified Skill Passports."
@@ -46,7 +46,7 @@ export function TopMatchedCandidates({
                       <MapPin className="size-3" /> {candidate.location}
                     </p>
                   )}
-                  {candidate.top_skills.length > 0 && (
+                  {(candidate.top_skills ?? []).length > 0 && (
                     <div className="mt-1.5 flex flex-wrap gap-1">
                       {candidate.top_skills.slice(0, 3).map((skill) => (
                         <span key={skill} className="rounded-md bg-primary/5 px-1.5 py-0.5 text-[11px] text-primary">

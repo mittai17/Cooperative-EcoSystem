@@ -58,7 +58,7 @@ export default function InstitutionReportsPage() {
             <Button variant="outline" size="sm" onClick={downloadReportCsv}>
               <Download className="mr-2 size-4" /> Export CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={() => alert("PDF Export will be generated via server-side puppeteer.")}>
+            <Button variant="outline" size="sm" onClick={handlePrint}>
               <FileText className="mr-2 size-4" /> Export PDF
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}>

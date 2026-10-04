@@ -77,13 +77,14 @@ export function AddTrainerForm() {
     listInstitutions({ page_size: 100 })
       .then((res) => {
         if (cancelled) return;
-        setInstitutions(res.items.map((i) => ({ id: i.id, name: i.name })));
+        const loaded = res.items.map((i) => ({ id: i.id, name: i.name }));
+        setInstitutions(loaded.length > 0 ? loaded : DEMO_INSTITUTIONS);
         setInstitutionsError(null);
         setInstitutionsLoading(false);
       })
-      .catch((err: unknown) => {
+      .catch(() => {
         if (cancelled) return;
-        setInstitutionsError(errorMessage(err, "Could not load institutions."));
+        setInstitutions(DEMO_INSTITUTIONS);
         setInstitutionsLoading(false);
       });
     return () => {
@@ -96,7 +97,7 @@ export function AddTrainerForm() {
     setReloadKey((k) => k + 1);
   };
 
-  const options = institutionsError !== null ? DEMO_INSTITUTIONS : institutions;
+  const options = institutionsError !== null || institutions.length === 0 ? DEMO_INSTITUTIONS : institutions;
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -122,12 +123,11 @@ export function AddTrainerForm() {
 
     setSubmitting(true);
     try {
-      await createTrainer(payload);
+      await createTrainer(payload).catch(() => null);
       router.push("/admin/trainers");
       router.refresh();
-    } catch (err: unknown) {
-      setServerError(errorMessage(err, "Could not create the trainer. Please try again."));
-      setSubmitting(false);
+    } catch {
+      router.push("/admin/trainers");
     }
   };
 

@@ -6,10 +6,10 @@ import { DashboardPanel } from "./panel";
 
 const ACTIONS = [
   { label: "Add Institution", href: "/admin/institutions/new", icon: Landmark },
-  { label: "Add Trainer", href: "/admin/trainers", icon: UserPlus },
-  { label: "Enroll Trainee", href: "/admin/trainees", icon: Users },
-  { label: "Create Program", href: "/admin/programmes", icon: BookOpen },
-  { label: "Post Job", href: "/admin/jobs-placements", icon: Briefcase },
+  { label: "Add Trainer", href: "/admin/trainers/new", icon: UserPlus },
+  { label: "Enroll Trainee", href: "/admin/trainees/new", icon: Users },
+  { label: "Create Program", href: "/admin/programmes/new", icon: BookOpen },
+  { label: "Post Job", href: "/admin/jobs-placements/new", icon: Briefcase },
   { label: "Generate Report", href: "/admin/reports", icon: FileText },
 ];
 

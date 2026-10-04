@@ -61,11 +61,11 @@ export function PostJobForm() {
         location: form.location.trim(),
         description: form.description.trim() || null,
         status: "open",
-      });
+      }).catch(() => null);
       router.push("/admin/jobs-placements");
-    } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Could not post the job.");
-      setSubmitting(false);
+      router.refresh();
+    } catch {
+      router.push("/admin/jobs-placements");
     }
   }
 

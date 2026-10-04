@@ -31,10 +31,10 @@ const evidenceIcon: Record<EvidenceType, typeof BookOpen> = {
 };
 
 export default function SkillPassportPage() {
-  const verifiedCount = skillPassport.filter((s) => s.verified).length;
-  const avgConfidence = Math.round(
-    skillPassport.reduce((sum, s) => sum + s.confidence, 0) / skillPassport.length
-  );
+  const verifiedCount = (skillPassport ?? []).filter((s) => s.verified).length;
+  const avgConfidence = (skillPassport ?? []).length > 0
+    ? Math.round(skillPassport.reduce((sum, s) => sum + s.confidence, 0) / skillPassport.length)
+    : 0;
 
   return (
     <div className="flex flex-col gap-6">

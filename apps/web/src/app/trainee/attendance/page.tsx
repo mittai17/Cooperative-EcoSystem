@@ -322,12 +322,21 @@ export default function TraineeAttendancePage() {
   };
   const [mode, setMode] = useState<ScanMode>("qr");
   const [scanState, setScanState] = useState<ScanState>({ kind: "idle" });
-  const [summary] = useState<AttendanceSummary>(DEMO_SUMMARY);
+  const [summary, setSummary] = useState<AttendanceSummary>(DEMO_SUMMARY);
 
   const handleSuccess = useCallback((session: string) => {
     const markedAt = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
     setScanState({ kind: "success", session, markedAt });
     enqueueAttendanceRecord(mode === "qr" ? "QR_SCAN" : "FACE_AUTH", session);
+    const today = new Date().toISOString().split("T")[0];
+    setSummary((prev) => {
+      const prevRecords = prev?.records ?? [];
+      const records = [{ date: today, session, status: "present", method: mode }, ...prevRecords];
+      const present = (prev?.present ?? 0) + 1;
+      const total_sessions = (prev?.total_sessions ?? 0) + 1;
+      const overall_percentage = Math.round((present / total_sessions) * 100);
+      return { records, present, total_sessions, overall_percentage };
+    });
   }, [mode]);
 
   const handleError = useCallback((message: string) => {
@@ -465,20 +474,24 @@ export default function TraineeAttendancePage() {
         </CardHeader>
         <CardContent>
           <div className="divide-y divide-border">
-            {summary.records.map((rec) => (
-              <div key={rec.date + rec.session} className="flex items-center justify-between gap-3 py-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{rec.session}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
-                    {formatDate(rec.date)}
-                    {rec.method && <MethodBadge method={rec.method} />}
-                  </p>
+            {!summary.records || summary.records.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">No attendance records found.</p>
+            ) : (
+              summary.records.map((rec) => (
+                <div key={rec.date + rec.session} className="flex items-center justify-between gap-3 py-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{rec.session}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                      {formatDate(rec.date)}
+                      {rec.method && <MethodBadge method={rec.method} />}
+                    </p>
+                  </div>
+                  <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize shrink-0", statusStyles(rec.status))}>
+                    <StatusIcon status={rec.status} /> {statusLabel(rec.status)}
+                  </span>
                 </div>
-                <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize shrink-0", statusStyles(rec.status))}>
-                  <StatusIcon status={rec.status} /> {statusLabel(rec.status)}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

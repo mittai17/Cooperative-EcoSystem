@@ -146,6 +146,8 @@
     "languageSwitcher": "भाषा बदलें",
     "messages": "संदेश",
     "userMenu": "उपयोगकर्ता खाता मेनू",
+    "myProfile": "मेरी प्रोफ़ाइल",
+    "settings": "सेटिंग्स",
     "adminUser": "एडमिन उपयोगकर्ता",
     "roleWorkspace": "{role} कार्यक्षेत्र",
     "workspaceTag": "{role} कार्यक्षेत्र · डेमो",

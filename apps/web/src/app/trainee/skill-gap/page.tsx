@@ -247,7 +247,7 @@ export default function SkillGapPage() {
                     </div>
                     <Badge variant="secondary" className="shrink-0 text-xs">{course.duration}</Badge>
                   </div>
-                  <Button render={<Link href="/courses" />} size="sm" variant="outline" className="w-fit text-xs" nativeButton={false}>{t("trainee.skillGap.enrolNow")} <ArrowRight className="ml-1 size-3" /></Button>
+                  <Button render={<Link href="/trainee/courses" />} size="sm" variant="outline" className="w-fit text-xs" nativeButton={false}>{t("trainee.skillGap.enrolNow")} <ArrowRight className="ml-1 size-3" /></Button>
                 </div>
               ))}
             </CardContent>

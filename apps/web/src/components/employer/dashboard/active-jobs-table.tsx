@@ -17,7 +17,7 @@ export function ActiveJobsTable({
   error: boolean;
   onRetry: () => void;
 }) {
-  const active = (jobs ?? []).filter((job) => job.status === "open").slice(0, 4);
+  const active = (Array.isArray(jobs) ? jobs : []).filter((job) => job.status === "open").slice(0, 4);
   return (
     <SectionCard title="Active Jobs" icon={Briefcase} action={{ label: "View All", href: "/employer/jobs" }}>
       {error ? (

@@ -38,7 +38,7 @@ export function TopInstitutionsCard({ rows }: { rows: TopInstitution[] }) {
                   <td className="py-2.5 text-right text-muted-foreground">{formatCount(row.trainers)}</td>
                   <td className="py-2.5 text-right font-medium text-foreground">{formatCount(row.trainees)}</td>
                   <td className="py-2.5 text-right">
-                    {row.rating === null ? (
+                    {typeof row.rating !== "number" || !Number.isFinite(row.rating) ? (
                       <span className="text-muted-foreground">—</span>
                     ) : (
                       <span className="inline-flex items-center gap-1 font-semibold text-foreground">

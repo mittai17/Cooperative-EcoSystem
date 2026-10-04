@@ -38,7 +38,15 @@ function mergeDashboard(data?: Partial<AdminDashboard>): AdminDashboard {
     institutions_by_state: data.institutions_by_state && data.institutions_by_state.length > 0 ? data.institutions_by_state : DEMO_DASHBOARD.institutions_by_state,
     program_distribution: data.program_distribution && data.program_distribution.length > 0 ? data.program_distribution : DEMO_DASHBOARD.program_distribution,
     placement_overview: data.placement_overview && data.placement_overview.length > 0 ? data.placement_overview : DEMO_DASHBOARD.placement_overview,
-    top_institutions: data.top_institutions && data.top_institutions.length > 0 ? data.top_institutions : DEMO_DASHBOARD.top_institutions,
+    top_institutions:
+      data.top_institutions && data.top_institutions.length > 0
+        ? data.top_institutions.map((row) => ({
+            ...row,
+            // Older/demo API payloads may omit rating entirely. Keep the
+            // dashboard contract explicit so consumers can remain null-safe.
+            rating: typeof row.rating === "number" ? row.rating : null,
+          }))
+        : DEMO_DASHBOARD.top_institutions,
     recent_activity: data.recent_activity && data.recent_activity.length > 0 ? data.recent_activity : DEMO_DASHBOARD.recent_activity,
     recent_placements: data.recent_placements && data.recent_placements.length > 0 ? data.recent_placements : DEMO_DASHBOARD.recent_placements,
     ai_insights: data.ai_insights && data.ai_insights.length > 0 ? data.ai_insights : DEMO_DASHBOARD.ai_insights,

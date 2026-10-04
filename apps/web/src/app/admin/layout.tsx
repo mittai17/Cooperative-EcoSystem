@@ -1,9 +1,313 @@
-import { AppShell } from "@/components/layout/app-shell";
+"use client";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+import { useEffect, useRef, useState, type ReactNode, type FormEvent } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Bell,
+  ChevronDown,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Search,
+  UserCircle,
+  X,
+  Sparkles,
+  LayoutDashboard,
+  Building2,
+  Users,
+  GraduationCap,
+  Briefcase,
+  BookOpen,
+  BadgeCheck,
+  ClipboardCheck,
+  Award,
+  TrendingUp,
+  FileText,
+  Settings,
+  ClipboardList,
+  Globe,
+} from "lucide-react";
+
+import { Logo } from "@/components/brand/logo";
+import { RoleSwitcherPills } from "@/components/admin/shared/role-switcher-pills";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { signOutDemo } from "@/lib/demo-users";
+
+const ADMIN_NAV = [
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Institutions", href: "/admin/institutions", icon: Building2 },
+  { label: "Trainers", href: "/admin/trainers", icon: GraduationCap },
+  { label: "Trainees", href: "/admin/trainees", icon: Users },
+  { label: "Employers", href: "/admin/employers", icon: Briefcase },
+  { label: "Training Programs", href: "/admin/programmes", icon: BookOpen },
+  { label: "Skill Passport", href: "/admin/skill-passport", icon: BadgeCheck },
+  { label: "Jobs & Placements", href: "/admin/jobs-placements", icon: Briefcase },
+  { label: "Assessments", href: "/admin/assessments", icon: ClipboardCheck },
+  { label: "Certifications", href: "/admin/certifications", icon: Award },
+  { label: "AI Analytics", href: "/admin/skill-demand", icon: TrendingUp },
+  { label: "Reports", href: "/admin/reports", icon: FileText },
+  { label: "User Management", href: "/admin/user-management", icon: UserCircle },
+  { label: "System Settings", href: "/admin/settings", icon: Settings },
+  { label: "Audit Logs", href: "/admin/audit-logs", icon: ClipboardList },
+];
+
+function AdminSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
+
   return (
-    <AppShell role="admin" userName="NCCT Admin Office" userSubtitle="admin@ncct.gov.in">
-      {children}
-    </AppShell>
+    <nav aria-label="Admin navigation" className="flex flex-col gap-1 px-3 py-2">
+      {ADMIN_NAV.map((item) => {
+        const active = pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
+        const Icon = item.icon;
+
+        return (
+          <Link
+            key={item.label}
+            href={item.href}
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-colors",
+              active
+                ? "bg-rose-50 text-red-600 font-bold dark:bg-rose-950/40 dark:text-red-400"
+                : "text-slate-600 hover:bg-slate-100 hover:text-foreground dark:text-sidebar-foreground/75 dark:hover:bg-muted"
+            )}
+          >
+            <Icon className={cn("size-4 shrink-0", active ? "text-red-600 dark:text-red-400" : "text-slate-500")} />
+            <span className="truncate">{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function NeedHelpBox() {
+  return (
+    <div className="mx-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 dark:border-border dark:bg-card p-4">
+      <p className="text-xs font-bold text-foreground">Need Help?</p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">Chat with CoopSetu AI</p>
+      <button
+        type="button"
+        className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-red-500/40 bg-white dark:bg-card px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-rose-50 shadow-2xs transition-colors cursor-pointer"
+      >
+        <Sparkles className="size-3.5 text-red-600" />
+        <span>Open Assistant</span>
+      </button>
+    </div>
+  );
+}
+
+function SidebarBrand() {
+  return (
+    <div className="px-5 pt-5 pb-3">
+      <Logo size="sm" />
+      <div className="mt-4">
+        <p className="text-xs font-bold text-foreground">Admin Workspace</p>
+        <p className="text-[11px] text-muted-foreground">National Cooperative Training (NCCT)</p>
+      </div>
+    </div>
+  );
+}
+
+function TopBarSearch() {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const term = query.trim();
+    router.push(term ? `/admin/institutions?q=${encodeURIComponent(term)}` : "/admin/dashboard");
+  }
+
+  return (
+    <form onSubmit={onSubmit} role="search" className="relative hidden w-full max-w-lg md:block">
+      <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
+      <input
+        ref={inputRef}
+        type="search"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search users, institutions, trainees, jobs, skills, reports..."
+        aria-label="Search admin portal"
+        className="h-9.5 w-full rounded-full border border-slate-200/90 dark:border-border bg-slate-50/70 dark:bg-card/70 pr-12 pl-10 text-xs text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-red-500 focus-visible:ring-1 focus-visible:ring-red-500/30"
+      />
+      <kbd className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded border border-border bg-white dark:bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground shadow-2xs">
+        ⌘K
+      </kbd>
+    </form>
+  );
+}
+
+function AdminProfileMenu() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-full py-1 pr-1 pl-1 hover:bg-muted/70 cursor-pointer"
+            aria-label="Admin user menu"
+          >
+            <span className="flex size-8 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-xs font-bold text-red-600">
+              AD
+            </span>
+            <span className="hidden text-left text-xs md:block">
+              <span className="block font-bold text-foreground leading-tight">Admin User</span>
+              <span className="block text-[10px] text-muted-foreground leading-tight">NCCT Admin</span>
+            </span>
+            <ChevronDown className="hidden size-3.5 text-muted-foreground md:block" />
+          </button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>
+          <p className="font-semibold text-foreground">Admin User</p>
+          <p className="text-xs text-muted-foreground">NCCT Admin</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link href="/admin/profile" />}>
+          <UserCircle className="mr-2 size-3.5" />
+          My profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOutDemo()} className="text-destructive focus:text-destructive">
+          <LogOut className="mr-2 size-3.5" />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="flex min-h-screen bg-[#F8FAFC]/50 dark:bg-background">
+      {/* Desktop Sidebar */}
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-border/80 bg-white dark:bg-card md:flex">
+        <SidebarBrand />
+        <div className="flex-1 overflow-y-auto">
+          <AdminSidebarNav />
+        </div>
+        <div className="mt-auto pt-3 pb-4">
+          <NeedHelpBox />
+        </div>
+      </aside>
+
+      {/* Mobile Drawer */}
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-foreground/30"
+            aria-label="Close navigation menu"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col overflow-y-auto bg-white dark:bg-card shadow-xl">
+            <div className="flex items-start justify-between pr-3">
+              <SidebarBrand />
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="mt-5 flex size-8 items-center justify-center rounded-lg hover:bg-muted"
+                aria-label="Close menu"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <AdminSidebarNav onNavigate={() => setMobileOpen(false)} />
+            </div>
+            <div className="mt-auto pt-3 pb-4">
+              <NeedHelpBox />
+            </div>
+          </aside>
+        </div>
+      ) : null}
+
+      {/* Main Content Area */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Role Switcher Pills Bar (Requested by user for easy evaluator navigation across personas) */}
+        <RoleSwitcherPills currentRole="admin" />
+
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 flex h-15 items-center justify-between gap-3 border-b border-border/80 bg-white/95 dark:bg-card/95 px-4 backdrop-blur sm:px-6">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border md:hidden"
+            aria-label="Open navigation menu"
+          >
+            <Menu className="size-4" />
+          </button>
+
+          <TopBarSearch />
+
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            {/* Notification Bell with red badge '5' */}
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="relative flex size-8 items-center justify-center rounded-full hover:bg-muted text-slate-600 dark:text-muted-foreground"
+            >
+              <Bell className="size-4.5" />
+              <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-[#E30B1C] text-[9px] font-bold text-white shadow-2xs">
+                5
+              </span>
+            </button>
+
+            {/* Message Bubble */}
+            <button
+              type="button"
+              aria-label="Messages"
+              className="flex size-8 items-center justify-center rounded-full hover:bg-muted text-slate-600 dark:text-muted-foreground"
+            >
+              <MessageSquare className="size-4.5" />
+            </button>
+
+            {/* Language Toggle with Globe icon + EN */}
+            <button
+              type="button"
+              aria-label="Language selection"
+              className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-muted text-xs font-semibold text-slate-700 dark:text-muted-foreground cursor-pointer"
+            >
+              <Globe className="size-4 text-slate-500" />
+              <span>EN</span>
+            </button>
+
+            <div className="h-6 w-px bg-border/60" />
+
+            {/* Admin User Profile */}
+            <AdminProfileMenu />
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8">
+          {children}
+        </main>
+      </div>
+    </div>
   );
 }

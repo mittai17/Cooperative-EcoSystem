@@ -1,131 +1,83 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, Loader2, Star } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, CheckCircle2, MessageSquarePlus, Star } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { FeedbackForm } from "@/components/employer/feedback/feedback-form";
+import { SkillDemandPanel } from "@/components/employer/feedback/skill-demand-panel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { ApiError, useApi } from "@/lib/use-api";
+import {
+  getFeedback,
+  type FeedbackRecord,
+  type FeedbackResponse,
+  type HireRecord,
+} from "@/lib/employer/workflow-api";
+import { errorMessage, formatDate, formatDuration } from "@/lib/employer/workflow-format";
+import { useApi } from "@/lib/use-api";
 
-interface Hire {
-  application_id: string;
-  job_id: string;
-  job_title: string;
-  trainee_id: string;
-  trainee_name: string;
-  feedback_submitted: boolean;
+/** Average of the six criteria, or the legacy single rating for feedback logged before the new form. */
+function overallRating(item: FeedbackRecord): number | null {
+  const values = Object.values(item.ratings ?? {}).filter((v): v is number => typeof v === "number");
+  if (values.length > 0) return values.reduce((sum, v) => sum + v, 0) / values.length;
+  return item.performance_rating;
 }
 
-interface FeedbackRecord {
-  id: string;
-  job_title: string;
-  trainee_name: string;
-  performance_rating: number;
-  training_relevance: number;
-  comments: string | null;
-  created_at: string | null;
+function Stars({ value }: { value: number | null }) {
+  const rounded = value === null ? 0 : Math.round(value);
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star key={i} className={cn("size-3", i <= rounded ? "fill-primary text-primary" : "text-muted-foreground")} />
+      ))}
+    </div>
+  );
 }
 
 export default function FeedbackPage() {
   const api = useApi();
-  const [hires, setHires] = useState<Hire[] | null>(null);
-  const [past, setPast] = useState<FeedbackRecord[] | null>(null);
-  const [selectedHire, setSelectedHire] = useState<string>("");
-  const [rating, setRating] = useState(0);
-  const [usefulSkills, setUsefulSkills] = useState("");
-  const [missingSkills, setMissingSkills] = useState("");
-  const [comments, setComments] = useState("");
+  const [data, setData] = useState<FeedbackResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [activeHire, setActiveHire] = useState<HireRecord | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setError(null);
     try {
-      const [hiresData, pastData] = await Promise.all([
-        api.get<{ hires: Hire[] }>("/api/v1/jobs/hired"),
-        api.get<{ feedback: FeedbackRecord[] }>("/api/v1/jobs/feedback/mine"),
-      ]);
-      setHires(hiresData.hires);
-      setPast(pastData.feedback);
-      const firstPending = hiresData.hires.find((h) => !h.feedback_submitted);
-      if (firstPending) setSelectedHire(`${firstPending.job_id}::${firstPending.trainee_id}`);
+      setData(await getFeedback(api));
     } catch (err) {
-      setError(err instanceof ApiError ? err.detail : "Could not reach the CoopSetu API");
-      setHires([]);
-      setPast([]);
+      setError(errorMessage(err, "Could not load hired candidates. Check your connection and try again."));
+      setData(null);
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const id = window.setTimeout(() => void load(), 0);
     return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load]);
 
-  const pendingHires = (hires ?? []).filter((h) => !h.feedback_submitted);
-
-  async function submit() {
-    if (!selectedHire) return;
-    const [jobId, traineeId] = selectedHire.split("::");
-    if (rating === 0) {
-      setError("Pick a skill readiness rating before submitting.");
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
-    try {
-      await api.post("/api/v1/jobs/feedback", {
-        job_id: jobId,
-        trainee_id: traineeId,
-        useful_skills: usefulSkills.split(",").map((s) => s.trim()).filter(Boolean),
-        missing_skills: missingSkills.split(",").map((s) => s.trim()).filter(Boolean),
-        training_relevance: rating,
-        performance_rating: rating,
-        comments: comments.trim(),
-      });
-      setNotice("Feedback recorded. The trainee's Skill Passport and NCCT skill-demand analytics are now updated.");
-      setUsefulSkills("");
-      setMissingSkills("");
-      setComments("");
-      setRating(0);
-      setSelectedHire("");
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.detail : "Could not submit this feedback.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const hires = data?.hires ?? [];
+  const past = data?.feedback ?? [];
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Employer Feedback"
-        description="Provide feedback on hired candidates to help improve cooperative training programmes."
+        description="Rate hired candidates after they start work. Your feedback helps improve cooperative training programmes."
       />
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle />
-          <AlertTitle>Something went wrong</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
 
       {notice && (
         <Alert>
@@ -135,121 +87,128 @@ export default function FeedbackPage() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle />
+          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center gap-3">
+            {error}
+            <Button size="sm" variant="outline" onClick={() => void load()}>
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="rounded-2xl xl:col-span-2">
           <CardHeader>
-            <CardTitle className="font-heading text-base">Submit New Feedback</CardTitle>
-            <CardDescription>Your feedback directly influences future curriculum and skill-demand analytics.</CardDescription>
+            <CardTitle className="font-heading text-base">Hired candidates</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {hires === null ? (
-              <Skeleton className="h-9 w-full" />
-            ) : pendingHires.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No hired candidates are waiting on feedback right now. Hires appear here once an application
-                reaches the &ldquo;Hired&rdquo; stage in Applications.
+          <CardContent className="p-0">
+            {!error && data === null && <Skeleton className="m-6 h-40 w-auto rounded-xl" />}
+
+            {!error && data !== null && hires.length === 0 && (
+              <p className="m-6 rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No hired candidates yet. Hires appear here once an application reaches the &ldquo;Hired&rdquo; stage in
+                Applications.
               </p>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label>Select Hired Trainee</Label>
-                  <Select
-                    items={pendingHires.map((hire) => ({ label: `${hire.trainee_name} — ${hire.job_title}`, value: `${hire.job_id}::${hire.trainee_id}` }))}
-                    value={selectedHire}
-                    onValueChange={(v) => v && setSelectedHire(String(v))}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Choose a hire" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pendingHires.map((hire) => (
-                        <SelectItem key={`${hire.job_id}::${hire.trainee_id}`} value={`${hire.job_id}::${hire.trainee_id}`}>
-                          {hire.trainee_name} — {hire.job_title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Skill Readiness Rating (1-5)</Label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button key={star} type="button" className="p-2 hover:bg-muted rounded-full" onClick={() => setRating(star)}>
-                        <Star className={cn("w-6 h-6 transition-colors", star <= rating ? "fill-primary text-primary" : "text-muted-foreground")} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Most Useful Skills Demonstrated</Label>
-                  <Input
-                    placeholder="e.g. Ledger maintenance, Tally software..."
-                    value={usefulSkills}
-                    onChange={(e) => setUsefulSkills(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Missing or Weak Skills</Label>
-                  <Input
-                    placeholder="e.g. Digital payments, communication..."
-                    value={missingSkills}
-                    onChange={(e) => setMissingSkills(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Overall Performance Comments</Label>
-                  <Textarea
-                    placeholder="How has the candidate performed in their role so far?"
-                    rows={4}
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                  />
-                </div>
-              </>
             )}
-          </CardContent>
-          {pendingHires.length > 0 && (
-            <CardFooter>
-              <Button onClick={submit} disabled={submitting || !selectedHire}>
-                {submitting && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-                Submit Feedback
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-heading text-base">Past Feedback</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {past === null ? (
-              <Skeleton className="h-24 w-full" />
-            ) : past.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No feedback submitted yet.</p>
-            ) : (
-              past.map((item) => (
-                <div key={item.id} className="border-b pb-4 last:border-0">
-                  <p className="font-medium text-sm">{item.trainee_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.job_title}
-                    {item.created_at ? ` • ${new Date(item.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}` : ""}
-                  </p>
-                  <div className="flex gap-1 mt-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className={cn("w-3 h-3", i <= item.performance_rating ? "fill-primary text-primary" : "text-muted-foreground")} />
+            {!error && data !== null && hires.length > 0 && (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Job</TableHead>
+                      <TableHead>Hire Date</TableHead>
+                      <TableHead>Time Employed</TableHead>
+                      <TableHead className="text-right">Feedback</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {hires.map((hire) => (
+                      <TableRow key={`${hire.job_id}-${hire.trainee_id}`}>
+                        <TableCell className="font-medium">{hire.employee_name}</TableCell>
+                        <TableCell className="text-muted-foreground">{hire.job_title}</TableCell>
+                        <TableCell>{formatDate(hire.hired_at)}</TableCell>
+                        <TableCell>{formatDuration(hire.hired_at)}</TableCell>
+                        <TableCell className="text-right">
+                          {hire.feedback_submitted ? (
+                            <Badge className="border-0 bg-success/10 text-success">Submitted</Badge>
+                          ) : (
+                            <Button size="sm" onClick={() => setActiveHire(hire)}>
+                              <MessageSquarePlus />
+                              Give feedback
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </div>
-                </div>
-              ))
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
+
+        <div className="flex flex-col gap-6">
+          <SkillDemandPanel api={api} />
+          <Card className="rounded-2xl">
+            <CardHeader>
+              <CardTitle className="font-heading text-base">Past feedback</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!error && data === null && <Skeleton className="h-24 w-full" />}
+              {!error && data !== null && past.length === 0 && (
+                <p className="text-sm text-muted-foreground">No feedback submitted yet.</p>
+              )}
+              {!error &&
+                past.map((item) => (
+                  <div key={item.id} className="border-b pb-4 last:border-0">
+                    <p className="text-sm font-medium">{item.employee_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.job_title}
+                      {item.created_at ? ` • ${formatDate(item.created_at)}` : ""}
+                    </p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <Stars value={overallRating(item)} />
+                      {overallRating(item) !== null && (
+                        <span className="text-xs text-muted-foreground">{overallRating(item)?.toFixed(1)} / 5</span>
+                      )}
+                    </div>
+                    {item.additional_skills_needed.length > 0 && (
+                      <p className="mt-1 text-xs text-muted-foreground">Needs: {item.additional_skills_needed.join(", ")}</p>
+                    )}
+                    {item.comments && <p className="mt-1 text-sm text-muted-foreground">{item.comments}</p>}
+                  </div>
+                ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      <Dialog open={activeHire !== null} onOpenChange={(open) => !open && setActiveHire(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Post-hire feedback</DialogTitle>
+            <DialogDescription>Rate each area from 1 (weak) to 5 (excellent).</DialogDescription>
+          </DialogHeader>
+          {activeHire && (
+            <FeedbackForm
+              api={api}
+              hire={activeHire}
+              onCancel={() => setActiveHire(null)}
+              onSubmitted={() => {
+                setNotice(`Feedback recorded for ${activeHire.employee_name}.`);
+                setActiveHire(null);
+                void load();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

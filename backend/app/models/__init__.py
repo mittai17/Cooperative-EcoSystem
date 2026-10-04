@@ -22,3 +22,11 @@ from app.models.mobile import (  # noqa: F401
 )
 from app.models.notification import Notification, PushToken  # noqa: F401
 from app.models.infra import IntegrationUsage, AiCache, TtsAudio, SyncReceipt  # noqa: F401
+from app.models.job_requirement import JobRequirement  # noqa: F401
+from app.models.employer_workflow import (  # noqa: F401
+    Interview, Offer, TalentPoolEntry, EmployerTeamMember, EmployerFeedbackRatings, EmployerOrgProfile,
+    EmployerUserPreferences,
+)
+from app.models.job_detail import JobDetail  # noqa: F401
+from app.models.platform_settings import PlatformSetting  # noqa: F401
+from app.models.audit_log import AuditLog  # noqa: F401

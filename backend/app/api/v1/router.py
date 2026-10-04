@@ -8,6 +8,8 @@ from app.api.v1 import (
     certificates,
     courses,
     employer,
+    employer_jobs,
+    employer_workflow,
     face,
     hostel,
     jobs,
@@ -22,6 +24,7 @@ from app.api.v1 import (
     timetable,
     users,
 )
+from app.api.v1 import employer_ai_interview
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
@@ -36,6 +39,8 @@ api_router.include_router(certificates.router, prefix="/certificates", tags=["Ce
 api_router.include_router(skills.router, prefix="/skills", tags=["Skills"])
 api_router.include_router(jobs.router, prefix="/jobs", tags=["Jobs"])
 api_router.include_router(employer.router, prefix="/employer", tags=["Employer"])
+api_router.include_router(employer_jobs.router, prefix="/employer", tags=["Employer"])
+api_router.include_router(employer_workflow.router, prefix="/employer", tags=["Employer"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 api_router.include_router(career.router, prefix="/career", tags=["Career"])
 api_router.include_router(offline_sync.router, prefix="/offline-sync", tags=["Offline Sync"])
@@ -47,3 +52,8 @@ api_router.include_router(logistics.router, prefix="/logistics", tags=["Logistic
 api_router.include_router(mobile.router, prefix="/mobile", tags=["Mobile"])
 api_router.include_router(system.router, prefix="/system", tags=["System"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+api_router.include_router(employer_ai_interview.router, prefix="/employer/ai-interview", tags=["Employer"])
+from app.api.v1 import admin_portal  # noqa: E402
+api_router.include_router(admin_portal.router, prefix="/admin", tags=["Admin"])
+from app.api.v1 import trainee_ai_interview  # noqa: E402
+api_router.include_router(trainee_ai_interview.router, prefix="/trainee/ai-interview", tags=["Trainee"])

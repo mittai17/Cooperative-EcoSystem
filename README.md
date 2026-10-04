@@ -1,104 +1,361 @@
-# CoopSetu AI
+# NURVEX
 
-> AI-enabled cooperative training, certification, skill intelligence, and employment platform for India’s cooperative ecosystem.
+> AI-powered learning, skill intelligence, certification, and employment ecosystem for India's cooperative sector.
 
-[![Web](https://img.shields.io/badge/Web-Next.js%2016-000000?logo=nextdotjs)](apps/web)
-[![API](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi)](backend)
-[![Mobile](https://img.shields.io/badge/Mobile-Expo%2057-000020?logo=expo)](apps/mobile)
-[![Database](https://img.shields.io/badge/Database-PostgreSQL%20%2B%20pgvector-4169E1?logo=postgresql)](backend/migrations)
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](backend)
+<p align="center">
+  <img src="https://img.shields.io/badge/NURVEX-AI%20Learning%20%26%20Employment-E31B23?style=for-the-badge" alt="NURVEX">
+  <img src="https://img.shields.io/badge/Smart%20India%20Hackathon-2026-111827?style=for-the-badge" alt="Smart India Hackathon 2026">
+</p>
 
-CoopSetu AI connects cooperative-sector training with verified skills and employment outcomes. Trainees move from nomination and learning through attendance, assessment, certification, Skill Passport updates, job matching, applications, and employer feedback. Institutions, trainers, employers, and national administrators operate through role-specific workspaces backed by one API and data model.
+<p align="center">
+  <strong>Learn → Prove → Certify → Build Skills → Get Matched → Get Hired → Improve the Ecosystem</strong>
+</p>
 
-Developed for **Smart India Hackathon 2026 — Problem Statement 26087**, associated with the Ministry of Cooperation and the National Council for Cooperative Training (NCCT).
+<p align="center">
+  NURVEX brings training, learning analytics, assessments, verified skills, career guidance, employers, and employment feedback into one measurable platform.
+</p>
 
-## Contents
+---
 
-- [Capabilities](#capabilities)
-- [Architecture](#architecture)
-- [Technology stack](#technology-stack)
-- [Repository structure](#repository-structure)
-- [Security model](#security-model)
-- [Local development](#local-development)
-- [Configuration](#configuration)
-- [Database and seed data](#database-and-seed-data)
-- [Testing](#testing)
-- [API map](#api-map)
-- [Offline support](#offline-support)
-- [AI and integrations](#ai-and-integrations)
-- [Deployment](#deployment)
-- [Known limitations](#known-limitations)
+## Why NURVEX?
 
-## Capabilities
+Traditional training systems often stop at course completion. NURVEX is designed around what happens after learning.
+
+A trainee can move through a continuous evidence-backed journey:
+
+```text
+Registration
+    ↓
+Nomination
+    ↓
+Training
+    ↓
+Learning
+    ↓
+Attendance
+    ↓
+Assessment
+    ↓
+Certification
+    ↓
+Skill Passport
+    ↓
+Skill Gap Analysis
+    ↓
+Personalized Learning
+    ↓
+Job Matching
+    ↓
+Application
+    ↓
+Interview
+    ↓
+Offer / Employment
+    ↓
+Employer Feedback
+    ↓
+Skill Demand Intelligence
+    ↓
+Training Recommendations
+```
+
+This creates a closed-loop training-to-employment ecosystem instead of a collection of disconnected portals.
+
+---
+
+## What NURVEX Solves
+
+- Digital programme registration, nomination, admission, and enrollment
+- Institution and trainee profiles
+- Cohort and self-paced learning
+- Integrated learning content and progress tracking
+- QR-based attendance with face-recognition integration points
+- Timetables, hostel, and logistics workflows
+- Assessments, grading, competency evidence, and certification
+- Tamper-evident certificate verification
+- AI-assisted career guidance
+- Evidence-backed Skill Passport
+- Skill-gap analysis and learning recommendations
+- Explainable job and candidate matching
+- Employer candidate discovery
+- Applications, interviews, offers, and talent pools
+- Employer feedback after hiring
+- Skill-demand intelligence and analytics
+- PWA/mobile experiences and offline-capable workflows
+- Role-specific dashboards for trainees, trainers, institutions, employers, and administrators
+
+---
+
+## Core Product Modules
 
 ### Trainee
 
-- Programme discovery, nomination, admission, and enrollment.
-- Self-paced and cohort learning with progress tracking.
-- QR attendance, NFC groundwork, and consent-based face attendance.
-- Assessments, verified competency evidence, and certificates.
-- Dynamic Skill Passport with confidence and evidence history.
-- Role-based skill-gap analysis and learning recommendations.
-- Explainable job matching, applications, and career planning.
-- Offline course caches and deferred synchronization.
+- Programme discovery, nomination, admission, and enrollment
+- Self-paced and cohort learning
+- Lesson and course progress tracking
+- QR attendance and face-attendance integration
+- Assessments and certificates
+- Skill Passport and evidence history
+- Skill-gap analysis
+- Career goals and recommended learning
+- Job recommendations and applications
+- Interview workflows
 
-### Trainer and institution
+### Trainer
 
-- Batch, trainee, timetable, content, assignment, and assessment management.
-- Attendance sessions, manual grading, and skill evaluations.
-- Programme-to-course curriculum links.
-- Nomination review, hostel, logistics, and institutional analytics.
-- Announcements and direct messages.
+- Assigned classes and batches
+- Timetable and calendar
+- Attendance sessions
+- QR attendance
+- Face-recognition integration
+- Trainee roster
+- Assessments and grading
+- Assignments and learning content
+- Skill evaluations
+- Evidence submission
+- Learning progress analytics
+- At-risk learner indicators based on measurable activity
+- Reports and communication
+
+### Institution
+
+- Programme management
+- Nomination review
+- Batch management
+- Trainee enrollment
+- Course and curriculum mapping
+- Trainer assignment
+- Timetable management
+- Hostel allocation
+- Logistics management
+- Attendance monitoring
+- Assessment reporting
+- Institution analytics
+- Announcements and communication
 
 ### Employer
 
-- Structured jobs with skill, proficiency, education, certificate, and experience requirements.
-- Deterministic, explainable candidate scoring.
-- Application, interview, offer, talent-pool, and team workflows.
-- AI-assisted interviews with a constrained deterministic fallback.
-- Post-hire feedback feeding national skill-demand intelligence.
+NURVEX is not intended to be a generic job board. The employer experience is built around verified training evidence and skills.
 
-### NCCT and platform administration
+- Structured job creation
+- Skill and proficiency requirements
+- Education, certificate, and experience requirements
+- Candidate discovery
+- Skill Passport review
+- Evidence comparison
+- Explainable match scores
+- Applications
+- Interviews
+- Offers and hiring
+- Talent pools
+- Post-hire feedback
 
-- Cross-institution training, certification, placement, and demand analytics.
-- Institution, employer, user, programme, job, and platform management.
-- Audit logs, reports, settings, and skill-demand monitoring.
+### Administrator / NCCT Workspace
+
+- Institutions, trainers, trainees, and employers
+- Programme and course management
+- Certification and placement analytics
+- Job and employment outcomes
+- Skill-demand monitoring
+- Reports and audit logs
+- Platform configuration
+
+---
+
+## AI Intelligence
+
+NURVEX uses AI where it adds value while keeping authoritative decisions reproducible and evidence-backed.
+
+### AI Skill Passport
+
+A learner's Skill Passport can evolve from:
+
+```text
+Course Completion
+      +
+Assessment Result
+      +
+Trainer Evaluation
+      +
+Certificate
+      +
+Employment Feedback
+      ↓
+Verified Skill Evidence
+```
+
+Each skill can maintain:
+
+- Skill
+- Proficiency
+- Confidence
+- Verification state
+- Evidence source
+- Evidence reference
+- Last updated timestamp
+
+### Skill Gap Analysis
+
+```text
+Current Skills
+      vs
+Target Role Requirements
+      ↓
+Matched Skills
+Missing Skills
+Weak Skills
+      ↓
+Recommended Learning
+```
+
+### Skill Graph
+
+```text
+Skills ↔ Courses ↔ Assessments ↔ Certificates ↔ Jobs ↔ Career Paths
+```
+
+### Explainable Job Matching
+
+Core matching decisions are designed around deterministic scoring rather than opaque LLM-only decisions. Signals can include required skills, proficiency, education, certificates, experience, and semantic similarity where appropriate.
+
+LLMs can explain and personalize results, while authoritative eligibility and scoring remain deterministic.
+
+### AI Career Navigator
+
+The career assistant can answer questions such as:
+
+- What skills am I missing?
+- What should I learn next?
+- Which jobs fit me?
+- Why am I not matching this role?
+- What career path should I follow?
+- Which course will close my biggest skill gap?
+
+### AI-Assisted Interview
+
+The interview experience can combine:
+
+- Job-specific questions
+- Candidate Skill Passport context
+- Spoken questions
+- Candidate voice answers
+- Live transcription
+- Dynamic follow-up questions
+- Structured post-interview feedback
+
+The system should evaluate relevant dimensions such as relevance, answer quality, clarity, communication, and role-specific knowledge. It should not make unsupported claims about emotions or mental state from facial appearance.
+
+---
+
+## Learning Content
+
+NURVEX is designed so learners can consume supported educational resources without being sent through a chain of unrelated websites.
+
+The content layer can integrate permitted sources such as:
+
+- DIKSHA / Sunbird
+- Officially embeddable video resources
+- Approved open educational resources
+- NURVEX-authored content
+
+### DIKSHA / Sunbird Integration
+
+```text
+DIKSHA / Sunbird
+       ↓
+Content API / Metadata
+       ↓
+NURVEX Backend
+       ↓
+NURVEX Learning Experience
+       ↓
+Progress Tracking
+       ↓
+Assessment
+       ↓
+Certificate
+       ↓
+Skill Passport
+```
+
+License information must be preserved for every external resource. NURVEX must not assume that every resource is freely redistributable; content should only be embedded, streamed, copied, translated, or stored where the applicable terms and license permit it.
+
+---
+
+## Attendance & Hardware
+
+NURVEX supports a digital attendance architecture suitable for institutional deployments.
+
+### Attendance methods
+
+- QR attendance
+- Face-recognition integration
+- Camera-based attendance workflows
+- Kiosk deployment
+- Online/offline synchronization
+
+Reference architecture:
+
+```text
+Attendance Device / Kiosk
+          ↓
+      Edge Layer
+          ↓
+       FastAPI
+          ↓
+     PostgreSQL
+          ↓
+ Attendance Events
+          ↓
+ Training Analytics
+```
+
+Hardware-specific implementations remain modular so the platform is not tied to a single vendor.
+
+---
 
 ## Architecture
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Clients
         WEB[Next.js Web / PWA]
         MOBILE[Expo Mobile]
         KIOSK[Attendance Kiosk]
     end
 
-    subgraph Platform
-        API[FastAPI REST API]
-        AUTH[Clerk JWT / local demo gate]
-        DOMAIN[Training, Skills, Jobs, Operations]
-        AI[Deterministic engines + Gemini]
-        SYNC[Offline sync and notifications]
+    subgraph Backend["NURVEX Platform"]
+        API[FastAPI API Gateway]
+        AUTH[Clerk Authentication]
+        DOMAIN[Training + Skills + Jobs + Operations]
+        AI[AI Services]
+        SYNC[Offline Sync]
+        INTEGRATIONS[External Integrations]
     end
 
-    subgraph Data
+    subgraph Data["Data Layer"]
         PG[(PostgreSQL)]
         VECTOR[(pgvector)]
+        OBJECT[(S3-compatible Storage)]
         CACHE[IndexedDB / SQLite]
     end
 
     WEB --> API
     MOBILE --> API
     KIOSK --> API
+
     WEB <--> CACHE
     MOBILE <--> CACHE
+
     API --> AUTH
     API --> DOMAIN
     API --> AI
     API --> SYNC
+    API --> INTEGRATIONS
+
     DOMAIN --> PG
     DOMAIN --> VECTOR
+    DOMAIN --> OBJECT
 ```
 
 ### Closed-loop lifecycle
@@ -106,165 +363,291 @@ flowchart LR
 ```mermaid
 flowchart LR
     A[Register] --> B[Nominate]
-    B --> C[Learn]
-    C --> D[Attendance]
-    D --> E[Assessment]
-    E --> F[Certificate]
-    F --> G[Skill Passport]
-    G --> H[Gap Analysis]
-    H --> I[Job Match]
-    I --> J[Application]
-    J --> K[Employer Feedback]
-    K --> L[Skill Demand]
-    L --> C
+    B --> C[Enroll]
+    C --> D[Learn]
+    D --> E[Attend]
+    E --> F[Assess]
+    F --> G[Certify]
+    G --> H[Skill Passport]
+    H --> I[Skill Gap]
+    I --> J[Recommended Learning]
+    J --> D
+    H --> K[Job Matching]
+    K --> L[Applications]
+    L --> M[Interview]
+    M --> N[Offer]
+    N --> O[Employment]
+    O --> P[Employer Feedback]
+    P --> Q[Skill Demand Intelligence]
+    Q --> J
 ```
 
-## Technology stack
+---
 
-| Layer | Technology | Purpose |
+## Technology Stack
+
+| Layer | Technology | Role |
 |---|---|---|
-| Web | Next.js 16.3, React 19, TypeScript 5 | App Router application and role workspaces |
-| UI | Tailwind CSS 4, Base UI, shadcn, Lucide, Recharts | Responsive components, themes, and charts |
-| Web offline | Service Worker, IndexedDB | PWA shell, learning cache, and deferred actions |
-| Mobile | Expo 57, React Native 0.86, TypeScript 6 | Android, iOS, and mobile web |
-| Mobile data | TanStack Query, Expo SQLite, Secure Store | Server state, cache, outbox, and sessions |
-| Device APIs | Camera, NFC, notifications, video, audio | Attendance, media, and alerts |
-| API | FastAPI 0.115, Pydantic 2, Uvicorn | Async REST API and validation |
-| Persistence | SQLAlchemy 2, Asyncpg, Psycopg 3 | Runtime access and migrations |
-| Database | PostgreSQL, pgvector, Alembic | Relational data, vector fields, schema history |
-| Authentication | Clerk JWT, gated local demo identities | User identity and role access |
-| AI | Deterministic engines, Google Gemini | Scoring, career chat, and interviews |
-| Integrity | HMAC-SHA256 | Tamper-evident certificate digests |
-| Quality | Pytest, E2E scripts, ESLint, TypeScript | Unit, integration, contract, and build checks |
+| Web | Next.js 16, React 19, TypeScript | Main web application |
+| UI | Tailwind CSS, Base UI, shadcn/ui, Lucide, Recharts | Interface and visualization |
+| PWA | Service Worker, IndexedDB | Web offline capabilities |
+| Mobile | Expo 57, React Native 0.86 | Mobile application |
+| Mobile State | TanStack Query, Expo SQLite, Secure Store | Cache, outbox, sessions |
+| API | FastAPI, Pydantic, Uvicorn | REST API and validation |
+| ORM | SQLAlchemy | Database access |
+| Database | PostgreSQL | Core relational data |
+| Vector Search | pgvector | Semantic retrieval / skill intelligence |
+| Migrations | Alembic | Schema versioning |
+| Authentication | Clerk | Identity and authorization foundation |
+| AI | Google Gemini and deterministic engines | Career, interview, recommendations |
+| Integrity | HMAC-SHA256 | Certificate integrity |
+| Testing | Pytest, ESLint, TypeScript, E2E scripts | Quality assurance |
+| Infrastructure | Docker | Reproducible backend deployment |
 
-## Repository structure
+---
+
+## Repository Structure
 
 ```text
 Cooperative-EcoSystem/
 ├── apps/
-│   ├── web/                  # Next.js application and PWA
-│   │   ├── public/           # Manifest, service worker, brand assets
+│   ├── web/
+│   │   ├── public/
 │   │   └── src/
-│   │       ├── app/          # Public and role-based routes
-│   │       ├── components/   # Shared UI and domain components
-│   │       └── lib/          # API, navigation, and offline engine
-│   └── mobile/               # Expo / React Native application
+│   │       ├── app/
+│   │       ├── components/
+│   │       └── lib/
+│   │
+│   └── mobile/
 │       ├── src/
-│       │   ├── api/          # API and query clients
-│       │   ├── features/     # Domain screens
-│       │   ├── i18n/         # en, hi, mr, gu, ta resources
-│       │   └── services/     # Auth, offline, NFC, API
-│       ├── app.json          # Expo configuration
-│       └── eas.json          # APK and AAB profiles
+│       │   ├── api/
+│       │   ├── features/
+│       │   ├── i18n/
+│       │   └── services/
+│       ├── app.json
+│       └── eas.json
+│
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/           # Versioned REST routers
-│   │   ├── models/           # SQLAlchemy models
-│   │   ├── schemas/          # Pydantic schemas
-│   │   ├── services/         # AI, matching, integrity, notifications
-│   │   └── seeds/            # Domain seed registry
-│   ├── migrations/           # Alembic migrations
-│   ├── tests/                # Backend test suite
+│   │   ├── api/v1/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   └── seeds/
+│   ├── migrations/
+│   ├── tests/
 │   └── Dockerfile
-├── docs/                     # Architecture and engineering docs
-├── scripts/                  # E2E, hosted, scratch, hardware checks
+│
+├── docs/
+├── scripts/
 ├── docker-compose.yml
 └── README.md
 ```
 
-## Key engineering decisions
+---
 
-### Evidence-backed Skill Passport
+## Key Engineering Principles
 
-Assessments, course completion, attendance eligibility, trainer evidence, and certificates contribute to verified skills. Each entry stores proficiency, confidence, verification state, and an evidence trail. New evidence can strengthen a skill; aggregation does not silently lower existing confidence.
+### Evidence before claims
 
-### Deterministic skill and job scoring
+Training outcomes should be linked to evidence. A certificate should not exist merely because a learner clicked "complete".
 
-Core eligibility and matching decisions do not require an LLM. Target roles define weighted skills and levels. Employer matching can include required skills, proficiency, education, certificates, and experience. Unspecified job criteria are removed and remaining weights are normalized.
+Evidence can include:
 
-### Tamper-evident certificates
+- Assessed performance
+- Course completion
+- Trainer evaluation
+- Verified certificate
+- Employment feedback
 
-Certificates use public verification codes like `CST-<YEAR>-<RANDOM>`. Canonical certificate fields are signed with HMAC-SHA256 using `CERTIFICATE_SIGNING_SECRET`. Verification recomputes the digest and compares it in constant time.
+### Deterministic core, AI-assisted experience
 
-### Progressive integrations
+AI is used for recommendations, explanations, career assistance, and interview dialogue. Authoritative operations such as certification integrity, structured scoring, permissions, and core matching logic should remain reproducible wherever possible.
 
-Optional services degrade safely when not configured. `GET /api/v1/system/integrations` reports configuration and implementation separately, without exposing credentials.
+### Privacy-aware design
 
-## Security model
+- Server-side secrets
+- Validated API inputs
+- Authenticated protected routes
+- Role-based access
+- Organization scoping
+- Audit logs
+- Least-privilege access
+- Explicit biometric consent where applicable
 
-- Pydantic schemas validate API inputs.
-- Protected endpoints derive identity from verified bearer claims.
-- Roles: `trainee`, `trainer`, `institution`, `employer`, `admin`, and `ncct_admin`.
-- Organization-scoped access fails closed when a non-global user lacks an organization.
-- Development anonymous actors are controlled by `ALLOW_ANONYMOUS_ACTOR`.
-- Demo identities require development mode, an explicit flag, and a loopback-only database.
-- CORS uses an explicit allowlist.
-- Server-side secrets never belong in `NEXT_PUBLIC_*` or `EXPO_PUBLIC_*` values.
-- Certificate issuance requires a server-only signing secret.
+### Graceful degradation
+
+Optional integrations should not cause the entire platform to fail. Integration capabilities should distinguish between:
+
+```text
+Configured
+Implemented
+Available
+```
+
+---
+
+## Security Model
+
+Roles represented by the platform include:
+
+- `trainee`
+- `trainer`
+- `institution`
+- `employer`
+- `admin`
+- `ncct_admin`
+
+Security expectations:
+
+- Validate untrusted input at API boundaries.
+- Derive identity from authenticated claims rather than client-provided identity fields.
+- Enforce organization scope on protected resources.
+- Keep secrets out of `NEXT_PUBLIC_*` and `EXPO_PUBLIC_*`.
+- Protect certificate signing keys.
+- Avoid production use of demo/anonymous authentication.
+- Use explicit CORS allowlists.
+- Maintain audit trails for security-sensitive mutations.
 
 > Never enable demo authentication or anonymous actors against a production or remote database.
 
-## Local development
+---
+
+## Certificates & Verification
+
+NURVEX can generate certificates with unique verification identifiers.
+
+Example:
+
+```text
+NUR-2026-XXXXXX
+```
+
+Certificate integrity can be protected using a server-side HMAC-SHA256 digest.
+
+Verification flow:
+
+```text
+Certificate
+    ↓
+Verification ID
+    ↓
+Public Verification Endpoint
+    ↓
+Recompute Integrity Digest
+    ↓
+VALID / INVALID / REVOKED
+```
+
+---
+
+## Offline Architecture
+
+### Web
+
+- PWA shell
+- IndexedDB cache
+- Learning cache
+- Deferred mutations
+- Sync queue
+- Retry state
+
+### Mobile
+
+- Expo SQLite
+- Local outbox
+- Cached user/course data
+- Network-aware synchronization
+- Secure session storage
+
+Offline mode is feature-scoped. Authoritative authorization, some grading operations, and conflict-sensitive operations may remain online-only.
+
+---
+
+## API Surface
+
+API routes are versioned under:
+
+```text
+/api/v1
+```
+
+| Prefix | Purpose |
+|---|---|
+| `/auth` | Authentication and provisioning |
+| `/users` | User management |
+| `/organisations` | Organizations |
+| `/programmes` | Programmes, nominations, batches |
+| `/courses` | Courses |
+| `/learning` | Learning and progress |
+| `/content/diksha` | DIKSHA content integration |
+| `/assessments` | Assessments and attempts |
+| `/attendance` | Attendance |
+| `/face` | Face attendance integration |
+| `/certificates` | Certificate issuance and verification |
+| `/skills` | Skill Passport and evidence |
+| `/career` | Career intelligence |
+| `/jobs` | Jobs and matching |
+| `/employer` | Employer workflows |
+| `/analytics` | Analytics and reporting |
+| `/admin` | Administration |
+| `/timetable` | Timetable |
+| `/hostel` | Hostel |
+| `/logistics` | Logistics |
+| `/offline-sync` | Deferred synchronization |
+| `/notifications` | Notifications |
+| `/system` | Integration capability state |
+
+The OpenAPI document at `/openapi.json` is the canonical machine-readable API contract.
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 20+ and npm 10+
-- Python 3.12 recommended
-- PostgreSQL 15+ with the `vector` extension
-- Docker for the isolated test database
-- Expo Go or native Android/iOS tooling for mobile
+- Node.js 20+
+- npm 10+
+- Python 3.12+
+- PostgreSQL 15+
+- PostgreSQL `vector` extension
+- Docker
+- Expo tooling for mobile development
 
-### 1. Clone and configure
+### Clone
 
 ```bash
-git clone <repository-url> Cooperative-EcoSystem
+git clone https://github.com/mittai17/Cooperative-EcoSystem.git
 cd Cooperative-EcoSystem
-
-cp backend/.env.example backend/.env
-cp apps/mobile/.env.example apps/mobile/.env
 ```
 
-Create `apps/web/.env.local`:
-
-```dotenv
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_MOCK_API=false
-```
-
-### 2. Prepare PostgreSQL
-
-```sql
-CREATE DATABASE coopsetu;
-\c coopsetu
-CREATE EXTENSION IF NOT EXISTS vector;
-```
-
-Example local value:
-
-```dotenv
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/coopsetu
-```
-
-### 3. Run the backend
+### Backend
 
 ```bash
 cd backend
+
 python3 -m venv .venv
 source .venv/bin/activate
+
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 alembic upgrade head
 python -m app.seed
+
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-- Health: <http://localhost:8000/health>
-- Swagger: <http://localhost:8000/docs>
-- ReDoc: <http://localhost:8000/redoc>
-- Integration state: <http://localhost:8000/api/v1/system/integrations>
+Useful endpoints:
 
-### 4. Run the web application
+```text
+http://localhost:8000/health
+http://localhost:8000/docs
+http://localhost:8000/redoc
+http://localhost:8000/openapi.json
+```
+
+### Web
 
 ```bash
 cd apps/web
@@ -272,9 +655,9 @@ npm ci
 npm run dev
 ```
 
-Open <http://localhost:3000>. Setting `NEXT_PUBLIC_MOCK_API=false` routes supported calls to FastAPI. Some screens still contain local presentation data; see [Known limitations](#known-limitations).
+Open `http://localhost:3000`.
 
-### 5. Run the mobile application
+### Mobile
 
 ```bash
 cd apps/mobile
@@ -283,106 +666,89 @@ npm run typecheck
 npm start
 ```
 
-For a physical device, use a network-reachable backend:
+For a physical device, point the client to a network-reachable backend rather than `localhost`.
 
-```dotenv
-EXPO_PUBLIC_API_BASE_URL=http://192.168.1.10:8000
-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace_me
-```
+---
 
-The client appends `/api/v1`. On a physical device, `localhost` points to the device. NFC and some native APIs require a development build rather than Expo Go.
-
-## Configuration
+## Environment Configuration
 
 ### Backend
 
-| Variable | Required | Description |
-|---|---:|---|
-| `DATABASE_URL` | Yes | PostgreSQL URL used by API and Alembic |
-| `DATABASE_URL_PROD` | No | Optional production database reference |
-| `CLERK_SECRET_KEY` | For Clerk | Server-side Clerk key |
-| `CLERK_PUBLISHABLE_KEY` | No | Clerk public key |
-| `CLERK_JWT_ISSUER` | For Clerk | Expected JWT issuer |
-| `APP_ENV` | Yes | Environment name |
-| `LOG_LEVEL` | No | Logging level |
-| `ALLOWED_ORIGINS` | Yes | Comma-separated CORS origins |
-| `ALLOW_ANONYMOUS_ACTOR` | Production | Must be `false` outside isolated development |
-| `DEMO_LOGIN_ENABLED` | No | Enables gated local demo identities |
-| `INTERNAL_API_SECRET` | Internal routes | Shared development/internal secret |
-| `CERTIFICATE_SIGNING_SECRET` | Certificates | High-entropy HMAC key |
-| `GEMINI_API_KEY` | No | Gemini career and interview responses |
-| `YOUTUBE_API_KEY` | No | YouTube configuration |
-| `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` | No | Adzuna configuration |
-| `JOOBLE_API_KEY` | No | Jooble configuration |
-| `BHASHINI_USER_ID`, `BHASHINI_API_KEY` | No | Bhashini configuration |
-| `FACE_MODEL_PACK` | No | Directory with YuNet/SFace ONNX files |
-| `FACE_MATCH_THRESHOLD` | No | Face similarity threshold |
-| `FACE_MIN_DET_SCORE` | No | Detection confidence threshold |
-| `MEDIA_BASE_URL` | No | Public media origin |
-| `FCM_SERVICE_ACCOUNT_FILE` | No | Firebase service-account path |
-| `CRON_SECRET` | Scheduled routes | Scheduler authentication secret |
+Typical variables include:
 
-Generate local secrets with:
+```dotenv
+DATABASE_URL=
+APP_ENV=
+LOG_LEVEL=
+ALLOWED_ORIGINS=
 
-```bash
-python -c 'import secrets; print(secrets.token_urlsafe(48))'
+CLERK_SECRET_KEY=
+CLERK_PUBLISHABLE_KEY=
+CLERK_JWT_ISSUER=
+
+CERTIFICATE_SIGNING_SECRET=
+
+GEMINI_API_KEY=
+YOUTUBE_API_KEY=
+
+BHASHINI_USER_ID=
+BHASHINI_API_KEY=
+
+FACE_MODEL_PACK=
+FACE_MATCH_THRESHOLD=
+FACE_MIN_DET_SCORE=
+
+MEDIA_BASE_URL=
+CRON_SECRET=
 ```
+
+Only configure variables required by the integrations you actually enable.
 
 ### Web
 
-| Variable | Required | Description |
-|---|---:|---|
-| `NEXT_PUBLIC_API_URL` | Yes | FastAPI origin without `/api/v1` |
-| `NEXT_PUBLIC_MOCK_API` | No | Use `false` for wired backend requests |
-
-The current web package does not include `@clerk/nextjs`; do not assume web Clerk integration is complete because older environment templates mention Clerk.
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_MOCK_API=false
+```
 
 ### Mobile
 
-| Variable | Required | Description |
-|---|---:|---|
-| `EXPO_PUBLIC_API_BASE_URL` | Native | Backend origin |
-| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | For Clerk | Client-safe Clerk key |
+```dotenv
+EXPO_PUBLIC_API_BASE_URL=http://192.168.1.10:8000
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=
+```
 
-Never put private keys in public client variables.
+Never place server secrets in public client variables.
 
-## Database and seed data
+---
 
-From `backend/`:
+## Database
+
+The database uses PostgreSQL with pgvector.
+
+Migration workflow:
 
 ```bash
+cd backend
 alembic current
 alembic upgrade head
-python -m app.seed
 ```
 
-The main seed is deterministic and idempotent. It creates India-themed institutions, users, programmes, courses, assessments, skills, jobs, applications, attendance, operations, and analytics records.
-
-Mobile-specific demo data:
-
-```bash
-# Local rows only; no Clerk network calls
-python -m app.seed_mobile --skip-clerk
-
-# Read-only counts
-python -m app.seed_mobile --counts
-```
-
-Running `python -m app.seed_mobile` without `--skip-clerk` may provision allowlisted Clerk demo users. Use it only with a disposable development tenant.
-
-Create migrations only after intentional model changes:
+Create a migration only after an intentional schema change:
 
 ```bash
 alembic revision --autogenerate -m "describe_change"
 ```
 
-Review generated migrations before applying them.
+Always review generated migrations before applying them.
+
+---
 
 ## Testing
 
 ### Backend
 
-Tests refuse remote databases. They expect a container named `coopsetu-scratch-pg` on `127.0.0.1:55432`.
+Scratch-database testing reduces the risk of running tests against a remote or production database.
 
 ```bash
 docker run --name coopsetu-scratch-pg \
@@ -394,8 +760,6 @@ docker run --name coopsetu-scratch-pg \
 python scripts/scratch_backend.py alembic upgrade head
 python scripts/scratch_backend.py pytest -q
 ```
-
-The wrapper reads the named container, builds its URL in memory, and forces safe development settings without printing credentials.
 
 ### Web
 
@@ -412,13 +776,10 @@ npm run build
 cd apps/mobile
 npm run typecheck
 npm run lint
-node scripts/nfc.test.mjs
 npx expo-doctor
 ```
 
-### Closed-loop E2E verification
-
-With the backend running:
+### Closed-loop E2E
 
 ```bash
 API_URL=http://127.0.0.1:8000 \
@@ -426,78 +787,76 @@ INTERNAL_API_SECRET=your-development-secret \
 python scripts/verify_e2e_loop.py
 ```
 
-This exercises 25 steps from registration and nomination through certification, Skill Passport, matching, applications, employer feedback, and demand aggregation.
+---
 
-Additional scripts:
+## Data Model
 
-- `scripts/test_hosted_deployment.py` checks a hosted deployment.
-- `scripts/physical_hardware_mobile_test.py` covers device-adjacent workflows.
+Core domain concepts include:
 
-## API map
+```text
+Users
+Organizations
+Institutions
+Trainers
+Trainees
+Employers
 
-All routes are under `/api/v1`.
+Programmes
+Nominations
+Batches
+Enrollments
 
-| Prefix | Domain |
-|---|---|
-| `/auth` | Identity sync, provisioning, and gated demo login |
-| `/users`, `/organisations` | People and organizations |
-| `/programmes` | Nominations, batches, enrollment |
-| `/courses`, `/learning`, `/content/diksha` | Learning and content |
-| `/assessments` | Questions, attempts, grading |
-| `/attendance`, `/face` | Attendance and consent-based face flows |
-| `/certificates` | Issuance and public verification |
-| `/skills`, `/career` | Passport, gap analysis, career AI |
-| `/jobs`, `/employer` | Jobs, candidates, interviews, offers |
-| `/analytics`, `/admin` | Reporting and administration |
-| `/timetable`, `/hostel`, `/logistics` | Institution operations |
-| `/offline-sync`, `/sync` | Deferred-action synchronization |
-| `/mobile`, `/notifications` | Mobile data and notifications |
-| `/system` | Secret-free integration capabilities |
+Courses
+Modules
+Lessons
+Assessments
+Assessment Results
+Learning Progress
 
-The generated contract at `/openapi.json` is the canonical machine-readable API reference.
+Attendance
+Attendance Events
+Timetables
+Hostel
+Logistics
 
-## Offline support
+Skills
+Skill Relationships
+Trainee Skills
+Skill Evidence
+Skill Gaps
+Career Paths
 
-### Web
+Jobs
+Job Requirements
+Job Matches
+Applications
+Interviews
+Offers
+Employer Feedback
 
-- PWA manifest and service worker.
-- IndexedDB course and lesson cache.
-- Deferred lesson, attendance, and assessment actions.
-- Retry and synchronization state.
+Certificates
+Certificate Verification
 
-### Mobile
+Analytics
+Skill Demand
+Employment Outcomes
+Notifications
+Audit Logs
+Offline Sync
+```
 
-- Expo SQLite in WAL mode.
-- Mutation outbox and cached course/user data.
-- Network-aware requests and sync screens.
-- Secure session storage.
-
-Offline support is feature-scoped. Authoritative grading, fresh authorization, and some conflict resolution remain online-only.
-
-## AI and integrations
-
-Core skill aggregation, gap analysis, job scoring, and certificate integrity are deterministic and reproducible.
-
-When `GEMINI_API_KEY` is configured, Gemini supplies career-advisor and interview text. Prompts are grounded in platform facts and interview outputs are validated. Provider failure returns a constrained fallback instead of blocking the workflow.
-
-`GET /api/v1/system/integrations` distinguishes:
-
-- whether required configuration exists;
-- whether an adapter is implemented;
-- whether the feature is available.
-
-Currently, Gemini is the adapter explicitly reported as implemented. Other provider keys are configuration surfaces and must not be described as live until their adapters and functional checks are complete.
+---
 
 ## Deployment
 
-### Backend container
+### Backend
 
 ```bash
-docker build -t coopsetu-api ./backend
-docker run --rm -p 8000:8000 --env-file backend/.env coopsetu-api
+docker build -t nurvex-api ./backend
+docker run --rm -p 8000:8000 --env-file backend/.env nurvex-api
 ```
 
-Run `alembic upgrade head` as a controlled release step before routing traffic to a new API version.
+Run migrations as a controlled release step.
 
 ### Web
 
@@ -516,60 +875,148 @@ npx eas build --profile preview --platform android
 npx eas build --profile production --platform android
 ```
 
-### Docker Compose status
+---
 
-The root Compose file defines backend and web services, but `apps/web/Dockerfile` is currently absent. The backend image works independently. Add and validate a production web Dockerfile before using Compose as a complete deployment path.
+## Production Readiness Checklist
 
-### Production checklist
-
-- Managed PostgreSQL with pgvector.
-- `ALLOW_ANONYMOUS_ACTOR=false` and `DEMO_LOGIN_ENABLED=false`.
-- Explicit HTTPS CORS origins.
-- Strong internal, cron, and certificate secrets in a secret manager.
-- TLS for database and public traffic.
-- One controlled migration job per release.
-- Health probes against `/health`.
-- Tested database backups and restoration.
-- Physical-device validation for QR, NFC, notifications, and face workflows.
-
-## Known limitations
-
-- Parts of the web API layer use demo-role cookies and placeholder bearer tokens. Complete Clerk session-token integration before production use.
-- Web admin GET requests use mock responses unless `NEXT_PUBLIC_MOCK_API=false`; some presentation-heavy pages still contain local data.
-- The root Compose configuration references a missing web Dockerfile.
-- Face processing needs separately supplied YuNet/SFace models. The deterministic fallback supports tests, not production biometrics.
-- NFC needs a native development build and physical hardware for meaningful validation.
-- Remote push is currently reported unavailable by the integration capability endpoint.
-- Several content, jobs, translation, and notification credentials are modeled before their adapters are complete.
-- AI output is advisory. Human review and deterministic evidence should remain authoritative for admission, grading, hiring, and certification.
-
-## Documentation
-
-| Document | Contents |
-|---|---|
-| [Architecture](docs/architecture.md) | Boundaries, data flows, services |
-| [Database](docs/database.md) | Schema and relationships |
-| [API](docs/api.md) | REST usage and examples |
-| [Roles](docs/roles.md) | Permissions and role model |
-| [AI](docs/ai.md) | Skill-gap and matching design |
-| [Mobile API](docs/mobile-api.md) | Mobile-facing contract |
-| [Mobile backend](docs/MOBILE_BACKEND.md) | Backend implementation notes |
-| [Mobile completion plan](docs/MOBILE_COMPLETION_PLAN.md) | Work packages and validation |
-
-## Contributing
-
-1. Keep changes focused and preserve existing style.
-2. Add migrations for schema changes; never edit an applied migration.
-3. Validate untrusted input at the API boundary.
-4. Enforce role and organization scope on protected queries and mutations.
-5. Add regression tests for security controls, state transitions, and integrity.
-6. Run scratch-database tests and client lint, type, and build checks.
-7. Update the relevant documentation when behavior changes.
-
-## License
-
-No license file is currently present. Unless the maintainers add one, default copyright restrictions apply.
+- [ ] Disable anonymous/demo authentication
+- [ ] Complete production Clerk session integration
+- [ ] Configure HTTPS everywhere
+- [ ] Lock CORS to trusted origins
+- [ ] Store secrets in a managed secret store
+- [ ] Protect certificate signing keys
+- [ ] Configure managed PostgreSQL + pgvector
+- [ ] Configure backups and restoration testing
+- [ ] Validate external integrations
+- [ ] Validate biometric consent and processing policies
+- [ ] Test physical attendance hardware
+- [ ] Validate offline conflict handling
+- [ ] Add production monitoring
+- [ ] Review all third-party content licenses
+- [ ] Review privacy and data-retention policies
 
 ---
 
-Built to demonstrate how cooperative training, verified skills, and employment feedback can operate as one measurable ecosystem.
+## Current Limitations
+
+NURVEX is an actively evolving prototype. Current areas requiring additional production hardening include:
+
+- Complete production-grade Clerk session integration across every web route
+- Some presentation-heavy web screens still use local/demo data
+- Production web containerization needs a validated web Dockerfile
+- Face attendance requires separately supplied compatible model files and real-world validation
+- Some external provider credentials are modeled before all adapters are fully implemented
+- Native hardware workflows require physical-device validation
+- AI remains advisory and should not replace human review for high-impact decisions
+- Third-party educational content must be governed by source-specific licensing and usage terms
+
+---
+
+## Roadmap
+
+### Phase 1 — Platform Foundation
+- [x] Multi-role web application
+- [x] FastAPI backend
+- [x] PostgreSQL + pgvector architecture
+- [x] Training and employment domain model
+- [x] Certificate integrity foundation
+
+### Phase 2 — Learning Intelligence
+- [ ] Expand DIKSHA/Sunbird ingestion and playback
+- [ ] Unified learning progress events
+- [ ] Adaptive learning recommendations
+- [ ] Advanced Skill Graph
+- [ ] Richer assessment analytics
+
+### Phase 3 — Employment Intelligence
+- [ ] Expanded candidate intelligence
+- [ ] Advanced interview workflows
+- [ ] Employer feedback analytics
+- [ ] Skill-demand forecasting
+- [ ] Training-to-demand recommendations
+
+### Phase 4 — Institutional Scale
+- [ ] Large-scale institution rollout
+- [ ] Kiosk/device management
+- [ ] More robust offline synchronization
+- [ ] Production observability
+- [ ] Enterprise deployment hardening
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+1. Create a focused branch.
+2. Keep changes modular.
+3. Follow the existing architecture.
+4. Add migrations for schema changes.
+5. Add regression tests for important behaviors.
+6. Validate authorization boundaries.
+7. Update documentation when behavior changes.
+8. Run lint, type checks, backend tests, and relevant E2E checks.
+
+Good contribution areas include:
+
+- DIKSHA/Sunbird integration
+- Learning-player instrumentation
+- Skill Graph enhancements
+- Assessment analytics
+- Employer intelligence
+- Offline synchronization
+- Accessibility
+- Internationalization
+- Test coverage
+
+---
+
+## Smart India Hackathon
+
+**Smart India Hackathon 2026**  
+**Problem Statement: 26087**  
+**Theme: Smart Education**  
+**Domain: Cooperative training, ERP, LMS, skills, and employment ecosystem**
+
+NURVEX is designed around the challenge of connecting cooperative-sector capacity building with digital learning, measurable outcomes, skill development, and employment.
+
+---
+
+## License
+
+No license file is currently present in this repository.
+
+Until a license is explicitly added by the maintainers, the repository remains subject to applicable default copyright restrictions.
+
+Do not assume the code or third-party assets are available for unrestricted redistribution.
+
+---
+
+## Vision
+
+> **Make learning measurable, skills verifiable, hiring explainable, and employment outcomes visible.**
+
+```text
+Learn
+  ↓
+Demonstrate
+  ↓
+Certify
+  ↓
+Build Skills
+  ↓
+Discover Opportunities
+  ↓
+Get Hired
+  ↓
+Capture Employer Feedback
+  ↓
+Understand Skill Demand
+  ↓
+Improve Training
+  ↺
+```
+
+<p align="center">
+  <strong>NURVEX — Learn. Prove. Grow. Work.</strong>
+</p>

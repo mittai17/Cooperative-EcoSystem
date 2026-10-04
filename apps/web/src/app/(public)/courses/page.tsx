@@ -24,7 +24,7 @@ const ALL_CATEGORIES = "__all__";
 const categories = [ALL_CATEGORIES, ...Array.from(new Set(courses.map((c) => c.category)))];
 
 function thumbnailFor(course: Course) {
-  return `https://picsum.photos/seed/coopsetu-${course.id}/640/420`;
+  return `https://picsum.photos/seed/nurvex-${course.id}/640/420`;
 }
 
 export default function CoursesPage() {

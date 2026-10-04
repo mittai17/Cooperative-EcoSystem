@@ -45,7 +45,7 @@ export function WelcomeBanner() {
         {/* Left: Heading & description */}
         <div className="min-w-0 max-w-xl">
           <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-[26px]">
-            Welcome to CoopSetu AI Admin Portal
+            Welcome to NURVEX Admin Portal
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-600 dark:text-muted-foreground leading-relaxed">
             Manage the cooperative training ecosystem, monitor progress and drive national impact.

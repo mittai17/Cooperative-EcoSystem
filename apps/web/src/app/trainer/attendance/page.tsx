@@ -44,8 +44,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useApi } from "@/lib/use-api";
-import { useTrainerQuery } from "@/lib/trainer/api";
+import { trainerFetch, trainerPost, useTrainerQuery } from "@/lib/trainer/api";
 
 import { EmptyState, ErrorState, LoadingBlock } from "@/components/trainer/states";
 import { HistoryTab } from "@/components/trainer/attendance/history";
@@ -408,7 +407,6 @@ function SlotList({
 }
 
 function TrainerAttendanceContent() {
-  const api = useApi();
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState("broadcast");
@@ -442,7 +440,7 @@ function TrainerAttendanceContent() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.get<{ classes: ClassOption[] }>("/api/v1/attendance/classes/mine");
+        const data = await trainerFetch<{ classes: ClassOption[] }>("/attendance/classes/mine");
         setClasses(data.classes);
         const presetBatch = searchParams.get("batch");
         const presetProgramme = searchParams.get("programme");
@@ -464,12 +462,12 @@ function TrainerAttendanceContent() {
 
   const loadHistory = useCallback(async () => {
     try {
-      const data = await api.get<{ sessions: SessionRow[] }>("/api/v1/attendance/sessions/mine?limit=10");
+      const data = await trainerFetch<{ sessions: SessionRow[] }>("/attendance/sessions/mine?limit=10");
       setHistory(data.sessions);
     } catch {
       setHistory(DEMO_TRAINER_SESSIONS);
     }
-  }, [api]);
+  }, []);
 
   useEffect(() => {
     const id = window.setTimeout(() => void loadHistory(), 0);
@@ -481,8 +479,8 @@ function TrainerAttendanceContent() {
     setGenerating(true);
     setGenError(null);
     try {
-      const data = await api.post<{ session_id: string; opens_at: string; closes_at: string; qr_data: string }>(
-        "/api/v1/attendance/sessions",
+      const data = await trainerPost<{ session_id: string; opens_at: string; closes_at: string; qr_data: string }>(
+        "/attendance/sessions",
         {
           session_name: `${activeClass.title}${activeClass.batch_name ? ` – ${activeClass.batch_name}` : ""}`,
           programme_id: activeClass.programme_id,
@@ -538,7 +536,7 @@ function TrainerAttendanceContent() {
     }, 1000);
     refreshRef.current = setInterval(async () => {
       try {
-        const data = await api.get<{ qr_data: string }>(`/api/v1/attendance/sessions/${active.session_id}/qr`);
+        const data = await trainerFetch<{ qr_data: string }>(`/attendance/sessions/${active.session_id}/qr`);
         setActive((prev) => (prev ? { ...prev, qr_data: data.qr_data } : prev));
       } catch {
         /* closed */

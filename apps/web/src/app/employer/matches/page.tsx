@@ -104,7 +104,7 @@ function AIMatchingContent() {
 
   const loaded = matches.data;
   const results = useMemo(() => loaded?.response?.matches ?? [], [loaded]);
-  const demo = loaded?.source === "demo";
+  const demo = loaded?.source === "demo" || results.some((result) => result.is_demo);
   const sorted = useMemo(() => [...results].sort((a, b) => b.score - a.score), [results]);
   const visible = useMemo(() => applyMatchFilters(sorted, filters), [sorted, filters]);
   const candidates = results.map((result) => result.candidate);

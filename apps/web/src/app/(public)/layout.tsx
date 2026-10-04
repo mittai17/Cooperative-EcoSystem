@@ -14,7 +14,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   if (userId) {
     return (
-      <AppShell role="trainee" userName="Ravindra S. Patil" userSubtitle="ravindra.patil@coopsetu.ai">
+      <AppShell role="trainee" userName="Ravindra S. Patil" userSubtitle="ravindra.patil@nurvex.ai">
         {children}
       </AppShell>
     );

@@ -26,10 +26,10 @@ export default function PlanDetailPage() {
   const router = useRouter();
   const planId = params.id as string;
 
-  const [plan, setPlan] = useState<TransportPlan | null>(null);
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [plan, setPlan] = useState<TransportPlan | null>(() => logisticsService.getPlanById(planId) ?? null);
+  const [trips, setTrips] = useState<Trip[]>(() => logisticsService.getTripsForPlan(planId));
+  const [ready] = useState(true);
+  const [error, setError] = useState<string | null>(() => logisticsService.getPlanById(planId) ? null : "Plan not found.");
   const [toStatus, setToStatus] = useState<PlanStatus | "">("");
   const [reason, setReason] = useState("");
   const [transitioning, setTransitioning] = useState(false);
@@ -39,11 +39,9 @@ export default function PlanDetailPage() {
     const found = logisticsService.getPlanById(planId);
     if (found) { setPlan(found); setTrips(logisticsService.getTripsForPlan(planId)); }
     else setError("Plan not found.");
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   // eslint-disable-next-line react-hooks/exhaustive-deps

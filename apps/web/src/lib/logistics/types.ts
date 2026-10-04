@@ -1,5 +1,5 @@
 /**
- * CoopSetu AI — Logistics Management Module
+ * NURVEX — Logistics Management Module
  * TypeScript types, status enums, and business-rule constants.
  *
  * Status transitions are enforced server-side; the client enforces them only

@@ -215,7 +215,7 @@ export default function InterviewReviewPage() {
             <CardHeader>
               <CardTitle className="font-heading text-base">Decision</CardTitle>
               <CardDescription>
-                Decisions are made and recorded by your team. CoopSetu does not make hiring decisions.
+                Decisions are made and recorded by your team. NURVEX does not make hiring decisions.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">

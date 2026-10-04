@@ -6,7 +6,7 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getEmployerJob, getMockEmployerJobDetail, JobsApiError, type EmployerJobDetail } from "@/lib/employer/jobs-api";
+import { getEmployerJob, JobsApiError, type EmployerJobDetail } from "@/lib/employer/jobs-api";
 import { JobForm } from "./job-form";
 
 /** Loads one job for /employer/jobs/[id]/edit and renders the shared form in edit mode. */
@@ -20,9 +20,12 @@ export function JobEditLoader({ jobId, savedNotice }: { jobId: string; savedNoti
     setError(null);
     try {
       const data = await getEmployerJob(jobId);
-      setJob(data || getMockEmployerJobDetail(jobId));
-    } catch {
-      setJob(getMockEmployerJobDetail(jobId));
+      setJob(data);
+    } catch (err) {
+      const status = err instanceof JobsApiError ? err.status : 0;
+      const message = err instanceof Error ? err.message : "Could not load this job.";
+      setError({ status, message });
+      setJob(null);
     } finally {
       setLoading(false);
     }
@@ -52,7 +55,7 @@ export function JobEditLoader({ jobId, savedNotice }: { jobId: string; savedNoti
         <AlertDescription className="flex flex-wrap items-center gap-3">
           <span>
             {notFound
-              ? "This posting does not exist or does not belong to your organisation."
+              ? "This posting does not exist or does not belong to your organisation. Pick another posting from the jobs list."
               : error?.message ?? "Please try again."}
           </span>
           {!notFound && (

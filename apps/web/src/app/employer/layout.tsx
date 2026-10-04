@@ -5,7 +5,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
     <AppShell
       role="employer"
       userName="Amul Dairy Cooperative Union"
-      userSubtitle="hr@amul.coopsetu.ai"
+      userSubtitle="hr@amul.nurvex.ai"
     >
       {children}
     </AppShell>

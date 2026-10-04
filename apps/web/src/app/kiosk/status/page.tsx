@@ -654,7 +654,7 @@ export default function KioskStatusPage() {
         ? {
             state: "ok",
             reading: "Online \u00b7 Wi-Fi",
-            detail: "coopsetu-institute-wifi \u00b7 RSSI -58 dBm",
+            detail: "nurvex-institute-wifi \u00b7 RSSI -58 dBm",
           }
         : {
             state: "down",
@@ -727,7 +727,10 @@ export default function KioskStatusPage() {
         description="Live health, the offline sync queue and device-local controls for this kiosk."
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <span className="demo-data-tag inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2 py-1 font-mono text-[11px] text-muted-foreground">
+            <span
+              suppressHydrationWarning
+              className="demo-data-tag inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2 py-1 font-mono text-[11px] text-muted-foreground"
+            >
               <Activity className="size-3" />
               {clockLabel} · {dateLabel}
             </span>

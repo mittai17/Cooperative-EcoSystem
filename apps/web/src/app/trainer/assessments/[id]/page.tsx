@@ -20,6 +20,16 @@ const STATUS_CLASS: Record<string, string> = {
   Pending: "bg-muted text-muted-foreground",
 };
 
+function isRenderableDetail(value: AssessmentDetail | null): value is AssessmentDetail {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<AssessmentDetail>;
+  if (!candidate.assessment || typeof candidate.assessment.title !== "string") return false;
+  if (!candidate.totals) return false;
+  if (!Array.isArray(candidate.assessment.questions)) return false;
+  if (!Array.isArray(candidate.rows)) return false;
+  return candidate.rows.every((r) => r && typeof r.trainee_id === "string");
+}
+
 export default function AssessmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data, loading, error, refetch } = useTrainerQuery<AssessmentDetail>(`/assessments/${id}`);
@@ -34,6 +44,9 @@ export default function AssessmentDetailPage() {
     );
   if (error) return <ErrorState message={error} onRetry={refetch} />;
   if (!data) return null;
+  if (!isRenderableDetail(data)) {
+    return <ErrorState message="This assessment could not be read. Its record may be incomplete." onRetry={refetch} />;
+  }
   const { assessment: a, totals: t, rows } = data;
 
   return (

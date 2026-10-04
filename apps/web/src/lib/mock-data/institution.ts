@@ -1,7 +1,7 @@
 // Seed data for the institution workspace: programme nominations, batches,
 // LMS course links, hostel inventory, training logistics and assessments.
 //
-// Everything in this file is illustrative demo data for the CoopSetu AI
+// Everything in this file is illustrative demo data for the NURVEX
 // frontend-first build (SIH 2026, problem statement PS 26087). Nothing here is
 // fetched from a backend yet, so the client islands in each institution page
 // keep a mutable copy in `useState` and apply edits locally only. Treat every
@@ -57,7 +57,7 @@ export interface Nomination {
 export const nominationWorkflow: { label: string; description: string }[] = [
   {
     label: "Registered",
-    description: "Trainee creates a CoopSetu account and uploads Aadhaar plus bank proof.",
+    description: "Trainee creates an NURVEX account and uploads Aadhaar plus bank proof.",
   },
   {
     label: "Nominated",

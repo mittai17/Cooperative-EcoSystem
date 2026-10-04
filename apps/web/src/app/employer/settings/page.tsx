@@ -36,7 +36,7 @@ export default function EmployerSettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Settings" description="Your account details and when CoopSetu should notify you." />
+      <PageHeader title="Settings" description="Your account details and when NURVEX should notify you." />
 
       {error && (
         <Alert variant="destructive">

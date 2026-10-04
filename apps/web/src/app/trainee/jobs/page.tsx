@@ -9,35 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchWithAuth } from "@/lib/api";
 import { jobs as mockJobs } from "@/lib/mock-data/jobs";
+import { getJobMatch } from "@/lib/job-match";
+import { cn } from "@/lib/utils";
 import { useT } from "@/i18n";
-
-// Shape returned by GET /api/v1/jobs/ (backend/app/api/v1/jobs.py, list_jobs).
-interface ApiJob {
-  id: string;
-  title: string;
-  employer: string | null;
-  location: string | null;
-  salaryRange?: string;
-  type?: string;
-  skillsRequired?: string[];
-  description?: string;
-}
-
-interface JobsResponse {
-  jobs?: ApiJob[];
-  total?: number;
-}
 
 export default function TraineeJobsPage() {
   const t = useT();
-  const [jobs, setJobs] = useState<ApiJob[]>([]);
+  const [jobs, setJobs] = useState(mockJobs);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [appliedJobs, setAppliedJobs] = useState<Record<string, boolean>>({});
   const [applySuccessNotice, setApplySuccessNotice] = useState<string | null>(null);
-
   const [reloadKey, setReloadKey] = useState(0);
 
   const refresh = () => {
@@ -48,46 +31,38 @@ export default function TraineeJobsPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("coopsetu_applications");
+      const stored = localStorage.getItem("nurvex_applications");
       if (stored) {
         const parsed = JSON.parse(stored) as Array<{ jobId?: string; id?: string | number }>;
         const map: Record<string, boolean> = {};
         parsed.forEach((item) => {
           if (item.jobId) map[item.jobId] = true;
         });
-        setAppliedJobs(map);
+        window.setTimeout(() => setAppliedJobs(map), 0);
       }
     } catch {}
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    fetchWithAuth("/api/v1/jobs/")
-      .then((data: JobsResponse | null) => {
-        if (cancelled) return;
-        if (data && Array.isArray(data.jobs) && data.jobs.length > 0) {
-          setJobs(data.jobs);
-        } else {
-          setJobs(mockJobs);
-        }
-      })
-      .catch(() => {
-        if (cancelled) return;
-        // Fallback to rich mock data
+    const id = window.setTimeout(() => {
+      setLoading(true);
+      setError(null);
+      try {
         setJobs(mockJobs);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [reloadKey]);
 
-  const handleApply = (job: ApiJob) => {
+  const handleApply = (job: (typeof mockJobs)[number]) => {
     const today = new Date().toISOString().split("T")[0];
     const newApp = {
-      id: `app-${Date.now()}`,
+      id: `app-${job.id}-${today}`,
       jobId: job.id,
       title: job.title,
       employer: job.employer || "Cooperative Union",
@@ -97,10 +72,10 @@ export default function TraineeJobsPage() {
     };
 
     try {
-      const stored = localStorage.getItem("coopsetu_applications");
+      const stored = localStorage.getItem("nurvex_applications");
       const list = stored ? JSON.parse(stored) : [];
       list.unshift(newApp);
-      localStorage.setItem("coopsetu_applications", JSON.stringify(list));
+      localStorage.setItem("nurvex_applications", JSON.stringify(list));
     } catch {}
 
     setAppliedJobs((prev) => ({ ...prev, [job.id]: true }));
@@ -164,17 +139,26 @@ export default function TraineeJobsPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {jobs.map((job) => {
             const hasApplied = appliedJobs[job.id];
+            const match = getJobMatch(job);
             return (
               <Card key={job.id} className="flex flex-col justify-between hover:shadow-md transition-shadow">
                 <div>
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-base font-bold leading-tight text-foreground">{job.title}</CardTitle>
-                      {job.type && (
-                        <Badge variant="secondary" className="text-[10px] shrink-0 font-medium">
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <Badge variant="secondary" className="text-[10px] font-medium">
                           {job.type}
                         </Badge>
-                      )}
+                        <span
+                          className={cn(
+                            "text-[10px] font-semibold",
+                            match.percent >= 70 ? "text-emerald-600" : match.percent >= 40 ? "text-amber-600" : "text-muted-foreground",
+                          )}
+                        >
+                          {match.percent}% skill match
+                        </span>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-2.5 text-sm text-muted-foreground pt-0">
@@ -200,14 +184,27 @@ export default function TraineeJobsPage() {
                         {job.description}
                       </p>
                     )}
-                    {job.skillsRequired && job.skillsRequired.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {job.skillsRequired.slice(0, 3).map((skill) => (
-                          <Badge key={skill} variant="outline" className="text-[10px] py-0 px-1.5 font-normal">
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {job.skillsRequired.map((skill) => {
+                        const hasSkill = match.matched.some((entry) => entry.toLowerCase() === skill.toLowerCase());
+                        return (
+                          <Badge
+                            key={skill}
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] py-0 px-1.5 font-normal",
+                              hasSkill && "border-success/40 bg-success/10 text-success",
+                            )}
+                          >
                             {skill}
                           </Badge>
-                        ))}
-                      </div>
+                        );
+                      })}
+                    </div>
+                    {match.missing.length > 0 && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Missing: {match.missing.join(", ")}
+                      </p>
                     )}
                   </CardContent>
                 </div>

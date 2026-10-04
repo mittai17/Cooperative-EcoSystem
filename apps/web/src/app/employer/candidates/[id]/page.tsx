@@ -39,7 +39,7 @@ const NO_JOB = "none";
 
 function profileDocument(profile: CandidateProfile) {
   return {
-    generated_from: "CoopSetu database facts",
+    generated_from: "NURVEX database facts",
     id: profile.id,
     name: profile.name,
     target_role: profile.occupation,

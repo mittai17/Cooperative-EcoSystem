@@ -10,6 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { courses } from "@/lib/mock-data/courses";
 import {
+  traineeEnrolments,
+  type Enrolment,
+} from "@/lib/trainee/course-catalog";
+import {
   downloadCourseForOffline,
   deleteCourseFromOffline,
 } from "@/lib/offline/course-cache";
@@ -66,22 +70,15 @@ const FILTER_KEYS: Record<string, string> = {
   "All": "trainee.myLearning.filterAll",
 };
 
-// Map initial trainee enrollments to full course catalog
-const enrolledCatalog = [
-  { courseId: "course-coop-bookkeeping", initialProgress: 62 },
-  { courseId: "course-leadership-coop-boards", initialProgress: 84 },
-  { courseId: "course-data-analysis-coop", initialProgress: 40 },
-  { courseId: "course-coop-mgmt-101", initialProgress: 95 },
-  { courseId: "course-dairy-ops-201", initialProgress: 20 },
-];
+const enrolledCatalog: Enrolment[] = traineeEnrolments;
 
 export default function MyLearningPage() {
   const t = useT();
-  const [filter, setFilter] = useState("In Progress");
-  const [enrolledList, setEnrolledList] = useState<{ courseId: string; initialProgress: number }[]>(() => {
+  const [filter, setFilter] = useState("All");
+  const [enrolledList, setEnrolledList] = useState<Enrolment[]>(() => {
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("coopsetu_enrolled_courses");
+        const stored = localStorage.getItem("nurvex_enrolled_courses");
         if (stored) return JSON.parse(stored);
       } catch {}
     }
@@ -138,12 +135,22 @@ export default function MyLearningPage() {
       const cached = offlineMap[match.id];
       return {
         ...match,
-        progress: item.initialProgress,
+        progress: item.progress,
         isSavedOffline: Boolean(cached),
         cachedInfo: cached,
       };
     });
   }, [enrolledList, offlineMap]);
+
+  const hoursStudied = useMemo(
+    () =>
+      enrolledList.reduce((total, item) => {
+        const course = courses.find((entry) => entry.id === item.courseId);
+        if (!course) return total;
+        return total + Math.round((course.durationHours * item.progress) / 100);
+      }, 0),
+    [enrolledList],
+  );
 
   const filteredCourses = useMemo(() => {
     return fullEnrolledCourses.filter((c) => {
@@ -163,10 +170,10 @@ export default function MyLearningPage() {
   const handleEnrolCourse = (courseId: string) => {
     if (enrolledList.some((e) => e.courseId === courseId)) return;
     const course = courses.find((c) => c.id === courseId);
-    const updated = [{ courseId, initialProgress: 0 }, ...enrolledList];
+    const updated: Enrolment[] = [{ courseId, progress: 0 }, ...enrolledList];
     setEnrolledList(updated);
     if (typeof window !== "undefined") {
-      localStorage.setItem("coopsetu_enrolled_courses", JSON.stringify(updated));
+      localStorage.setItem("nurvex_enrolled_courses", JSON.stringify(updated));
     }
     showNotice(t("trainee.myLearning.enrolledNotice").replace("{title}", course?.title || t("trainee.myLearning.newCourse")));
     setEnrolModalOpen(false);
@@ -177,7 +184,7 @@ export default function MyLearningPage() {
     const updated = enrolledList.filter((e) => e.courseId !== courseId);
     setEnrolledList(updated);
     if (typeof window !== "undefined") {
-      localStorage.setItem("coopsetu_enrolled_courses", JSON.stringify(updated));
+      localStorage.setItem("nurvex_enrolled_courses", JSON.stringify(updated));
     }
     await handleRemoveOffline(courseId);
     showNotice(t("trainee.myLearning.removedNotice").replace("{title}", course?.title || t("trainee.myLearning.courseTitleFallback")));
@@ -270,7 +277,7 @@ export default function MyLearningPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.myLearning.hoursStudied")}</p>
-              <p className="text-2xl font-bold text-foreground">42 {t("trainee.myLearning.hours")}</p>
+              <p className="text-2xl font-bold text-foreground">{hoursStudied} {t("trainee.myLearning.hours")}</p>
             </div>
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Clock className="size-5" />

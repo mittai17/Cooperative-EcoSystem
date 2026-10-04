@@ -1,29 +1,25 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
-  Search, Filter, ChevronDown, BookOpen, Award, GraduationCap,
-  Monitor, Zap, Clock, MapPin, Users, Star, Heart, Share2,
-  CheckCircle2, XCircle, AlertCircle, ArrowRight, ChevronRight,
+  Search, BookOpen, Award, GraduationCap,
+  Monitor, Clock, MapPin, Users, Star, Heart,
+  CheckCircle2, ArrowRight,
   Building2, Calendar, FileText, TrendingUp, X, SlidersHorizontal,
-  Sparkles, Bell,
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { MOCK_PROGRAMMES, mockTrainers } from "@/lib/mock-data/programmes-data";
-import type { Programme, ProgrammeType } from "@/types/programme";
+import { MOCK_PROGRAMMES } from "@/lib/mock-data/programmes-data";
+import type { Programme, ProgrammeLang, ProgrammeType } from "@/types/programme";
 import { useApplications, useSavedProgrammes } from "@/lib/store/programme-store";
-import { checkEligibility, DEMO_TRAINEE_PROFILE, getRecommendationReason } from "@/lib/services/eligibility-service";
+import { DEMO_TRAINEE_PROFILE, getRecommendationReason } from "@/lib/services/eligibility-service";
 import { ProgrammeDetailDrawer } from "./components/programme-detail-drawer";
 import { ApplicationWizard } from "./components/application-wizard";
 import { MyApplicationsPanel } from "./components/my-applications-panel";
@@ -85,7 +81,6 @@ function ProgrammeCard({
   const myApps = getByTrainee("trainee-ravindra");
   const existing = getApplicationStatus(myApps, programme.id);
   const saved = isSaved(programme.id);
-  const pct = Math.round((programme.availableSeats / programme.totalSeats) * 100);
   const isFull = programme.availableSeats === 0;
   const isLimited = programme.availableSeats > 0 && programme.availableSeats <= 5;
   const reason = getRecommendationReason(programme.id, DEMO_TRAINEE_PROFILE);
@@ -351,7 +346,6 @@ function FilterBar({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ProgrammesPage() {
-  const router = useRouter();
   const t = useT();
   const [activeTab, setActiveTab] = useState<ProgrammeType | "all">("all");
   const [query, setQuery] = useState("");
@@ -401,7 +395,7 @@ export default function ProgrammesPage() {
       if (filters.institution !== "All" && !p.institution.includes(filters.institution)) return false;
       if (filters.mode !== "All" && p.mode !== filters.mode) return false;
       if (filters.level !== "All" && p.level !== filters.level) return false;
-      if (filters.language !== "All" && !p.language.includes(filters.language as any)) return false;
+      if (filters.language !== "All" && !p.language.includes(filters.language as ProgrammeLang)) return false;
       return true;
     });
 
@@ -577,7 +571,7 @@ export default function ProgrammesPage() {
       {activeSection === "nominations" && <NominationsSection />}
 
       {/* === Certification Exams === */}
-      {activeSection === "exams" && <ExamsSection onApply={setWizardProgramme} />}
+      {activeSection === "exams" && <ExamsSection />}
 
       {/* Drawers & Modals */}
       {detailProgramme && (

@@ -16,11 +16,20 @@ import {
   type ApplicationSummary,
   type InterviewMode,
 } from "@/lib/employer/workflow-api";
-import { combineLocalDateTime, errorMessage, toDateInputValue } from "@/lib/employer/workflow-format";
+import { combineLocalDateTime, errorMessage, toDateInputValue, toTimeInputValue } from "@/lib/employer/workflow-format";
 
 const DURATIONS = [30, 45, 60, 90, 120];
 
 const DURATION_ITEMS = DURATIONS.map((d) => ({ label: `${d} minutes`, value: String(d) }));
+
+/** Default booking slot: the next half-hour boundary at least two hours out. */
+function nextSlot(): Date {
+  const date = new Date();
+  date.setMinutes(0, 0, 0);
+  date.setHours(date.getHours() + 2);
+  date.setMinutes(date.getMinutes() >= 30 ? 30 : 0);
+  return date;
+}
 const MODE_ITEMS = [
   { label: "Online", value: "online" },
   { label: "On-site", value: "onsite" },
@@ -42,8 +51,8 @@ interface InterviewFormProps {
 }
 
 export function InterviewForm({ api, application, onScheduled }: InterviewFormProps) {
-  const [date, setDate] = useState(toDateInputValue(new Date()));
-  const [time, setTime] = useState("10:00");
+  const [date, setDate] = useState(() => toDateInputValue(nextSlot()));
+  const [time, setTime] = useState(() => toTimeInputValue(nextSlot()));
   const [duration, setDuration] = useState("60");
   const [mode, setMode] = useState<InterviewMode>("online");
   const [interviewer, setInterviewer] = useState("");

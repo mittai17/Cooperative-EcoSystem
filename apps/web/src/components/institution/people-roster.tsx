@@ -178,7 +178,7 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
     const base = role === "trainee" ? DEFAULT_TRAINEES : DEFAULT_TRAINERS;
     let list = [...base];
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(`coopsetu_mock_${role}s`);
+      const stored = localStorage.getItem(`nurvex_mock_${role}s`);
       if (stored) {
         try {
           const userCreated = JSON.parse(stored) as RosterPerson[];
@@ -216,7 +216,24 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
 
   useEffect(() => {
     let cancelled = false;
-    load();
+    api
+      .get<RosterPerson[]>(rosterQuery())
+      .then((data) => {
+        if (cancelled) return;
+        if (data && data.length > 0) {
+          setRows(data);
+          setLoadError(null);
+        } else {
+          setRows(getFallbackMock());
+          setLoadError(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRows(getFallbackMock());
+          setLoadError(null);
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -316,7 +333,7 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
           const newRows = (prev ?? []).map((row) => (row.id === updated.id ? { ...row, ...updated } : row));
           // Save to localStorage for demo persistence
           const newItems = newRows.filter(r => r.id.startsWith("new-"));
-          if (newItems.length > 0) localStorage.setItem(`coopsetu_mock_${role}s`, JSON.stringify(newItems));
+          if (newItems.length > 0) localStorage.setItem(`nurvex_mock_${role}s`, JSON.stringify(newItems));
           return newRows;
         });
         setNotice({ tone: "success", text: `${updated.full_name ?? "Record"} updated.` });
@@ -352,12 +369,12 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
           const newRows = [created, ...(prev ?? [])];
           // Save to localStorage for demo persistence
           const newItems = newRows.filter(r => r.id.startsWith("new-"));
-          localStorage.setItem(`coopsetu_mock_${role}s`, JSON.stringify(newItems));
+          localStorage.setItem(`nurvex_mock_${role}s`, JSON.stringify(newItems));
           return newRows;
         });
         setNotice({
           tone: "success",
-          text: `${created.full_name} added. They don't have a CoopSetu account yet — ask them to sign in with ${values.email.trim()} to activate it.`
+          text: `${created.full_name} added. They don't have an NURVEX account yet — ask them to sign in with ${values.email.trim()} to activate it.`
         });
       }
       setFormOpen(false);
@@ -377,7 +394,7 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
       setRows((prev) => {
         const newRows = (prev ?? []).map((row) => (row.id === person.id ? { ...row, is_active: updated.is_active } : row));
         const newItems = newRows.filter(r => r.id.startsWith("new-"));
-        if (newItems.length > 0) localStorage.setItem(`coopsetu_mock_${role}s`, JSON.stringify(newItems));
+        if (newItems.length > 0) localStorage.setItem(`nurvex_mock_${role}s`, JSON.stringify(newItems));
         return newRows;
       });
       setNotice({
@@ -438,7 +455,7 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
           label="Awaiting first sign-in"
           value={String(stats.pending)}
           icon={Mail}
-          trend={stats.pending > 0 ? "Invited but not yet linked to a CoopSetu account" : "Everyone has signed in"}
+          trend={stats.pending > 0 ? "Invited but not yet linked to an NURVEX account" : "Everyone has signed in"}
           trendTone="neutral"
         />
       </div>
@@ -612,7 +629,7 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
             <DialogDescription>
               {editing
                 ? `Update ${editing.full_name ?? "this person"}'s details.`
-                : `They'll get a local record now and link their CoopSetu account the first time they sign in with this email.`}
+                : `They'll get a local record now and link their NURVEX account the first time they sign in with this email.`}
             </DialogDescription>
           </DialogHeader>
 

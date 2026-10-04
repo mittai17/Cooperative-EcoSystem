@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   CheckCircle2,
   Cpu,
@@ -50,34 +50,36 @@ function LiveClock() {
   });
 
   return (
-    <div className="text-center">
-      <p className="text-5xl font-bold tabular-nums tracking-tight text-white sm:text-6xl">
+    <div className="text-center" suppressHydrationWarning>
+      <p suppressHydrationWarning className="text-5xl font-bold tabular-nums tracking-tight text-white sm:text-6xl">
         {timeStr}
       </p>
-      <p className="mt-1 text-sm text-red-300">
+      <p suppressHydrationWarning className="mt-1 text-sm text-red-300">
         {dateStr} &middot; <span className="font-mono text-xs text-red-400">IST (UTC+5:30)</span>
       </p>
     </div>
   );
 }
 
-// ── Connectivity badge ────────────────────────────────────────────────────────
+function subscribeOnline(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
+function getOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function getServerOnlineSnapshot() {
+  return true;
+}
 
 function ConnectivityBadge() {
-  const [online, setOnline] = useState(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true
-  );
-
-  useEffect(() => {
-    const handleOnline = () => setOnline(true);
-    const handleOffline = () => setOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
+  const online = useSyncExternalStore(subscribeOnline, getOnlineSnapshot, getServerOnlineSnapshot);
 
   return (
     <div
@@ -117,7 +119,7 @@ export default function KioskLandingPage() {
 
   return (
     <>
-      <DemoRoleSwitcherBanner />
+      <DemoRoleSwitcherBanner currentRole="kiosk" />
       <div className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-[#0f0404] px-6 py-8">
         {/* Radial glow behind the card area */}
         <div
@@ -132,12 +134,12 @@ export default function KioskLandingPage() {
         {/* ── Top bar ── */}
         <header className="relative z-10 flex w-full max-w-5xl items-center justify-between">
           <div className="flex items-center gap-2.5">
-            {/* CoopSetu wordmark */}
+            {/* NURVEX wordmark */}
             <span className="flex size-9 items-center justify-center rounded-lg bg-red-700 text-white shadow-md">
               <ScanLine className="size-5" />
             </span>
             <div>
-              <p className="text-sm font-bold tracking-tight text-white">CoopSetu AI</p>
+              <p className="text-sm font-bold tracking-tight text-white">NURVEX</p>
               <p className="text-[10px] uppercase tracking-widest text-red-400">
                 Attendance Kiosk &middot; {kioskDevice.institution}
               </p>
@@ -271,7 +273,7 @@ export default function KioskLandingPage() {
         {/* ── Footer ── */}
         <footer className="relative z-10 flex w-full max-w-5xl items-center justify-between border-t border-red-950/60 pt-4">
           <p className="text-[11px] text-red-700">
-            CoopSetu AI &middot; {kioskDevice.name} &middot; v2.4.0 &middot; SIH 2026
+            NURVEX &middot; {kioskDevice.name} &middot; v2.4.0 &middot; SIH 2026
           </p>
           <div className="flex items-center gap-4 text-[11px]">
             <Link
@@ -318,7 +320,7 @@ export default function KioskLandingPage() {
                 </div>
                 <div className="flex gap-2 w-full pt-2">
                   <Link href="/kiosk/attendance" className="flex-1">
-                    <Button variant="default" className="w-full bg-red-700 hover:bg-red-600">
+                    <Button variant="default" className="w-full bg-red-700 hover:bg-red-600" nativeButton={false}>
                       View Attendance Register
                     </Button>
                   </Link>

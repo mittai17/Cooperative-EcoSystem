@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trainerPost } from "@/lib/trainer/api";
+import { trainerProfile } from "@/lib/mock-data/trainer";
 import { cn } from "@/lib/utils";
 
 export interface TraineeRow {
@@ -193,8 +194,8 @@ function ReminderForm({
   const [subject, setSubject] = useState(defaultSubject);
   const [body, setBody] = useState(
     target.feedback
-      ? `Hi ${first},\n\nHere is some feedback on your progress so far:\n\n\n\nRegards,\nDr. S. Kumar`
-      : `Hi ${first},\n\nI noticed ${target.reasons?.length ? target.reasons.join(", ").toLowerCase() : "some gaps in your recent progress"}. Please catch up on your pending work and reach out if you need any help.\n\nRegards,\nDr. S. Kumar`
+      ? `Hi ${first},\n\nHere is some feedback on your progress so far:\n\n\n\nRegards,\n${trainerProfile.name}`
+      : `Hi ${first},\n\nI noticed ${target.reasons?.length ? target.reasons.join(", ").toLowerCase() : "some gaps in your recent progress"}. Please catch up on your pending work and reach out if you need any help.\n\nRegards,\n${trainerProfile.name}`
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -2,22 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Award,
-  BadgeCheck,
-  Building2,
+  BarChart3,
   CalendarDays,
   Camera,
   CheckCircle2,
   Clock,
   Fingerprint,
-  Hash,
   QrCode,
   ScanLine,
   ShieldAlert,
-  ShieldCheck,
-  ShieldX,
-  Sparkles,
-  User,
   XCircle,
   ZapIcon,
 } from "lucide-react";
@@ -44,6 +37,8 @@ interface AttendanceSummary {
   overall_percentage: number;
   total_sessions: number;
   present: number;
+  /** Attendance for one programme or module, used by the per-subject breakdown. */
+  subjects: { label: string; held: number; attended: number; percentage: number }[];
 }
 
 type ScanMode = "qr" | "face";
@@ -60,8 +55,8 @@ type FaceState = "idle" | "detecting" | "verifying" | "verified" | "failed";
 
 const DEMO_SUMMARY: AttendanceSummary = {
   overall_percentage: 87,
-  total_sessions: 30,
-  present: 26,
+  total_sessions: 52,
+  present: 45,
   records: [
     { date: "2026-10-03", session: "Cooperative Management Fundamentals — Module 4", status: "present", method: "face" },
     { date: "2026-10-02", session: "PACS Digital Accounting — Session 7", status: "present", method: "qr" },
@@ -70,6 +65,20 @@ const DEMO_SUMMARY: AttendanceSummary = {
     { date: "2026-09-29", session: "PACS Digital Accounting — Session 6", status: "present", method: "face" },
     { date: "2026-09-27", session: "Cooperative Management Fundamentals — Module 2", status: "present", method: "qr" },
     { date: "2026-09-25", session: "Dairy Cooperative Operations — Theory", status: "present", method: "qr" },
+    { date: "2026-09-24", session: "PACS Digital Accounting — Session 5", status: "present", method: "face" },
+    { date: "2026-09-23", session: "Dairy Cold Chain & Quality Testing — Lab 2", status: "late", method: "qr" },
+    { date: "2026-09-22", session: "Cooperative Management Fundamentals — Module 1", status: "present", method: "face" },
+    { date: "2026-09-20", session: "Dairy Cooperative Operations — Theory", status: "present", method: "qr" },
+    { date: "2026-09-19", session: "PACS Digital Accounting — Session 4", status: "absent", method: "" },
+    { date: "2026-09-18", session: "Dairy Cold Chain & Quality Testing — Lab 1", status: "present", method: "qr" },
+    { date: "2026-09-17", session: "Cooperative Management Fundamentals — Induction", status: "present", method: "face" },
+    { date: "2026-09-16", session: "PACS Digital Accounting — Session 3", status: "present", method: "qr" },
+  ],
+  subjects: [
+    { label: "Dairy Cooperative Operations", held: 18, attended: 16, percentage: 89 },
+    { label: "PACS Digital Accounting", held: 14, attended: 12, percentage: 86 },
+    { label: "Cooperative Management Fundamentals", held: 12, attended: 11, percentage: 92 },
+    { label: "Dairy Cold Chain & Quality Testing", held: 8, attended: 6, percentage: 75 },
   ],
 };
 
@@ -335,7 +344,7 @@ export default function TraineeAttendancePage() {
       const present = (prev?.present ?? 0) + 1;
       const total_sessions = (prev?.total_sessions ?? 0) + 1;
       const overall_percentage = Math.round((present / total_sessions) * 100);
-      return { records, present, total_sessions, overall_percentage };
+      return { ...prev, records, present, total_sessions, overall_percentage };
     });
   }, [mode]);
 
@@ -461,6 +470,33 @@ export default function TraineeAttendancePage() {
               <QRScanner onSuccess={handleSuccess} onError={handleError} />
             )
           )}
+        </CardContent>
+      </Card>
+
+      {/* Subject-wise breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading text-base flex items-center gap-2">
+            <BarChart3 className="size-4 text-muted-foreground" />
+            Subject-wise Attendance
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          {summary.subjects.map((subject) => (
+            <div key={subject.label} className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground">{subject.label}</span>
+                <span className={cn("text-xs font-semibold", subject.percentage >= 75 ? "text-emerald-600" : "text-amber-600")}>
+                  {subject.attended}/{subject.held} sessions &middot; {subject.percentage}%
+                </span>
+              </div>
+              <Progress value={subject.percentage} className="h-1.5" />
+            </div>
+          ))}
+          <p className="text-xs text-muted-foreground">
+            75% attendance is mandatory for certification. Subject-wise figures are calculated by the
+            institute from the same QR and face-marked sessions shown below.
+          </p>
         </CardContent>
       </Card>
 

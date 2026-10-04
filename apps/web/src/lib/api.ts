@@ -4,7 +4,7 @@ import type { FunnelRange, TimelineRange, EmployerJob } from "@/lib/employer/job
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 
-const DEMO_ROLE_COOKIE = 'coopsetu_demo_role';
+const DEMO_ROLE_COOKIE = 'nurvex_demo_role';
 // Demo persona role -> backend dev-demo key (see backend/app/dev_demo_auth.py).
 const DEMO_ROLE_TO_KEY = new Map<string, string>([
   ['employer', 'demo-employer'],

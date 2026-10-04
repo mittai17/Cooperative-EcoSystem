@@ -426,7 +426,7 @@ export default function KioskAttendancePage() {
       if (!CARD_CODE_PATTERN.test(normalised)) {
         recordFailure(
           `Malformed card code "${normalised}"`,
-          `A CoopSetu card code is CS, a four-character session group and a four-digit roll serial, for example ${CARD_CODE_FORMAT_HINT}. The group for this session is ${kioskSession.tokenGroup}.`,
+          `A NURVEX card code is CS, a four-character session group and a four-digit roll serial, for example ${CARD_CODE_FORMAT_HINT}. The group for this session is ${kioskSession.tokenGroup}.`,
         );
         return;
       }
@@ -1559,7 +1559,7 @@ export default function KioskAttendancePage() {
               <div className="flex flex-col items-start gap-2 rounded-lg border border-border bg-card px-4 py-3 text-xs text-muted-foreground shadow-sm sm:flex-row sm:items-center sm:justify-between">
                 <span className="flex items-center gap-1.5">
                   <QrCode className="size-3.5" />
-                  CoopSetu AI &middot; {kioskDevice.appVersion} &middot; {kioskDevice.firmwareVersion}
+                  NURVEX &middot; {kioskDevice.appVersion} &middot; {kioskDevice.firmwareVersion}
                 </span>
                   <Link href="/kiosk/status" className="contents"><Button
                   variant="outline"

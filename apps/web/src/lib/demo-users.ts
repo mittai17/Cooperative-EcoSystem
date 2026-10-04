@@ -20,7 +20,7 @@ export const DEMO_USERS: DemoUser[] = [
     id: "demo-trainee",
     role: "trainee",
     name: "Ravindra Suresh Patil",
-    email: "ravindra.patil@coopsetu.ai",
+    email: "ravindra.patil@nurvex.ai",
     user: "trainee-ravindra",
     org: "Dairy Cooperative Management Cohort",
     roleTitle: "Cooperative Trainee / Learner",
@@ -48,7 +48,7 @@ export const DEMO_USERS: DemoUser[] = [
     id: "demo-trainer",
     role: "trainer",
     name: "Dr. Meera Kulkarni",
-    email: "meera.kulkarni@coopsetu.ai",
+    email: "meera.kulkarni@nurvex.ai",
     user: "trainer-kulkarni",
     org: "Senior Faculty — PACS Digital Accounting (PDA-02)",
     roleTitle: "Trainer / Faculty Member",
@@ -62,7 +62,7 @@ export const DEMO_USERS: DemoUser[] = [
     id: "demo-employer",
     role: "employer",
     name: "Rajesh Mehta — Amul Dairy HR",
-    email: "hr@amul.coopsetu.ai",
+    email: "hr@amul.nurvex.ai",
     user: "employer-mehta",
     org: "Gujarat Co-operative Milk Marketing Federation (Amul)",
     roleTitle: "Employer / Talent Acquisition",
@@ -90,7 +90,7 @@ export const DEMO_USERS: DemoUser[] = [
     id: "demo-kiosk",
     role: "kiosk",
     name: "Terminal Station 01 — Anand Center",
-    email: "kiosk.station01@coopsetu.ai",
+    email: "kiosk.station01@nurvex.ai",
     user: "kiosk-station-01",
     org: "Village Cooperative Digital Kiosk Unit",
     roleTitle: "Kiosk Station Operator",
@@ -119,10 +119,10 @@ export function setDemoSessionCookies(demoUser: DemoUser): void {
   const maxAge = 60 * 60 * 24 * 7; // 7 days
   const cookieOptions = `; path=/; max-age=${maxAge}; SameSite=Lax`;
 
-  document.cookie = `coopsetu_demo_role=${encodeURIComponent(demoUser.role)}${cookieOptions}`;
-  document.cookie = `coopsetu_demo_user=${encodeURIComponent(demoUser.user)}${cookieOptions}`;
-  document.cookie = `coopsetu_demo_email=${encodeURIComponent(demoUser.email)}${cookieOptions}`;
-  document.cookie = `coopsetu_demo_name=${encodeURIComponent(demoUser.name)}${cookieOptions}`;
+  document.cookie = `nurvex_demo_role=${encodeURIComponent(demoUser.role)}${cookieOptions}`;
+  document.cookie = `nurvex_demo_user=${encodeURIComponent(demoUser.user)}${cookieOptions}`;
+  document.cookie = `nurvex_demo_email=${encodeURIComponent(demoUser.email)}${cookieOptions}`;
+  document.cookie = `nurvex_demo_name=${encodeURIComponent(demoUser.name)}${cookieOptions}`;
 }
 
 /**
@@ -143,10 +143,10 @@ export function signOutDemo(redirectTo: string = "/sign-in"): void {
   if (typeof document === "undefined") return;
 
   const expired = "; path=/; max-age=0; SameSite=Lax";
-  document.cookie = `coopsetu_demo_role=${expired}`;
-  document.cookie = `coopsetu_demo_user=${expired}`;
-  document.cookie = `coopsetu_demo_email=${expired}`;
-  document.cookie = `coopsetu_demo_name=${expired}`;
+  document.cookie = `nurvex_demo_role=${expired}`;
+  document.cookie = `nurvex_demo_user=${expired}`;
+  document.cookie = `nurvex_demo_email=${expired}`;
+  document.cookie = `nurvex_demo_name=${expired}`;
 
   window.location.href = redirectTo;
 }
@@ -173,10 +173,10 @@ export function getActiveDemoSession(): {
     return acc;
   }, {});
 
-  const role = (cookies["coopsetu_demo_role"] as UserRole) || null;
-  const user = cookies["coopsetu_demo_user"] || null;
-  const email = cookies["coopsetu_demo_email"] || null;
-  const name = cookies["coopsetu_demo_name"] || null;
+  const role = (cookies["nurvex_demo_role"] as UserRole) || null;
+  const user = cookies["nurvex_demo_user"] || null;
+  const email = cookies["nurvex_demo_email"] || null;
+  const name = cookies["nurvex_demo_name"] || null;
 
   const demoUser = role ? DEMO_USERS.find((u) => u.role === role) ?? null : null;
 

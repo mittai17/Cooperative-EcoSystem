@@ -50,7 +50,7 @@ export default function JobsPlacementsPage() {
         if (cancelled) return;
         setJobs(rows && rows.length > 0 ? rows : DEMO_JOBS);
         setError(null);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         setJobs(DEMO_JOBS);
         setError(null);

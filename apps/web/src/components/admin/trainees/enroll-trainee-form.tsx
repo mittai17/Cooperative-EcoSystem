@@ -6,7 +6,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 
 import { FormCard, FormField, FormFooter, ListNotice } from "@/components/admin/trainers/people-ui";
-import { errorMessage } from "@/components/admin/trainers/people-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

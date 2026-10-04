@@ -9,9 +9,7 @@ import {
   Globe,
   Users,
   Briefcase,
-  CheckCircle2,
   ShieldCheck,
-  ExternalLink,
   Settings,
   Pencil,
 } from "lucide-react";
@@ -66,7 +64,7 @@ export default function EmployerProfilePage() {
                 <Mail className="size-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">HR Recruitment Email</p>
-                  <p className="text-sm font-medium">hr@amul.coopsetu.ai</p>
+                  <p className="text-sm font-medium">hr@amul.nurvex.ai</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-lg border border-border p-3">
@@ -106,7 +104,7 @@ export default function EmployerProfilePage() {
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-2">About Organisation</h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Amul is India&apos;s apex cooperative body uniting over 3.6 million milk producers across Gujarat. Through CoopSetu AI,
+                Amul is India&apos;s apex cooperative body uniting over 3.6 million milk producers across Gujarat. Through NURVEX,
                 Amul actively recruits certified trainees specializing in PACS inventory management, dairy cooperative accounting,
                 cold chain logistics, and quality assurance.
               </p>
@@ -119,7 +117,7 @@ export default function EmployerProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Recruitment Overview</CardTitle>
-              <CardDescription>Live stats on CoopSetu AI</CardDescription>
+              <CardDescription>Live stats on NURVEX</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between border-b border-border pb-3">

@@ -64,7 +64,7 @@ export default function ReportsPage() {
         setDonut(validDonut);
         setUsingDemo(validReport === DEMO_REPORTS[tab]);
         setError(null);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         setReport(DEMO_REPORTS[tab]);
         setDonut(DEMO_DONUT);

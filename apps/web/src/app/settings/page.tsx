@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 export default async function SettingsPage() {
   const cookieStore = await cookies();
-  const demoRole = cookieStore.get("coopsetu_demo_role")?.value;
+  const demoRole = cookieStore.get("nurvex_demo_role")?.value;
 
   const roleMap: Record<string, string> = {
     trainee: "/trainee/profile?tab=settings",

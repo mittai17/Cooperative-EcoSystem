@@ -87,7 +87,7 @@ export function CreateNoticeModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Category</Label>
-              <Select value={category} onValueChange={(v: any) => setCategory(v)}>
+              <Select value={category} onValueChange={(v) => v && setCategory(v as NoticeCategory)}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>

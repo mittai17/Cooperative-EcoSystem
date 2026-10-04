@@ -53,21 +53,19 @@ function ExpiryBadge({ date }: { date: string }) {
 }
 
 export default function VehiclesDriversPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [vendors] = useState(logisticsService.getVendors());
-  const [ready, setReady] = useState(false);
+  const [vehicles, setVehicles] = useState<Vehicle[]>(() => logisticsService.getVehicles());
+  const [drivers, setDrivers] = useState<Driver[]>(() => logisticsService.getDrivers());
+  const [vendors] = useState(() => logisticsService.getVendors());
+  const [ready] = useState(true);
   const [vehicleQuery, setVehicleQuery] = useState("");
   const [driverQuery, setDriverQuery] = useState("");
 
   function refresh() {
     setVehicles(logisticsService.getVehicles());
     setDrivers(logisticsService.getDrivers());
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   }, []);

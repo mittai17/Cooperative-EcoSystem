@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { Wifi, WifiOff, RefreshCw, CheckCircle2, CloudUpload } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { WifiOff, RefreshCw, CheckCircle2, CloudUpload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useOfflineSync } from "@/lib/offline/sync-manager";
 
@@ -11,26 +11,27 @@ import { useOfflineSync } from "@/lib/offline/sync-manager";
 
 function OfflineSyncBar() {
   const { isOnline, pendingCount, isSyncing, lastSyncedAt, syncNow } = useOfflineSync();
-  const [visible, setVisible] = useState(false);
   const [justSynced, setJustSynced] = useState(false);
+  const prevSyncedRef = useRef(lastSyncedAt);
 
-  // Show bar when offline OR when there are pending items
   useEffect(() => {
-    setVisible(!isOnline || pendingCount > 0 || isSyncing);
-  }, [isOnline, pendingCount, isSyncing]);
-
-  // Flash "synced" briefly
-  useEffect(() => {
-    if (isOnline && pendingCount === 0 && !isSyncing && lastSyncedAt) {
-      setJustSynced(true);
-      setVisible(true);
-      const t = setTimeout(() => {
+    if (prevSyncedRef.current !== lastSyncedAt && lastSyncedAt && isOnline && pendingCount === 0 && !isSyncing) {
+      prevSyncedRef.current = lastSyncedAt;
+      const showTimer = setTimeout(() => {
+        setJustSynced(true);
+      }, 0);
+      const hideTimer = setTimeout(() => {
         setJustSynced(false);
-        setVisible(false);
       }, 3000);
-      return () => clearTimeout(t);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
     }
+    prevSyncedRef.current = lastSyncedAt;
   }, [isOnline, pendingCount, isSyncing, lastSyncedAt]);
+
+  const visible = !isOnline || pendingCount > 0 || isSyncing || justSynced;
 
   if (!visible) return null;
 

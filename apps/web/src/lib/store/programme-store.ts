@@ -7,11 +7,11 @@ import { useState, useEffect, useCallback } from "react";
 import type { Application, Nomination, ExamRegistration, ApplicationStatus, DocumentRecord, TimelineEvent, BatchAllocation } from "@/types/application";
 import { MOCK_APPLICATIONS, MOCK_NOMINATIONS, MOCK_EXAM_REGISTRATIONS, MOCK_UPCOMING_EVENTS } from "@/lib/mock-data/applications-data";
 
-const APPS_KEY = "coopsetu_programme_applications";
-const NOMS_KEY = "coopsetu_programme_nominations";
-const EXAMS_KEY = "coopsetu_exam_registrations";
-const SAVED_KEY = "coopsetu_saved_programmes";
-const DRAFTS_KEY = "coopsetu_application_drafts";
+const APPS_KEY = "nurvex_programme_applications";
+const NOMS_KEY = "nurvex_programme_nominations";
+const EXAMS_KEY = "nurvex_exam_registrations";
+const SAVED_KEY = "nurvex_saved_programmes";
+const DRAFTS_KEY = "nurvex_application_drafts";
 
 // ─── storage helpers ──────────────────────────────────────────────────────────
 function load<T>(key: string, fallback: T): T {
@@ -46,14 +46,14 @@ export function useApplications() {
     setApplications(apps);
     // Dispatch custom event so other hook instances (trainer page, etc.) can react
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("coopsetu_apps_changed"));
+      window.dispatchEvent(new Event("nurvex_apps_changed"));
     }
   }, []);
 
   useEffect(() => {
     const handler = () => setApplications(load(APPS_KEY, MOCK_APPLICATIONS));
-    window.addEventListener("coopsetu_apps_changed", handler);
-    return () => window.removeEventListener("coopsetu_apps_changed", handler);
+    window.addEventListener("nurvex_apps_changed", handler);
+    return () => window.removeEventListener("nurvex_apps_changed", handler);
   }, []);
 
   const createApplication = useCallback(
@@ -171,14 +171,14 @@ export function useNominations() {
     save(NOMS_KEY, noms);
     setNominations(noms);
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("coopsetu_noms_changed"));
+      window.dispatchEvent(new Event("nurvex_noms_changed"));
     }
   }, []);
 
   useEffect(() => {
     const handler = () => setNominations(load(NOMS_KEY, MOCK_NOMINATIONS));
-    window.addEventListener("coopsetu_noms_changed", handler);
-    return () => window.removeEventListener("coopsetu_noms_changed", handler);
+    window.addEventListener("nurvex_noms_changed", handler);
+    return () => window.removeEventListener("nurvex_noms_changed", handler);
   }, []);
 
   const createNomination = useCallback(
@@ -206,14 +206,14 @@ export function useExamRegistrations() {
     save(EXAMS_KEY, regs);
     setExamRegs(regs);
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("coopsetu_exams_changed"));
+      window.dispatchEvent(new Event("nurvex_exams_changed"));
     }
   }, []);
 
   useEffect(() => {
     const handler = () => setExamRegs(load(EXAMS_KEY, MOCK_EXAM_REGISTRATIONS));
-    window.addEventListener("coopsetu_exams_changed", handler);
-    return () => window.removeEventListener("coopsetu_exams_changed", handler);
+    window.addEventListener("nurvex_exams_changed", handler);
+    return () => window.removeEventListener("nurvex_exams_changed", handler);
   }, []);
 
   const registerForExam = useCallback(

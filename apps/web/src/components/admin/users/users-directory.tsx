@@ -42,11 +42,16 @@ type RoleFilter = PlatformRole | typeof ALL;
 
 // Demo rows mirror the backend user row shape, using the six backend roles.
 const DEMO_USERS: AdminUser[] = [
-  { id: "demo-u1", full_name: "Admin User", email: "admin@ncct.gov.in", role: "ncct_admin", organisation_id: null, organisation_name: null, state: null, status: "active", created_at: "2025-06-01T10:00:00Z", last_active: "2026-10-03T08:30:00Z" },
-  { id: "demo-u2", full_name: "Priya Singh", email: "priya.singh@ncct.gov.in", role: "institution", organisation_id: null, organisation_name: null, state: null, status: "active", created_at: "2025-08-14T10:00:00Z", last_active: "2026-10-02T17:10:00Z" },
-  { id: "demo-u3", full_name: "Rohan Mehta", email: "rohan.mehta@ncct.gov.in", role: "admin", organisation_id: null, organisation_name: null, state: null, status: "active", created_at: "2025-09-03T10:00:00Z", last_active: "2026-10-01T11:45:00Z" },
-  { id: "demo-u4", full_name: "Anjali Rao", email: "anjali.rao@ncct.gov.in", role: "employer", organisation_id: null, organisation_name: null, state: null, status: "active", created_at: "2025-10-22T10:00:00Z", last_active: "2026-09-29T09:20:00Z" },
-  { id: "demo-u5", full_name: "Vikram Joshi", email: "vikram.joshi@ncct.gov.in", role: "trainer", organisation_id: null, organisation_name: null, state: null, status: "inactive", created_at: "2025-12-05T10:00:00Z", last_active: "2026-08-14T14:00:00Z" },
+  { id: "demo-u1", full_name: "Admin User", email: "admin@ncct.gov.in", role: "ncct_admin", organisation_id: null, organisation_name: "NCCT Central HQ", state: "Delhi", status: "active", created_at: "2025-06-01T10:00:00Z", last_active: "2026-10-03T08:30:00Z" },
+  { id: "demo-u2", full_name: "Priya Singh", email: "priya.singh@vamnicom.gov.in", role: "institution", organisation_id: null, organisation_name: "VAMNICOM, Pune", state: "Maharashtra", status: "active", created_at: "2025-08-14T10:00:00Z", last_active: "2026-10-02T17:10:00Z" },
+  { id: "demo-u3", full_name: "Rohan Mehta", email: "rohan.mehta@ncct.gov.in", role: "admin", organisation_id: null, organisation_name: "NCCT Central HQ", state: "Delhi", status: "active", created_at: "2025-09-03T10:00:00Z", last_active: "2026-10-01T11:45:00Z" },
+  { id: "demo-u4", full_name: "Anjali Rao", email: "anjali.rao@amul.coop", role: "employer", organisation_id: null, organisation_name: "Amul Dairy Products (GCMMF)", state: "Gujarat", status: "active", created_at: "2025-10-22T10:00:00Z", last_active: "2026-09-29T09:20:00Z" },
+  { id: "demo-u5", full_name: "Vikram Joshi", email: "vikram.joshi@irma.ac.in", role: "trainer", organisation_id: null, organisation_name: "Institute of Rural Management, Anand", state: "Gujarat", status: "inactive", created_at: "2025-12-05T10:00:00Z", last_active: "2026-08-14T14:00:00Z" },
+  { id: "demo-u6", full_name: "Kavitha Nair", email: "kavitha.nair@ncdc.gov.in", role: "institution", organisation_id: null, organisation_name: "NCDC Training Institute", state: "Delhi", status: "active", created_at: "2026-01-18T10:00:00Z", last_active: "2026-10-03T10:15:00Z" },
+  { id: "demo-u7", full_name: "Suresh Kumar Pandey", email: "suresh.pandey@iffco.in", role: "employer", organisation_id: null, organisation_name: "IFFCO Logistics", state: "Uttar Pradesh", status: "active", created_at: "2026-02-09T10:00:00Z", last_active: "2026-09-30T14:30:00Z" },
+  { id: "demo-u8", full_name: "Dr. Meera Shah", email: "meera.shah@ncui.coop", role: "trainer", organisation_id: null, organisation_name: "NCUI Training Centre, Delhi", state: "Delhi", status: "active", created_at: "2026-03-22T10:00:00Z", last_active: "2026-10-02T09:00:00Z" },
+  { id: "demo-u9", full_name: "Arjun Kumar", email: "arjun.kumar@trainee.coop", role: "trainee", organisation_id: null, organisation_name: "Gujarat Cooperative College", state: "Gujarat", status: "active", created_at: "2026-04-01T10:00:00Z", last_active: "2026-10-01T16:45:00Z" },
+  { id: "demo-u10", full_name: "Deepa Krishnan", email: "deepa.krishnan@ncct.gov.in", role: "admin", organisation_id: null, organisation_name: "NCCT Central HQ", state: "Tamil Nadu", status: "active", created_at: "2026-05-15T10:00:00Z", last_active: "2026-09-28T11:20:00Z" },
 ];
 
 function formatLastActive(value: string | null | undefined): string {
@@ -170,7 +175,10 @@ export function UsersDirectory() {
       />
 
       {usingDemo ? (
-        <ListNotice message={`${error} Showing sample rows.`} onRetry={() => setReloadKey((k) => k + 1)} />
+        <ListNotice
+          message={error ? `${error} Showing sample rows.` : "Showing sample records."}
+          onRetry={() => setReloadKey((k) => k + 1)}
+        />
       ) : null}
 
       {actionError ? (
@@ -282,6 +290,10 @@ export function UsersDirectory() {
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <dt className="text-muted-foreground">Role</dt>
               <dd>{roleLabel(detail.role)}</dd>
+              <dt className="text-muted-foreground">Organisation</dt>
+              <dd>{detail.organisation_name || "—"}</dd>
+              <dt className="text-muted-foreground">State</dt>
+              <dd>{detail.state || "—"}</dd>
               <dt className="text-muted-foreground">Status</dt>
               <dd>
                 <StatusPill status={detail.status} />

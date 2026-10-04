@@ -64,7 +64,7 @@ export default function AuditLogsPage() {
           setTotal(filtered.length);
           setError(null);
         }
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         const needle = query.trim().toLowerCase();
         const filtered = DEMO_AUDIT_LOGS.filter(

@@ -45,7 +45,7 @@ export function ProfileHeader({
         <CandidateAvatar name={profile.name} photoUrl={profile.photo_url} className="size-20 text-xl" />
         <div className="min-w-0 flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">{profile.name}</h2>
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">{profile.name}</h1>
             {isVerifiedPassport && (
               <Badge className="gap-1 bg-success/10 text-success hover:bg-success/10">
                 <BadgeCheck className="size-3.5" /> Verified Skill Passport

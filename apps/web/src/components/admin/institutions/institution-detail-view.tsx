@@ -48,14 +48,17 @@ export function InstitutionDetailView({ id }: { id: string }) {
       })
       .catch(() => {
         if (cancelled) return;
-        const matched = DEMO_INSTITUTIONS.find((row) => row.id === id);
-        const fallback = matched ?? {
-          ...DEMO_INSTITUTIONS[0],
-          id,
-          name: id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Cooperative Training Institute",
-        };
-        setInstitution(fallback);
-        setStatus("demo");
+        const matched = id
+          ? DEMO_INSTITUTIONS.find(
+              (row) => row.id === id || (id.startsWith("i") && row.id === `demo-${id.slice(1)}`),
+            )
+          : null;
+        if (matched) {
+          setInstitution(matched);
+          setStatus("demo");
+        } else {
+          setStatus("missing");
+        }
       });
     return () => {
       cancelled = true;
@@ -76,8 +79,8 @@ export function InstitutionDetailView({ id }: { id: string }) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
         <AlertTriangle className="size-8 text-amber-600" aria-hidden />
-        <p className="font-semibold text-foreground">We could not load this institution.</p>
-        <p className="text-sm text-muted-foreground">It may have been removed, or the service is unavailable.</p>
+        <p className="font-semibold text-foreground">Institution not found</p>
+        <p className="text-sm text-muted-foreground">The requested institution does not exist or may have been removed.</p>
         <Link href="/admin/institutions" className="mt-2 text-sm font-medium text-primary hover:underline">
           Back to institutions
         </Link>

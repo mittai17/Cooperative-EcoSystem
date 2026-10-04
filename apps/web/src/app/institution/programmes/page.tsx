@@ -37,30 +37,31 @@ function ProgrammesPageContent() {
   const searchParams = useSearchParams();
   const createdNotice = searchParams.get("created");
 
-  const [programmes, setProgrammes] = useState<ProgrammeSummaryItem[]>(institutionProgrammeSummary);
+  const [programmes, setProgrammes] = useState<ProgrammeSummaryItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nurvex_institution_programmes");
+        if (stored) {
+          const customProgs = JSON.parse(stored) as { id: string; title: string; trainees?: number; attendance?: number; status?: string }[];
+          const customFormatted: ProgrammeSummaryItem[] = customProgs.map((cp) => ({
+            id: cp.id,
+            title: cp.title,
+            trainees: cp.trainees ?? 0,
+            attendance: cp.attendance ?? 100,
+            status: cp.status ?? "Active",
+          }));
+          const existingIds = new Set(customFormatted.map((c) => c.id));
+          return [...customFormatted, ...institutionProgrammeSummary.filter((p) => !existingIds.has(p.id))];
+        }
+      } catch {}
+    }
+    return institutionProgrammeSummary;
+  });
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"All" | "Active" | "Archived">("All");
   const [notice, setNotice] = useState<string | null>(
     createdNotice ? "New programme created and published successfully!" : null
   );
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("coopsetu_institution_programmes");
-      if (stored) {
-        const customProgs = JSON.parse(stored) as { id: string; title: string; trainees?: number; attendance?: number; status?: string }[];
-        const customFormatted: ProgrammeSummaryItem[] = customProgs.map((cp) => ({
-          id: cp.id,
-          title: cp.title,
-          trainees: cp.trainees ?? 0,
-          attendance: cp.attendance ?? 100,
-          status: cp.status ?? "Active",
-        }));
-        const existingIds = new Set(customFormatted.map((c) => c.id));
-        setProgrammes([...customFormatted, ...institutionProgrammeSummary.filter((p) => !existingIds.has(p.id))]);
-      }
-    } catch {}
-  }, []);
 
   const handleToggleArchive = (id: string) => {
     const prog = programmes.find((p) => p.id === id);
@@ -68,14 +69,14 @@ function ProgrammesPageContent() {
     const updated = programmes.map((p) => (p.id === id ? { ...p, status: newStatus } : p));
     setProgrammes(updated);
     try {
-      const stored = localStorage.getItem("coopsetu_institution_programmes");
+      const stored = localStorage.getItem("nurvex_institution_programmes");
       if (stored) {
         const customProgs = JSON.parse(stored) as ProgrammeSummaryItem[];
         const customUpdated = customProgs.map((p) => (p.id === id ? { ...p, status: newStatus } : p));
-        localStorage.setItem("coopsetu_institution_programmes", JSON.stringify(customUpdated));
+        localStorage.setItem("nurvex_institution_programmes", JSON.stringify(customUpdated));
       } else {
         // If it's a default programme that was archived, save the updated state
-        localStorage.setItem("coopsetu_institution_programmes", JSON.stringify(updated));
+        localStorage.setItem("nurvex_institution_programmes", JSON.stringify(updated));
       }
     } catch {}
     setNotice(`"${prog?.title}" marked as ${newStatus}.`);

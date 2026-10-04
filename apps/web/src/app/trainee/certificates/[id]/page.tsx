@@ -31,6 +31,7 @@ import {
   verificationUrl,
   type CertifiedSkill,
 } from "@/lib/mock-data/kiosk";
+import { traineeCertificateDetails } from "@/lib/trainee/certificate-registry";
 import type { CertificateStatus, EvidenceType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CertificateActions } from "./certificate-actions";
@@ -230,7 +231,7 @@ function UnavailableState({
             </Button></Link>
       </div>
 
-      <PageHeader title={title} description="CoopSetu Skill Passport" />
+      <PageHeader title={title} description="NURVEX Skill Passport" />
 
       <Card>
         <CardContent className="flex flex-col gap-4">
@@ -284,7 +285,7 @@ export default async function CertificateDetailPage({
     );
   }
 
-  const detail = certificateDetails[id];
+  const detail = certificateDetails[id] ?? traineeCertificateDetails[id];
 
   if (!detail) {
     return (

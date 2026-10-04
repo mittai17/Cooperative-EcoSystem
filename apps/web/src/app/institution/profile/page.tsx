@@ -85,20 +85,20 @@ const DEFAULT_PROFILE: InstitutionProfileData = {
 };
 
 export default function InstitutionProfilePage() {
-  const [profile, setProfile] = useState<InstitutionProfileData>(DEFAULT_PROFILE);
+  const [profile, setProfile] = useState<InstitutionProfileData>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nurvex_institution_profile");
+        if (stored) {
+          return { ...DEFAULT_PROFILE, ...JSON.parse(stored) };
+        }
+      } catch {}
+    }
+    return DEFAULT_PROFILE;
+  });
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState<InstitutionProfileData>(DEFAULT_PROFILE);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("coopsetu_institution_profile");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setProfile({ ...DEFAULT_PROFILE, ...parsed });
-      }
-    } catch {}
-  }, []);
 
   const openEditDialog = () => {
     setEditForm({ ...profile });
@@ -109,7 +109,7 @@ export default function InstitutionProfilePage() {
     e.preventDefault();
     setProfile(editForm);
     try {
-      localStorage.setItem("coopsetu_institution_profile", JSON.stringify(editForm));
+      localStorage.setItem("nurvex_institution_profile", JSON.stringify(editForm));
     } catch {}
     setEditOpen(false);
     setSavedNotice("Institution profile updated successfully.");

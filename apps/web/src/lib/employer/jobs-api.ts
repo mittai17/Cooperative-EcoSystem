@@ -11,11 +11,18 @@
  *   GET    /api/v1/employer/jobs/{id}/requirements  (skills are also embedded in the detail)
  *   PUT    /api/v1/employer/jobs/{id}/requirements
  *
- * Every call goes through `fetchWithAuth` from `lib/api.ts`. That helper throws a
- * plain Error whose message is `API Error: <status> <statusText>`, so the status
- * is recovered from the message and surfaced as `JobsApiError.status`.
+ * Every call goes through `employerRequest` (`lib/employer/employer-http.ts`), the
+ * mock-first employer gateway. Failures surface as `JobsApiError` with the status
+ * recovered from the message, so views can tell a 404 from a transport failure.
  */
-import { fetchWithAuth } from "@/lib/api";
+import { employerRequest, type Api } from "@/lib/employer/employer-http";
+import { mockEmployerJobs } from "@/lib/employer/fixtures/catalog";
+
+export {
+  FALLBACK_SKILL_CATALOGUE,
+  getMockEmployerJobDetail,
+  mockEmployerJobs,
+} from "@/lib/employer/fixtures/catalog";
 
 export type JobStatus = "draft" | "open" | "paused" | "closed";
 
@@ -254,11 +261,13 @@ export class JobsApiError extends Error {
   }
 }
 
-async function call<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function call<T>(path: string, options: RequestInit = {}, transport?: Api): Promise<T> {
   try {
-    return (await fetchWithAuth(path, options)) as T;
+    return await employerRequest<T>(path, options, transport);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not reach the CoopSetu API";
+    const message = error instanceof Error ? error.message : "Could not reach the NURVEX API";
+    const carried = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : null;
+    if (carried !== null) throw new JobsApiError(carried, message);
     const match = /API Error: (\d{3})/.exec(message);
     throw new JobsApiError(match ? Number(match[1]) : 0, message);
   }
@@ -302,179 +311,6 @@ export function cancelEmployerInterview(id: string) {
   });
 }
 
-export const mockEmployerJobs: EmployerJob[] = [
-  {
-    id: "emp-job-dairy-supervisor",
-    title: "Dairy Procurement Supervisor",
-    department: "Procurement & Quality",
-    location: "Anand, Gujarat",
-    employment_type: "Full-time",
-    status: "open",
-    salary_range: "₹22,000 - ₹28,000 / month",
-    openings: 4,
-    applications_count: 38,
-    shortlisted_count: 14,
-    interview_count: 6,
-    match_rate: 94,
-    posted_at: "2026-09-01T09:00:00.000Z",
-    deadline: "2026-10-31T18:00:00.000Z",
-  },
-  {
-    id: "emp-job-quality-analyst",
-    title: "Quality & Compliance Analyst",
-    department: "Quality Assurance",
-    location: "Anand, Gujarat",
-    employment_type: "Full-time",
-    status: "open",
-    salary_range: "₹26,000 - ₹34,000 / month",
-    openings: 2,
-    applications_count: 24,
-    shortlisted_count: 9,
-    interview_count: 4,
-    match_rate: 88,
-    posted_at: "2026-09-05T10:30:00.000Z",
-    deadline: "2026-11-15T18:00:00.000Z",
-  },
-  {
-    id: "emp-job-mis-analyst",
-    title: "MIS & Data Analyst - Cooperative Sector",
-    department: "Information Technology",
-    location: "New Delhi",
-    employment_type: "Full-time",
-    status: "open",
-    salary_range: "₹35,000 - ₹45,000 / month",
-    openings: 2,
-    applications_count: 42,
-    shortlisted_count: 12,
-    interview_count: 5,
-    match_rate: 91,
-    posted_at: "2026-09-10T11:00:00.000Z",
-    deadline: "2026-11-20T18:00:00.000Z",
-  },
-  {
-    id: "emp-job-society-accountant",
-    title: "Cooperative Society Accountant",
-    department: "Finance & Accounts",
-    location: "Pune, Maharashtra",
-    employment_type: "Full-time",
-    status: "open",
-    salary_range: "₹18,000 - ₹24,000 / month",
-    openings: 2,
-    applications_count: 29,
-    shortlisted_count: 8,
-    interview_count: 3,
-    match_rate: 85,
-    posted_at: "2026-09-12T08:00:00.000Z",
-    deadline: "2026-10-25T18:00:00.000Z",
-  },
-  {
-    id: "emp-job-store-manager",
-    title: "Retail Store Manager - Cooperative Brand",
-    department: "Marketing & Retail",
-    location: "Vadodara, Gujarat",
-    employment_type: "Full-time",
-    status: "paused",
-    salary_range: "₹19,000 - ₹25,000 / month",
-    openings: 1,
-    applications_count: 16,
-    shortlisted_count: 5,
-    interview_count: 2,
-    match_rate: 82,
-    posted_at: "2026-08-20T14:00:00.000Z",
-    deadline: "2026-10-15T18:00:00.000Z",
-  },
-  {
-    id: "emp-job-fpo-coordinator",
-    title: "FPO Operations Coordinator",
-    department: "Operations",
-    location: "Surat, Gujarat",
-    employment_type: "Full-time",
-    status: "draft",
-    salary_range: "₹25,000 - ₹32,000 / month",
-    openings: 3,
-    applications_count: 0,
-    shortlisted_count: 0,
-    interview_count: 0,
-    match_rate: null,
-    posted_at: null,
-    deadline: null,
-  },
-];
-
-export function getMockEmployerJobDetail(id: string): EmployerJobDetail {
-  const base = mockEmployerJobs.find((j) => j.id === id) ?? {
-    id,
-    title: "Dairy Procurement Supervisor",
-    department: "Procurement & Quality",
-    location: "Anand, Gujarat",
-    employment_type: "Full-time",
-    status: "open" as JobStatus,
-    salary_range: "₹22,000 - ₹28,000 / month",
-    openings: 4,
-    applications_count: 38,
-    shortlisted_count: 14,
-    interview_count: 6,
-    match_rate: 94,
-    posted_at: "2026-09-01T09:00:00.000Z",
-    deadline: "2026-10-31T18:00:00.000Z",
-  };
-
-  const requirementsMap: Record<string, JobRequirement[]> = {
-    "emp-job-dairy-supervisor": [
-      { skill_id: "sk-1", skill_name: "Dairy Operations", requirement_type: "required", min_proficiency: 70 },
-      { skill_id: "sk-2", skill_name: "Quality Testing", requirement_type: "required", min_proficiency: 70 },
-      { skill_id: "sk-3", skill_name: "Logistics Planning", requirement_type: "preferred", min_proficiency: 50 },
-      { skill_id: "sk-4", skill_name: "Cold Chain Handling", requirement_type: "preferred", min_proficiency: 50 },
-    ],
-    "emp-job-quality-analyst": [
-      { skill_id: "sk-2", skill_name: "Quality Testing", requirement_type: "required", min_proficiency: 75 },
-      { skill_id: "sk-5", skill_name: "Documentation", requirement_type: "required", min_proficiency: 60 },
-      { skill_id: "sk-6", skill_name: "Food Safety", requirement_type: "preferred", min_proficiency: 60 },
-      { skill_id: "sk-7", skill_name: "HACCP", requirement_type: "preferred", min_proficiency: 50 },
-    ],
-    "emp-job-mis-analyst": [
-      { skill_id: "sk-8", skill_name: "Data Analysis", requirement_type: "required", min_proficiency: 80 },
-      { skill_id: "sk-9", skill_name: "Spreadsheets", requirement_type: "required", min_proficiency: 80 },
-      { skill_id: "sk-10", skill_name: "Dashboarding", requirement_type: "preferred", min_proficiency: 70 },
-      { skill_id: "sk-11", skill_name: "Python", requirement_type: "preferred", min_proficiency: 50 },
-    ],
-    "emp-job-society-accountant": [
-      { skill_id: "sk-12", skill_name: "Bookkeeping", requirement_type: "required", min_proficiency: 75 },
-      { skill_id: "sk-13", skill_name: "Tally", requirement_type: "required", min_proficiency: 75 },
-      { skill_id: "sk-14", skill_name: "Statutory Compliance", requirement_type: "required", min_proficiency: 65 },
-      { skill_id: "sk-15", skill_name: "Cooperative Accounting", requirement_type: "preferred", min_proficiency: 60 },
-    ],
-  };
-
-  const defaultReqs: JobRequirement[] = [
-    { skill_id: "sk-1", skill_name: "Dairy Operations", requirement_type: "required", min_proficiency: 70 },
-    { skill_id: "sk-2", skill_name: "Quality Testing", requirement_type: "required", min_proficiency: 70 },
-    { skill_id: "sk-3", skill_name: "Logistics Planning", requirement_type: "preferred", min_proficiency: 50 },
-  ];
-
-  return {
-    ...base,
-    company_name: "Amul Dairy Cooperative Union",
-    sector: "Dairy & Agri-processing",
-    experience_required: "2+ years in rural cooperative or dairy operations",
-    education: "Bachelor's Degree in Agriculture, Food Tech, or Rural Management",
-    description: `We are seeking a dedicated professional for the role of ${base.title}. You will oversee village cooperative collection points, coordinate cold-chain logistics, and ensure compliance with NCCT cooperative standards and food quality regulations.`,
-    responsibilities: "- Supervise daily milk procurement and collection routes across PACS societies\n- Verify FAT/SNF automated testing calibration and digital register logs\n- Coordinate chilling plant handover and cold chain transport schedules\n- Support primary society secretaries with member dispatch reconciliation and DBT payouts",
-    certifications: "NCCT Dairy Management Certificate or equivalent food quality certification preferred",
-    languages: "Gujarati, Hindi, English",
-    salary_min: 22000,
-    salary_max: 28000,
-    requirements: requirementsMap[id] ?? defaultReqs,
-    pipeline: {
-      applied: base.applications_count,
-      shortlisted: base.shortlisted_count,
-      interview: base.interview_count,
-      offered: Math.min(base.openings ?? 2, Math.max(1, Math.floor(base.interview_count / 2))),
-      hired: Math.max(1, Math.floor(base.interview_count / 3)),
-    },
-  };
-}
-
 function filterMockJobs(all: EmployerJob[], filters: JobListFilters): EmployerJob[] {
   let list = [...all];
   if (filters.q?.trim()) {
@@ -512,117 +348,52 @@ export async function listEmployerJobs(filters: JobListFilters = {}): Promise<Em
       return data.jobs;
     }
   } catch {
-    // API down; fallback to realistic mock jobs
+    // Gateway unavailable; keep the list populated from the local fixtures.
   }
   return filterMockJobs(mockEmployerJobs, filters);
 }
 
 export async function getEmployerJob(id: string): Promise<EmployerJobDetail> {
-  try {
-    return await call<EmployerJobDetail>(`/api/v1/employer/jobs/${encodeURIComponent(id)}`);
-  } catch {
-    return getMockEmployerJobDetail(id);
-  }
+  return call<EmployerJobDetail>(`/api/v1/employer/jobs/${encodeURIComponent(id)}`);
 }
 
 export async function createEmployerJob(input: JobInput) {
-  try {
-    return await call<{ id: string; status: JobStatus }>("/api/v1/employer/jobs", jsonBody(input));
-  } catch {
-    const id = `emp-job-${Date.now().toString(36)}`;
-    const newJob: EmployerJob = {
-      id,
-      title: input.title,
-      department: input.department || null,
-      location: input.location || null,
-      employment_type: input.employment_type,
-      status: input.status ?? "draft",
-      salary_range:
-        input.salary_min && input.salary_max
-          ? `₹${input.salary_min.toLocaleString()} - ₹${input.salary_max.toLocaleString()} / month`
-          : null,
-      openings: input.openings ?? 1,
-      applications_count: 0,
-      shortlisted_count: 0,
-      interview_count: 0,
-      match_rate: null,
-      posted_at: input.status === "open" ? new Date().toISOString() : null,
-      deadline: input.deadline || null,
-    };
-    mockEmployerJobs.unshift(newJob);
-    return { id, status: newJob.status };
-  }
+  return call<{ id: string; status: JobStatus }>("/api/v1/employer/jobs", jsonBody(input));
 }
 
 export async function updateEmployerJob(id: string, input: Partial<JobInput>) {
-  try {
-    return await call<{ id: string; status: JobStatus }>(`/api/v1/employer/jobs/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    });
-  } catch {
-    const idx = mockEmployerJobs.findIndex((j) => j.id === id);
-    if (idx !== -1) {
-      if (input.title) mockEmployerJobs[idx].title = input.title;
-      if (input.department !== undefined) mockEmployerJobs[idx].department = input.department;
-      if (input.location !== undefined) mockEmployerJobs[idx].location = input.location;
-      if (input.status) mockEmployerJobs[idx].status = input.status;
-    }
-    return { id, status: mockEmployerJobs[idx]?.status ?? "draft" };
-  }
+  return call<{ id: string; status: JobStatus }>(`/api/v1/employer/jobs/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
 }
 
 export async function setJobRequirements(id: string, requirements: JobRequirement[]) {
-  try {
-    return await call<{ requirements: JobRequirement[] }>(
-      `/api/v1/employer/jobs/${encodeURIComponent(id)}/requirements`,
-      { method: "PUT", body: JSON.stringify({ requirements }) },
-    );
-  } catch {
-    return { requirements };
-  }
+  return call<{ requirements: JobRequirement[] }>(
+    `/api/v1/employer/jobs/${encodeURIComponent(id)}/requirements`,
+    { method: "PUT", body: JSON.stringify({ requirements }) },
+  );
 }
 
 export async function publishEmployerJob(id: string) {
-  try {
-    return await call<{ id: string; status: JobStatus }>(
-      `/api/v1/employer/jobs/${encodeURIComponent(id)}/publish`,
-      { method: "POST" },
-    );
-  } catch {
-    const job = mockEmployerJobs.find((j) => j.id === id);
-    if (job) {
-      job.status = "open";
-      job.posted_at = job.posted_at ?? new Date().toISOString();
-    }
-    return { id, status: "open" as JobStatus };
-  }
+  return call<{ id: string; status: JobStatus }>(
+    `/api/v1/employer/jobs/${encodeURIComponent(id)}/publish`,
+    { method: "POST" },
+  );
 }
 
 export async function pauseEmployerJob(id: string) {
-  try {
-    return await call<{ id: string; status: JobStatus }>(
-      `/api/v1/employer/jobs/${encodeURIComponent(id)}/pause`,
-      { method: "POST" },
-    );
-  } catch {
-    const job = mockEmployerJobs.find((j) => j.id === id);
-    if (job) job.status = "paused";
-    return { id, status: "paused" as JobStatus };
-  }
+  return call<{ id: string; status: JobStatus }>(
+    `/api/v1/employer/jobs/${encodeURIComponent(id)}/pause`,
+    { method: "POST" },
+  );
 }
 
 export async function closeEmployerJob(id: string) {
-  try {
-    return await call<{ id: string; status: JobStatus }>(
-      `/api/v1/employer/jobs/${encodeURIComponent(id)}/close`,
-      { method: "POST" },
-    );
-  } catch {
-    const job = mockEmployerJobs.find((j) => j.id === id);
-    if (job) job.status = "closed";
-    return { id, status: "closed" as JobStatus };
-  }
+  return call<{ id: string; status: JobStatus }>(
+    `/api/v1/employer/jobs/${encodeURIComponent(id)}/close`,
+    { method: "POST" },
+  );
 }
 
 /* ---------- Skill catalogue (Skill Graph) ---------- */
@@ -637,26 +408,3 @@ export async function listSkillCatalogue(): Promise<string[]> {
   const names = (data.skill_demand ?? []).map((row) => row.skill).filter(Boolean);
   return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
 }
-
-export const FALLBACK_SKILL_CATALOGUE: string[] = [
-  "Accounting",
-  "Bookkeeping",
-  "Cooperative Accounting",
-  "Cooperative Finance",
-  "Cooperative Operations",
-  "Credit Appraisal",
-  "Data Analysis",
-  "Digital Marketing",
-  "Dairy Operations",
-  "Dairy Management",
-  "Financial Management",
-  "Food Safety",
-  "Leadership",
-  "Logistics Planning",
-  "Quality Control",
-  "Quality Testing",
-  "Rural Development",
-  "Statutory Compliance",
-  "Supply Chain Logistics",
-  "Tally",
-];

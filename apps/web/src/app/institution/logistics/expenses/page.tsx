@@ -17,12 +17,10 @@ function fmt(n: number) {
 }
 
 export default function ExpensesPage() {
-  const [expenses, setExpenses] = useState<TripExpense[]>([]);
-  const [ready, setReady] = useState(false);
+  const [expenses, setExpenses] = useState<TripExpense[]>(() => logisticsService.getExpenses());
+  const [ready] = useState(true);
 
   useEffect(() => {
-    setExpenses(logisticsService.getExpenses());
-    setReady(true);
     const unsub = logisticsService.subscribe(() => setExpenses(logisticsService.getExpenses()));
     return unsub;
   }, []);

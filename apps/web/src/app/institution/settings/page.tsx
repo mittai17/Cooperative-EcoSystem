@@ -28,40 +28,44 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface StoredSettings {
+  emailAlerts?: boolean;
+  autoBatchSync?: boolean;
+  kioskSync?: boolean;
+  attendanceAlerts?: boolean;
+  minAttendancePct?: string;
+  qrRefreshInterval?: string;
+}
+
+function getStoredSettings(): StoredSettings | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem("nurvex_institution_settings");
+    return stored ? (JSON.parse(stored) as StoredSettings) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function InstitutionSettingsPage() {
   const [activeTab, setActiveTab] = useState("campus");
 
   // State
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [autoBatchSync, setAutoBatchSync] = useState(true);
-  const [kioskSync, setKioskSync] = useState(true);
-  const [attendanceAlerts, setAttendanceAlerts] = useState(true);
+  const [emailAlerts, setEmailAlerts] = useState(() => getStoredSettings()?.emailAlerts ?? true);
+  const [autoBatchSync, setAutoBatchSync] = useState(() => getStoredSettings()?.autoBatchSync ?? true);
+  const [kioskSync, setKioskSync] = useState(() => getStoredSettings()?.kioskSync ?? true);
+  const [attendanceAlerts, setAttendanceAlerts] = useState(() => getStoredSettings()?.attendanceAlerts ?? true);
   const [hostelSms, setHostelSms] = useState(true);
   const [dailyDigest, setDailyDigest] = useState(true);
   const [offlineSync, setOfflineSync] = useState(true);
   const [mfaRequired, setMfaRequired] = useState(true);
 
-  const [minAttendancePct, setMinAttendancePct] = useState("75");
-  const [qrRefreshInterval, setQrRefreshInterval] = useState("45");
+  const [minAttendancePct, setMinAttendancePct] = useState(() => getStoredSettings()?.minAttendancePct ?? "75");
+  const [qrRefreshInterval, setQrRefreshInterval] = useState(() => getStoredSettings()?.qrRefreshInterval ?? "45");
   const [sessionTimeout, setSessionTimeout] = useState("30");
   const [operatingHours, setOperatingHours] = useState("08:30 AM - 05:30 PM");
 
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("coopsetu_institution_settings");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.emailAlerts !== undefined) setEmailAlerts(parsed.emailAlerts);
-        if (parsed.autoBatchSync !== undefined) setAutoBatchSync(parsed.autoBatchSync);
-        if (parsed.kioskSync !== undefined) setKioskSync(parsed.kioskSync);
-        if (parsed.attendanceAlerts !== undefined) setAttendanceAlerts(parsed.attendanceAlerts);
-        if (parsed.minAttendancePct) setMinAttendancePct(parsed.minAttendancePct);
-        if (parsed.qrRefreshInterval) setQrRefreshInterval(parsed.qrRefreshInterval);
-      }
-    } catch {}
-  }, []);
 
   const handleSave = () => {
     const payload = {
@@ -79,7 +83,7 @@ export default function InstitutionSettingsPage() {
       operatingHours,
     };
     try {
-      localStorage.setItem("coopsetu_institution_settings", JSON.stringify(payload));
+      localStorage.setItem("nurvex_institution_settings", JSON.stringify(payload));
     } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 3500);

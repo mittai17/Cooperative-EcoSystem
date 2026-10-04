@@ -18,12 +18,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { hostelService } from "@/lib/hostel/hostel-service";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   Wifi,
   Utensils,
   Shirt,

@@ -60,7 +60,7 @@ export default function ProgrammesPage() {
         if (cancelled) return;
         setCatalogue(rows && rows.length > 0 ? rows : DEMO_PROGRAMMES);
         setError(null);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         setCatalogue(DEMO_PROGRAMMES);
         setError(null);

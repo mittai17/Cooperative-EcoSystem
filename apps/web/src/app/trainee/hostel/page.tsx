@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   BedDouble,
@@ -13,9 +14,7 @@ import {
   Mail,
   Clock,
   Wrench,
-  AlertTriangle,
   FileText,
-  ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ import { useT } from "@/i18n";
 
 export default function TraineeMyHostelPage() {
   const t = useT();
-  const [trainee, setTrainee] = useState(
+  const [trainee] = useState(
     hostelService.getTraineeById("trn-ravindra") || DEMO_TRAINEE_RAVINDRA
   );
   const [issueModalOpen, setIssueModalOpen] = useState(false);
@@ -178,10 +177,12 @@ export default function TraineeMyHostelPage() {
 
           {/* Right photo */}
           <div className="md:col-span-5 rounded-xl overflow-hidden border relative h-48 sm:h-auto">
-            <img
+            <Image
               src="/vamnicom-campus.jpg"
               alt={t("trainee.hostel.roomPhotoAlt")}
-              className="w-full h-full object-cover"
+              width={640}
+              height={360}
+              className="size-full object-cover"
             />
             <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur px-2.5 py-1 rounded-md text-[11px] text-white font-medium">
               {t("trainee.hostel.roomCaption")}

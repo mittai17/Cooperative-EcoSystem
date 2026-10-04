@@ -12,17 +12,15 @@ import { logisticsService } from "@/lib/logistics/logistics-service";
 import type { Route } from "@/lib/logistics/types";
 
 export default function RoutesPage() {
-  const [routes, setRoutes] = useState<Route[]>([]);
-  const [ready, setReady] = useState(false);
+  const [routes, setRoutes] = useState<Route[]>(() => logisticsService.getRoutes());
+  const [ready] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   function refresh() {
     setRoutes(logisticsService.getRoutes());
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   }, []);

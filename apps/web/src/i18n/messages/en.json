@@ -230,7 +230,7 @@
       }
     },
     "chatbot": {
-      "greeting": "Hi {name}! I am CoopSetu AI, your career and learning assistant. How can I help you today?",
+      "greeting": "Hi {name}! I am NURVEX, your career and learning assistant. How can I help you today?",
       "online": "Online",
       "placeholder": "Ask me anything...",
       "suggestions": {
@@ -260,7 +260,7 @@
       "toggleMenu": "Toggle navigation menu"
     },
     "hero": {
-      "badgeBrand": "CoopSetu AI",
+      "badgeBrand": "NURVEX",
       "badgeInitiative": "NCCT Initiative",
       "titleLine1": "From Learning",
       "titleLine2": "to",
@@ -332,18 +332,18 @@
     },
     "cta": {
       "title": "Ready to bring your cooperative into the loop?",
-      "body": "Whether you train, teach, hire, or govern, there is a CoopSetu workspace built for your role.",
+      "body": "Whether you train, teach, hire, or govern, there is an NURVEX workspace built for your role.",
       "getStarted": "Get Started",
       "signIn": "Sign In"
     },
     "banner": {
       "title": "A Stronger Cooperative India Through Skills, Opportunities and AI",
-      "ariaGetStarted": "Get started with CoopSetu AI"
+      "ariaGetStarted": "Get started with NURVEX"
     },
     "footer": {
       "description": "A National Cooperative Capacity Building initiative connecting cooperative training directly to verified skills and employment. Built for Smart India Hackathon 2026, PS 26087.",
       "demoTag": "Demo build, sample data shown throughout",
-      "copyright": "CoopSetu AI. Prototype for Smart India Hackathon 2026.",
+      "copyright": "NURVEX. Prototype for Smart India Hackathon 2026.",
       "ministry": "Ministry of Cooperation · National Council for Cooperative Training (NCCT)",
       "columns": {
         "platform": "Platform",
@@ -411,7 +411,7 @@
       "mission": {
         "label": "Our Mission",
         "title": "Close the loop between training and livelihood",
-        "body": "India's cooperative sector trains thousands every year, yet outcomes remain invisible — fragmented across institutions with no digital thread connecting a trainee's learning journey to employment. CoopSetu AI changes that.",
+        "body": "India's cooperative sector trains thousands every year, yet outcomes remain invisible — fragmented across institutions with no digital thread connecting a trainee's learning journey to employment. NURVEX changes that.",
         "passportBody": "We give every trainee a living, AI-powered {passport} that employers can trust, every institution a real-time dashboard, and NCCT a national analytics view of skill supply and demand.",
         "passport": "Skill Passport",
         "tiles": {
@@ -432,7 +432,7 @@
           "3": "Employers cannot verify claimed cooperative competencies",
           "4": "NCCT has no real-time visibility into national training throughput"
         },
-        "closing": "CoopSetu AI directly addresses every one of these gaps with a single integrated platform."
+        "closing": "NURVEX directly addresses every one of these gaps with a single integrated platform."
       },
       "howItWorks": {
         "label": "How It Works",
@@ -481,7 +481,7 @@
       },
       "partners": {
         "label": "Partners & Institutions",
-        "title": "Ecosystem partners powering CoopSetu",
+        "title": "Ecosystem partners powering NURVEX",
         "names": {
           "ncct": "National Council for Cooperative Training",
           "vamnicom": "Vaikunth Mehta National Institute",
@@ -598,7 +598,7 @@
           "2Many": "Available for a {type} engagement with {count} openings.",
           "3": "Prior cooperative-sector or rural-development experience preferred, not mandatory."
         },
-        "companyBlurb": "{employer} is a cooperative employer in the {sector} sector, operating out of {location}. They post verified openings directly on CoopSetu and hire against AI-ranked, skill-passport-backed candidate matches rather than resume keywords alone."
+        "companyBlurb": "{employer} is a cooperative employer in the {sector} sector, operating out of {location}. They post verified openings directly on NURVEX and hire against AI-ranked, skill-passport-backed candidate matches rather than resume keywords alone."
       }
     },
     "courseLearning": {
@@ -705,7 +705,7 @@
     },
     "demo": {
       "badge": "Smart India Hackathon 2026 Evaluation Hub",
-      "title": "CoopSetu AI Demo Hub",
+      "title": "NURVEX Demo Hub",
       "body": "Test every feature across the cooperative skilling ecosystem. Select any of the 6 roles below to enter with pre-loaded profiles, active courses, verified certifications, and live dashboards.",
       "guideTitle": "What Evaluators Can Test in Each Persona",
       "guideBody": "Switch between personas at any time using the top switcher bar",
@@ -729,16 +729,16 @@
       }
     },
     "login": {
-      "badge": "CoopSetu AI Demo & Production Access",
+      "badge": "NURVEX Demo & Production Access",
       "title": "Choose Your Persona to Enter",
-      "body": "Explore CoopSetu AI as any of our 6 ecosystem roles. Select any persona below to log in instantly with full state and pre-populated data.",
+      "body": "Explore NURVEX as any of our 6 ecosystem roles. Select any persona below to log in instantly with full state and pre-populated data.",
       "credentialsTitle": "Have credentials or custom credentials?",
       "credentialsBody": "Log in through the standard authentication portal with your email.",
       "standardSignIn": "Standard Sign-In"
     },
     "verify": {
       "title": "Certificate Verification",
-      "body": "Instantly verify the authenticity of any CoopSetu AI–issued certificate. Results are checked against the {ledger}.",
+      "body": "Instantly verify the authenticity of any NURVEX–issued certificate. Results are checked against the {ledger}.",
       "trySample": "Try the sample certificate",
       "searchPlaceholder": "Enter certificate ID, e.g. CST-2026-DAI-00842",
       "submit": "Verify",
@@ -777,7 +777,7 @@
       },
       "print": "Print / Save PDF",
       "viewFull": "View Full Certificate",
-      "watermark": "🔒 Verified {date} IST · CoopSetu AI Certificate Registry · NCCT Apex Ledger",
+      "watermark": "🔒 Verified {date} IST · NURVEX Certificate Registry · NCCT Apex Ledger",
       "notFound": {
         "title": "No certificate found for “{id}”",
         "body": "Double-check the certificate ID printed on your document, or try one of the sample certificates below."
@@ -858,7 +858,7 @@
       "openFullPlayer": "Loading...",
       "sourceDiksha": "Source",
       "sizeUnknown": "All Languages",
-      "sourceCoopsetu": "Source",
+      "sourceNurvex": "Source",
       "inAppPlayer": "Loading...",
       "catalogTitle": "Search results",
       "play": "All Languages",
@@ -882,7 +882,7 @@
       "viewerAria": "Loading...",
       "startLearning": "Start Learning",
       "title": "Learn",
-      "selectPrompt": "Select any resource from the left to watch or read directly in CoopSetu.",
+      "selectPrompt": "Select any resource from the left to watch or read directly in NURVEX.",
       "allSubjects": "All Subjects",
       "startLesson": "outline",
       "infoEnd": "Learn",
@@ -904,7 +904,7 @@
       "timeline": "Goal Overview",
       "targetRoleValue": "Goal Overview",
       "currentRole": "Goal Overview",
-      "greeting": "Hello! I am your CoopSetu AI Career Advisor. Ask me anything about skills, training, or job paths.",
+      "greeting": "Hello! I am your NURVEX Career Advisor. Ask me anything about skills, training, or job paths.",
       "step2Title": "Roadmap",
       "reply1": "Great goal! To become a Dairy Cooperative Manager in Gujarat (e.g., at Amul or local unions), you need strong financial and supply chain skills to complement your dairy operations knowledge.",
       "viewCourse": "Roadmap",
@@ -1642,7 +1642,7 @@
   "auth": {
     "signIn": {
       "backHome": "Back to Home",
-      "footer": "CoopSetu AI · National Cooperative Skilling & Placement Platform · SIH 2026"
+      "footer": "NURVEX · National Cooperative Skilling & Placement Platform · SIH 2026"
     },
     "signUp": {
       "disabledTitle": "Sign up is disabled",
@@ -1650,7 +1650,8 @@
     }
   },
   "brand": {
-    "logoAlt": "CoopSetu AI - Learn, Skill, Work, Grow Together",
-    "emblemAlt": "CoopSetu AI Emblem"
+    "logoAlt": "NURVEX - Learn, Skill, Work, Grow Together",
+    "emblemAlt": "NURVEX Emblem",
+    "tagline": "Learn · Skill · Work · Grow Together"
   }
 }

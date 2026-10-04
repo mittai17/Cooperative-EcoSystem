@@ -45,8 +45,8 @@ function formatDate(iso: string) {
 }
 
 export default function TransportPlansPage() {
-  const [plans, setPlans] = useState<TransportPlan[]>([]);
-  const [ready, setReady] = useState(false);
+  const [plans, setPlans] = useState<TransportPlan[]>(() => logisticsService.getPlans());
+  const [ready] = useState(true);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<PlanStatus | "All">("All");
   const [page, setPage] = useState(1);
@@ -54,11 +54,9 @@ export default function TransportPlansPage() {
 
   function refresh() {
     setPlans(logisticsService.getPlans());
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   }, []);

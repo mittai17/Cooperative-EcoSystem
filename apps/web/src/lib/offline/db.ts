@@ -1,4 +1,4 @@
-// Browser-native IndexedDB wrapper for CoopSetu AI Offline Engine
+// Browser-native IndexedDB wrapper for NURVEX Offline Engine
 
 export interface CachedLessonSummary {
   id: string;
@@ -58,7 +58,7 @@ export interface SyncQueueItem {
   error?: string;
 }
 
-const DB_NAME = 'coopsetu_offline_db';
+const DB_NAME = 'nurvex_offline_db';
 const DB_VERSION = 1;
 
 const STORES = {

@@ -686,8 +686,8 @@ export default function InstitutionDashboardPage() {
 
   // Active Modals
   const [timetableModalOpen, setTimetableModalOpen] = useState(false);
-  const [reviewNominationModal, setReviewNominationModal] = useState<any | null>(null);
-  const [sessionActionModal, setSessionActionModal] = useState<any | null>(null);
+  const [reviewNominationModal, setReviewNominationModal] = useState<(typeof INITIAL_NOMINATIONS)[number] | null>(null);
+  const [sessionActionModal, setSessionActionModal] = useState<(typeof INITIAL_OPERATIONS)[number] | null>(null);
   const [programmesModalOpen, setProgrammesModalOpen] = useState(false);
   const [trainersModalOpen, setTrainersModalOpen] = useState(false);
   const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
@@ -754,7 +754,7 @@ export default function InstitutionDashboardPage() {
   };
 
   // Handle Session Action (Start / Join / View)
-  const handleSessionAction = (item: any) => {
+  const handleSessionAction = (item: (typeof INITIAL_OPERATIONS)[number]) => {
     if (item.actionType === "start") {
       setLiveClassActive(true);
       setSessionActionModal(item);
@@ -1078,7 +1078,7 @@ export default function InstitutionDashboardPage() {
               <div className="relative">
                 <select
                   value={attendancePeriod}
-                  onChange={(e) => setAttendancePeriod(e.target.value as any)}
+                  onChange={(e) => setAttendancePeriod(e.target.value as "Today" | "This Week" | "This Month" | "This Quarter")}
                   aria-label="Attendance period"
                   className="text-xs font-semibold bg-muted/50 border border-border/80 rounded-lg px-2.5 py-1 text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary cursor-pointer"
                 >

@@ -6,9 +6,7 @@ import {
   ChevronRight,
   BedDouble,
   CheckCircle2,
-  Calendar,
   Phone,
-  DoorClosed,
   Clock,
   Check,
 } from "lucide-react";

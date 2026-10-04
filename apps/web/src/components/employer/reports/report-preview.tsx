@@ -42,7 +42,7 @@ export function ReportPreviewTable({ api, reportKey, onExportError }: ReportPrev
   async function exportCsv() {
     setExporting(true);
     try {
-      await downloadReportCsv(reportKey);
+      await downloadReportCsv(api, reportKey);
     } catch (err) {
       onExportError(errorMessage(err, "The export could not be downloaded. Try again."));
     } finally {

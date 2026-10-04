@@ -60,9 +60,9 @@ export default function CreateProgrammePage() {
       };
 
       try {
-        const stored = localStorage.getItem("coopsetu_institution_programmes");
+        const stored = localStorage.getItem("nurvex_institution_programmes");
         const list = stored ? JSON.parse(stored) : [];
-        localStorage.setItem("coopsetu_institution_programmes", JSON.stringify([newProg, ...list]));
+        localStorage.setItem("nurvex_institution_programmes", JSON.stringify([newProg, ...list]));
       } catch {}
 
       router.push("/institution/programmes?created=true");

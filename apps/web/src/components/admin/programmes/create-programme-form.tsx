@@ -81,7 +81,7 @@ export function CreateProgrammeForm() {
       }).catch(() => null);
       router.push("/admin/programmes");
       router.refresh();
-    } catch (err) {
+    } catch {
       router.push("/admin/programmes");
     }
   }

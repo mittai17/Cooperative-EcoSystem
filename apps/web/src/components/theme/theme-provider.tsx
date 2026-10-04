@@ -18,7 +18,7 @@ interface ThemeContextValue {
   setTheme: (theme: Theme) => void;
 }
 
-const STORAGE_KEY = "coopsetu-theme";
+const STORAGE_KEY = "nurvex-theme";
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 

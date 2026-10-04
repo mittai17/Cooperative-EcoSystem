@@ -28,20 +28,28 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "CoopSetu AI",
-    template: "%s | CoopSetu AI",
+    default: "NURVEX",
+    template: "%s | NURVEX",
   },
   description:
-    "CoopSetu AI connects cooperative training directly to skills and employment through an AI-powered closed loop: registration, training, certification, job matching, and employer feedback in one ecosystem.",
+    "NURVEX connects cooperative training directly to skills and employment through an AI-powered closed loop: registration, training, certification, job matching, and employer feedback in one ecosystem.",
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/favicon.png", type: "image/png" },
-      { url: "/brand/logo-emblem.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "64x64 32x32 24x24 16x16" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
+      { url: "/brand/nurvex-icon-192.png", type: "image/png", sizes: "192x192" },
     ],
     apple: [
-      { url: "/brand/logo-emblem.png", type: "image/png" },
+      { url: "/brand/nurvex-icon-192.png", type: "image/png", sizes: "192x192" },
     ],
+  },
+  openGraph: {
+    title: "NURVEX",
+    description:
+      "NURVEX connects cooperative training directly to skills and employment through an AI-powered closed loop: registration, training, certification, job matching, and employer feedback in one ecosystem.",
+    siteName: "NURVEX",
+    images: [{ url: "/brand/nurvex-icon-512.png", width: 512, height: 512, type: "image/png" }],
   },
 };
 

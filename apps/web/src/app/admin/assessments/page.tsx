@@ -50,7 +50,7 @@ export default function AssessmentsPage() {
         if (cancelled) return;
         setAssessments(rows && rows.length > 0 ? rows : DEMO_ASSESSMENTS);
         setError(null);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         setAssessments(DEMO_ASSESSMENTS);
         setError(null);

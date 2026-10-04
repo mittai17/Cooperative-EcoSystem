@@ -80,7 +80,7 @@ export function AddHostelModal({ open, onOpenChange, onSuccess }: AddHostelModal
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Gender Classification</Label>
-              <Select value={gender} onValueChange={(v: any) => setGender(v)}>
+              <Select value={gender} onValueChange={(v) => v && setGender(v as HostelGender)}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Gender" />
                 </SelectTrigger>

@@ -102,7 +102,7 @@ export default function CertificationsPage() {
           setTotal(filtered.length);
           setError(null);
         }
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         const needle = query.trim().toLowerCase();
         const filtered = DEMO_CERTIFICATIONS.filter(

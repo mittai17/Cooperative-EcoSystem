@@ -4,22 +4,17 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  Award,
   BookOpen,
-  Calendar,
   CheckCircle2,
   Clock,
-  ExternalLink,
   GraduationCap,
   Mail,
   MapPin,
-  Pencil,
   Phone,
   Settings,
   ShieldCheck,
   Sparkles,
   User,
-  Users,
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
@@ -27,7 +22,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { MetricBar, initials } from "@/components/trainer/trainees/shared";
+import { portalClasses, trainerProfile } from "@/lib/mock-data/trainer";
 
 export default function TrainerProfilePage() {
   return (
@@ -103,19 +99,19 @@ function TrainerProfileContent() {
           <Card className="md:col-span-2">
             <CardHeader className="flex flex-row items-center gap-4">
               <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xl font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200">
-                SK
+                {initials(trainerProfile.name)}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-xl">Dr. S. Kumar</CardTitle>
+                  <CardTitle className="text-xl">{trainerProfile.name}</CardTitle>
                   <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                    <ShieldCheck className="mr-1 size-3" /> NCCT Certified Trainer
+                    <ShieldCheck className="mr-1 size-3" /> {trainerProfile.accreditation}
                   </Badge>
                 </div>
                 <CardDescription className="text-sm">
-                  Senior Faculty Member · PACS Digital Accounting & Cooperative Governance
+                  {trainerProfile.designation}
                 </CardDescription>
-                <p className="mt-1 text-xs text-muted-foreground">Faculty ID: VAM-FAC-2026-088</p>
+                <p className="mt-1 text-xs text-muted-foreground">Faculty ID: {trainerProfile.employeeId}</p>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -124,28 +120,28 @@ function TrainerProfileContent() {
                   <Mail className="size-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Official Email</p>
-                    <p className="text-sm font-medium">s.kumar@vamnicom.gov.in</p>
+                    <p className="text-sm font-medium">{trainerProfile.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border border-border p-3">
                   <Phone className="size-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Phone</p>
-                    <p className="text-sm font-medium">+91 94220 18452</p>
+                    <p className="text-sm font-medium">{trainerProfile.phone}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border border-border p-3">
                   <MapPin className="size-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Institution Campus</p>
-                    <p className="text-sm font-medium">VAMNICOM, Pune, Maharashtra</p>
+                    <p className="text-sm font-medium">{trainerProfile.campus}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border border-border p-3">
                   <GraduationCap className="size-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Qualification</p>
-                    <p className="text-sm font-medium">Ph.D. in Cooperative Management</p>
+                    <p className="text-sm font-medium">{trainerProfile.qualification}</p>
                   </div>
                 </div>
               </div>
@@ -153,21 +149,15 @@ function TrainerProfileContent() {
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-2">Subject Specializations</h4>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">PACS Digital Accounting (PDA-02)</Badge>
-                  <Badge variant="secondary">Cooperative Law & Statutory Audit</Badge>
-                  <Badge variant="secondary">Microfinance & SHG Federation Management</Badge>
-                  <Badge variant="secondary">Dairy Cooperative Operations</Badge>
-                  <Badge variant="secondary">National Cooperative Policy Framework</Badge>
+                  {trainerProfile.specialisations.map((s) => (
+                    <Badge key={s} variant="secondary">{s}</Badge>
+                  ))}
                 </div>
               </div>
 
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-2">Bio & Experience</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Over 16 years of academic and field-level cooperative training experience across NCCT institutions and RICMs.
-                  Specialized in digital transformation of Primary Agricultural Credit Societies (PACS), compliance monitoring,
-                  and modern accounting automation.
-                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{trainerProfile.bio}</p>
               </div>
             </CardContent>
           </Card>
@@ -182,19 +172,19 @@ function TrainerProfileContent() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between border-b border-border pb-3">
                   <span className="text-sm text-muted-foreground">Total Sessions Taught</span>
-                  <span className="font-bold text-foreground">128</span>
+                  <span className="font-bold text-foreground">{trainerProfile.stats.sessions_taught}</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-border pb-3">
                   <span className="text-sm text-muted-foreground">Active Cohorts</span>
-                  <span className="font-bold text-foreground">4 Cohorts</span>
+                  <span className="font-bold text-foreground">{trainerProfile.stats.active_cohorts} Cohorts</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-border pb-3">
                   <span className="text-sm text-muted-foreground">Trainees Mentored</span>
-                  <span className="font-bold text-foreground">340+</span>
+                  <span className="font-bold text-foreground">{trainerProfile.stats.trainees_mentored}+</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Trainee Feedback Score</span>
-                  <span className="font-bold text-emerald-600">4.9 / 5.0 ★</span>
+                  <span className="font-bold text-emerald-600">{trainerProfile.stats.feedback_score}</span>
                 </div>
               </CardContent>
             </Card>
@@ -226,39 +216,30 @@ function TrainerProfileContent() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Assigned Batches & Programmes</CardTitle>
-              <CardDescription>Current active batches under Dr. S. Kumar</CardDescription>
+              <CardTitle>Assigned Batches &amp; Programmes</CardTitle>
+              <CardDescription>Current active batches under {trainerProfile.name}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-lg border border-border p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-foreground">Diploma in Cooperative Business Management (DCBM-24)</h4>
-                    <p className="text-xs text-muted-foreground">Module: PACS Computerisation & ERP Systems</p>
+              {portalClasses.map((c) => (
+                <div key={c.id} className="rounded-lg border border-border p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <h4 className="truncate font-semibold text-foreground">{c.course}</h4>
+                      <p className="text-xs text-muted-foreground">{c.category} · Batch {c.batch_label}</p>
+                    </div>
+                    <Badge variant={c.status_active ? "default" : "secondary"}>{c.status_active ? "Active" : "Completed"}</Badge>
                   </div>
-                  <Badge>Active</Badge>
-                </div>
-                <div className="mt-3 flex items-center gap-6 text-xs text-muted-foreground">
-                  <span>Batch Size: 48 Trainees</span>
-                  <span>Schedule: Mon, Wed, Fri (10:00 AM - 12:00 PM)</span>
-                  <span>Room: Hall A-201, VAMNICOM</span>
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-border p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-foreground">PACS Digital Accounting Certificate (PDAC-12)</h4>
-                    <p className="text-xs text-muted-foreground">Module: Statutory Audit & Tally Compliance</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-muted-foreground">
+                    <span>{c.trainees} trainees</span>
+                    <span>{c.schedule_days.join(", ")} ({c.start} - {c.end})</span>
+                    <span>Room {c.room}, {c.venue}</span>
                   </div>
-                  <Badge>Active</Badge>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <MetricBar label="Syllabus covered" value={c.progress} />
+                    <MetricBar label="Attendance" value={c.attendance} />
+                  </div>
                 </div>
-                <div className="mt-3 flex items-center gap-6 text-xs text-muted-foreground">
-                  <span>Batch Size: 35 Trainees</span>
-                  <span>Schedule: Tue, Thu (02:00 PM - 04:30 PM)</span>
-                  <span>Room: Computer Lab 2</span>
-                </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </div>

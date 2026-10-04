@@ -81,11 +81,9 @@ export function SectionError({ onRetry }: { onRetry?: () => void }) {
   );
 }
 
-export function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
+export function initials(name: string | null | undefined): string {
+  const parts = (name ?? "").split(/\s+/).filter(Boolean).slice(0, 2);
+  return parts
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
 }

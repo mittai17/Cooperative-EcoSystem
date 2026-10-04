@@ -1,5 +1,5 @@
 /**
- * Typed client for the DIKSHA video search proxy (free Government of India learning content).
+ * Typed client for the DIKSHA video search (free Government of India learning content).
  *
  * Endpoint: GET /api/v1/content/diksha/search
  *   q       2-100 chars (required)
@@ -7,11 +7,12 @@
  *   limit   1-24, default 12
  *   offset  0-500
  *
- * Uses the same base URL and bearer token as `fetchWithAuth` in `lib/api.ts`, but reads the
- * response body on failure so the backend's message (e.g. the 502 "upstream is down" text)
- * can be shown to the user. `fetchWithAuth` discards that body.
+ * The live proxy is used when it answers. When it cannot (no backend session,
+ * upstream outage) the search is answered from `diksha-catalogue`, so the Learn
+ * hub always returns playable content instead of an error state.
  */
 import { getApiBase, resolveAuthToken } from "@/lib/api";
+import { searchCatalogue } from "@/lib/content/diksha-catalogue";
 
 const SEARCH_PATH = "/api/v1/content/diksha/search";
 
@@ -124,13 +125,24 @@ function isDikshaSearchResponse(value: unknown): value is DikshaSearchResponse {
   return Array.isArray(v.items) && typeof v.limit === "number" && typeof v.offset === "number";
 }
 
+/** Catalogue fallback so a failed proxy never leaves the Learn hub empty. */
+function searchCatalogueFallback(params: DikshaSearchParams): DikshaSearchResponse {
+  const limit = params.limit ?? DIKSHA_DEFAULT_LIMIT;
+  const offset = params.offset ?? 0;
+  const items = searchCatalogue(params.q.trim(), params.subject, limit, offset);
+  return { items, limit, offset };
+}
+
 export async function searchDikshaVideos(params: DikshaSearchParams): Promise<DikshaSearchResponse> {
   validateParams(params);
 
+  const limit = params.limit ?? DIKSHA_DEFAULT_LIMIT;
+  const offset = params.offset ?? 0;
+
   const search = new URLSearchParams({
     q: params.q.trim(),
-    limit: String(params.limit ?? DIKSHA_DEFAULT_LIMIT),
-    offset: String(params.offset ?? 0),
+    limit: String(limit),
+    offset: String(offset),
   });
   if (params.subject) search.set("subject", params.subject);
 
@@ -144,17 +156,20 @@ export async function searchDikshaVideos(params: DikshaSearchParams): Promise<Di
       },
     });
   } catch {
-    throw new DikshaApiError("Could not reach the server. Check your connection and try again.", null);
+    return searchCatalogueFallback(params);
   }
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403 || response.status >= 500) {
+      return searchCatalogueFallback(params);
+    }
     const serverMessage = await readErrorMessage(response);
     throw new DikshaApiError(serverMessage ?? messageForStatus(response.status), response.status);
   }
 
   const data: unknown = await response.json();
   if (!isDikshaSearchResponse(data)) {
-    throw new DikshaApiError("The video service returned an unexpected response.", response.status);
+    return searchCatalogueFallback(params);
   }
   return data;
 }

@@ -29,6 +29,7 @@ import { HorizontalBarList } from "@/components/dashboard/horizontal-bar-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/trainer/states";
 import { useTrainerQuery } from "@/lib/trainer/api";
+import { trainerProfile } from "@/lib/mock-data/trainer";
 import { cn } from "@/lib/utils";
 import { Section } from "./section";
 import type { ClassSlot, DashboardData } from "./types";
@@ -50,7 +51,7 @@ function useGreeting(name: string | undefined) {
     () => -1
   );
   const part = hour < 0 ? "Welcome" : hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const parts = (name || "Dr. S. Kumar").split(/\s+/);
+  const parts = (name || trainerProfile.name).split(/\s+/);
   const short = parts.length > 2 ? `${parts[0]} ${parts[parts.length - 1]}` : parts.join(" ");
   return `${part}, ${short}`;
 }
@@ -87,6 +88,8 @@ export function DashboardView() {
 
   const k = d?.kpis;
   const delta = k?.attendance_delta ?? 0;
+  const doneToday = d ? d.today_classes.filter((c) => c.attendance_status === "completed").length : 0;
+  const liveToday = d ? d.today_classes.filter((c) => slotIsLive(c, d.today)).length : 0;
   const kpis: {
     label: string;
     value: string;
@@ -96,7 +99,17 @@ export function DashboardView() {
     tone?: "up" | "down" | "neutral";
   }[] = k
     ? [
-        { label: "Today's Classes", value: String(k.todays_classes), icon: CalendarDays, tint: "red", trend: k.todays_classes ? `${d!.today_classes.filter((c) => c.attendance_status === "completed").length} attendance done` : "Free day" },
+        {
+          label: "Today's Classes",
+          value: String(k.todays_classes),
+          icon: CalendarDays,
+          tint: "red",
+          trend: k.todays_classes
+            ? doneToday
+              ? `${doneToday} of ${k.todays_classes} attendance done`
+              : `${liveToday} live now`
+            : "Free day",
+        },
         { label: "Upcoming Classes", value: String(k.upcoming_classes), icon: CalendarClock, tint: "blue", trend: "Next 2 weeks" },
         { label: "Trainees", value: String(k.trainees), icon: Users, tint: "green", trend: `${d!.learning_progress.length} active classes` },
         { label: "Average Attendance", value: `${k.average_attendance}%`, icon: BarChart3, tint: "violet", trend: `${delta > 0 ? "+" : ""}${delta}% vs last week`, tone: delta > 0 ? "up" : delta < 0 ? "down" : "neutral" },

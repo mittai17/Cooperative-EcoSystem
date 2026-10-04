@@ -153,7 +153,10 @@ export function TrainersDirectory() {
       />
 
       {usingDemo ? (
-        <ListNotice message={`${error} Showing sample rows.`} onRetry={() => setReloadKey((k) => k + 1)} />
+        <ListNotice
+          message={error ? `${error} Showing sample rows.` : "Showing sample records."}
+          onRetry={() => setReloadKey((k) => k + 1)}
+        />
       ) : null}
 
       <ListCard

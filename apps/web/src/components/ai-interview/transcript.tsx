@@ -25,7 +25,7 @@ interface TranscriptProps {
   speaking?: boolean;
 }
 
-export function Transcript({ messages, emptyMessage, onSpeakMessage, speaking }: TranscriptProps) {
+export function Transcript({ messages, emptyMessage, onSpeakMessage }: TranscriptProps) {
   const t = useT();
   if (messages.length === 0) {
     return (

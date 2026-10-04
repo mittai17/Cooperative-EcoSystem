@@ -183,7 +183,7 @@ export default function LearningPlayerPage({ params }: PageProps) {
           </Link>
           <span className="text-slate-300 dark:text-slate-700">|</span>
           <span className="text-xs font-medium text-slate-500 truncate max-w-md">
-            CoopSetu AI Learning Pathway · DIKSHA Certified
+            NURVEX Learning Pathway · DIKSHA Certified
           </span>
         </div>
 
@@ -376,7 +376,7 @@ export default function LearningPlayerPage({ params }: PageProps) {
                   <div>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Sparkles className="size-5 text-primary" />
-                      CoopSetu Knowledge Assessment & Certification
+                      NURVEX Knowledge Assessment & Certification
                     </CardTitle>
                     <CardDescription className="mt-1">
                       Complete this assessment to certify your knowledge and update your Skill Passport.
@@ -416,7 +416,7 @@ export default function LearningPlayerPage({ params }: PageProps) {
                           <div className="mt-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-left max-w-lg mx-auto shadow-sm">
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                                CoopSetu Certified Diploma
+                                NURVEX Certified Diploma
                               </span>
                               <Badge variant="outline" className="text-emerald-600 border-emerald-400 text-[10px]">
                                 Verified

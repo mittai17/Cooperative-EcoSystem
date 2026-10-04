@@ -23,7 +23,7 @@ const REPORTS: { key: ReportKey; title: string; description: string }[] = [
 
 export default function ReportsPage() {
   const api = useApi();
-  const [openKey, setOpenKey] = useState<ReportKey | null>(null);
+  const [openKey, setOpenKey] = useState<ReportKey | null>(REPORTS[0].key);
   const [exportingKey, setExportingKey] = useState<ReportKey | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +31,7 @@ export default function ReportsPage() {
     setExportingKey(key);
     setError(null);
     try {
-      await downloadReportCsv(key);
+      await downloadReportCsv(api, key);
     } catch (err) {
       setError(errorMessage(err, "The export could not be downloaded. Try again."));
     } finally {

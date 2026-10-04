@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Info, Target, Briefcase, BookOpen, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { skillPassport } from "@/lib/mock-data/skills";
 import { useT } from "@/i18n";
 
 // Node definitions
@@ -31,21 +32,36 @@ const nodes: Node[] = [
   { id: "s3", label: "Communication", type: "Skill", x: 350, y: 250 },
   { id: "s4", label: "Rural Development", type: "Skill", x: 550, y: 150 },
   { id: "s5", label: "Bookkeeping", type: "Skill", x: 450, y: 350 },
-  
+  { id: "s6", label: "Dairy Operations", type: "Skill", x: 140, y: 175 },
+  { id: "s7", label: "Quality Testing", type: "Skill", x: 60, y: 95 },
+  { id: "s8", label: "Statutory Compliance", type: "Skill", x: 660, y: 250 },
+  { id: "s9", label: "Credit Appraisal", type: "Skill", x: 550, y: 430 },
+
   // Courses
   { id: "c1", label: "Leadership for Board Members", type: "Course", x: 100, y: 100 },
   { id: "c2", label: "Data Analytics for Coops", type: "Course", x: 50, y: 250 },
   { id: "c3", label: "Rural Entrepreneurship", type: "Course", x: 700, y: 100 },
   { id: "c4", label: "Cooperative Bookkeeping", type: "Course", x: 600, y: 400 },
-  
+  { id: "c5", label: "Dairy Cooperative Operations", type: "Course", x: 250, y: 40 },
+  { id: "c6", label: "Agri Credit Appraisal & Risk", type: "Course", x: 690, y: 470 },
+  { id: "c7", label: "Data Analysis for Decisions", type: "Course", x: 60, y: 400 },
+  { id: "c8", label: "Governance & Ethics for Boards", type: "Course", x: 430, y: 60 },
+
   // Jobs
   { id: "j1", label: "Coop Development Officer", type: "Job", x: 300, y: 50 },
   { id: "j2", label: "MIS & Data Analyst", type: "Job", x: 250, y: 450 },
   { id: "j3", label: "Rural Dev Officer", type: "Job", x: 500, y: 50 },
   { id: "j4", label: "Society Accountant", type: "Job", x: 350, y: 450 },
-  
+  { id: "j5", label: "Dairy Procurement Supervisor", type: "Job", x: 120, y: 300 },
+  { id: "j6", label: "Agricultural Credit Officer", type: "Job", x: 640, y: 340 },
+  { id: "j7", label: "PACS Accounts Assistant", type: "Job", x: 460, y: 250 },
+  { id: "j8", label: "Cold Chain Logistics Lead", type: "Job", x: 60, y: 210 },
+
   // Certifications
   { id: "cert1", label: "Cert in Coop Management", type: "Certification", x: 100, y: 200 },
+  { id: "cert2", label: "Cert in Dairy Operations", type: "Certification", x: 180, y: 60 },
+  { id: "cert3", label: "Cert in Bookkeeping & Tally", type: "Certification", x: 330, y: 350 },
+  { id: "cert4", label: "Cert in Quality Testing", type: "Certification", x: 30, y: 150 },
 ];
 
 const edges: Edge[] = [
@@ -61,7 +77,28 @@ const edges: Edge[] = [
   { source: "s4", target: "j3" },
   { source: "s5", target: "c4" },
   { source: "s5", target: "j4" },
-  { source: "s1", target: "s3" }, // Skill synergy
+  { source: "s1", target: "s3" },
+  { source: "s6", target: "c5" },
+  { source: "s6", target: "j5" },
+  { source: "s6", target: "cert2" },
+  { source: "s7", target: "cert4" },
+  { source: "s7", target: "c5" },
+  { source: "s7", target: "j5" },
+  { source: "s6", target: "s7" },
+  { source: "s8", target: "c8" },
+  { source: "s8", target: "j4" },
+  { source: "s8", target: "j7" },
+  { source: "s5", target: "s8" },
+  { source: "s5", target: "cert3" },
+  { source: "s2", target: "c7" },
+  { source: "s2", target: "s5" },
+  { source: "s9", target: "c6" },
+  { source: "s9", target: "j6" },
+  { source: "s9", target: "j7" },
+  { source: "s9", target: "c2" },
+  { source: "s6", target: "j8" },
+  { source: "s7", target: "j8" },
+  { source: "s8", target: "j6" },
 ];
 
 const colorMap = {
@@ -70,6 +107,46 @@ const colorMap = {
   Job: { fill: "hsl(var(--warning, 35 100% 50%))", text: "text-amber-600", bg: "bg-amber-100", icon: Briefcase },
   Certification: { fill: "hsl(var(--destructive, 280 100% 60%))", text: "text-purple-600", bg: "bg-purple-100", icon: Award },
 };
+
+const NODE_NOTE_LABEL: Record<NodeType, string> = {
+  Skill: "Evidence",
+  Course: "Why this course",
+  Job: "Why this role",
+  Certification: "Credential",
+};
+
+const NODE_NOTE: Record<NodeType, string> = {
+  Skill: "",
+  Course: "Contributes to the connected skills above. Open it from My Learning to continue where you left off.",
+  Job: "Sourced from verified cooperative employers. Your skill match on this role is the average of the connected skills you have already verified.",
+  Certification: "Issued by a NCCT Sector Skill Council after assessment and field evidence were verified.",
+};
+
+const skillByName = new Map(skillPassport.map((entry) => [entry.name, entry]));
+
+const averageConfidence =
+  skillPassport.length === 0
+    ? 0
+    : Math.round(skillPassport.reduce((total, entry) => total + entry.confidence, 0) / skillPassport.length);
+
+const FALLBACK_EVIDENCE: { type: string; title: string; date: string }[] = [
+  { type: "Project", title: "Field placement report under verification", date: "2026-09-30" },
+];
+
+function nodeConfidence(label: string): number {
+  return skillByName.get(label)?.confidence ?? averageConfidence;
+}
+
+function nodeEvidence(label: string): { type: string; title: string; date: string }[] {
+  const entry = skillByName.get(label);
+  return entry ? entry.evidence : FALLBACK_EVIDENCE;
+}
+
+function formatEvidenceDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 export default function SkillGraphPage() {
   const t = useT();
@@ -203,7 +280,7 @@ export default function SkillGraphPage() {
                     <h4 className="text-sm font-semibold mb-2 text-muted-foreground">{t("trainee.skillGraph.proficiency")}</h4>
                     <div className="flex justify-between items-center bg-muted/50 p-3 rounded-md">
                       <span className="font-medium text-sm">{t("trainee.skillGraph.confidence")}</span>
-                      <span className="font-bold text-primary">85%</span>
+                      <span className="font-bold text-primary">{nodeConfidence(selectedNode.label)}%</span>
                     </div>
                   </div>
                 )}
@@ -229,15 +306,20 @@ export default function SkillGraphPage() {
                   <div>
                     <h4 className="text-sm font-semibold mb-2 text-muted-foreground">{t("trainee.skillGraph.evidence")}</h4>
                     <div className="border-l-2 border-primary/20 pl-4 py-1 flex flex-col gap-3">
-                      <div>
-                        <p className="text-sm font-medium">{t("trainee.skillGraph.completedAssessment")}</p>
-                        <p className="text-xs text-muted-foreground">{t("trainee.skillGraph.assessmentDetail")}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{t("trainee.skillGraph.projectSubmission")}</p>
-                        <p className="text-xs text-muted-foreground">{t("trainee.skillGraph.projectDetail")}</p>
-                      </div>
+                      {nodeEvidence(selectedNode.label).map((item) => (
+                        <div key={item.title}>
+                          <p className="text-sm font-medium">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">{item.type} &middot; {formatEvidenceDate(item.date)}</p>
+                        </div>
+                      ))}
                     </div>
+                  </div>
+                )}
+
+                {selectedNode.type !== "Skill" && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2 text-muted-foreground">{NODE_NOTE_LABEL[selectedNode.type]}</h4>
+                    <p className="text-sm text-muted-foreground">{NODE_NOTE[selectedNode.type]}</p>
                   </div>
                 )}
                 

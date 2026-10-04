@@ -21,6 +21,7 @@ import { describeApiError, type InterviewSource } from "@/lib/ai-interview/commo
 import {
   evaluateTraineeInterview,
   getInterviewTarget,
+  interviewRoleOptions,
   startTraineeSession,
   submitTraineeTurn,
   type TraineeEvaluation,
@@ -366,7 +367,7 @@ export default function TraineeAiInterviewPage() {
             <div className="flex flex-col gap-2 mt-2">
               <span className="text-xs text-muted-foreground">Or select a common role:</span>
               <div className="flex flex-wrap gap-2">
-                {["Dairy Procurement Supervisor", "PACS Accounts Assistant", "Cooperative Extension Officer", "Rural Marketing Executive", "Cold Chain Logistics Lead"].map(role => (
+                {interviewRoleOptions.map(role => (
                   <Badge 
                     key={role} 
                     variant="outline" 

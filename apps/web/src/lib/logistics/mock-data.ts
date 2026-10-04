@@ -1,5 +1,5 @@
 /**
- * CoopSetu AI — Logistics Module Seed Data
+ * NURVEX — Logistics Module Seed Data
  *
  * Fulfils spec §11 exactly:
  *   3 institutions / 5 campuses

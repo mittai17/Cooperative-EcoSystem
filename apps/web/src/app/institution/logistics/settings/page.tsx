@@ -43,8 +43,8 @@ function fmtDt(iso: string) {
 }
 
 export default function SettingsAuditPage() {
-  const [log, setLog] = useState<AuditEvent[]>([]);
-  const [ready, setReady] = useState(false);
+  const [log, setLog] = useState<AuditEvent[]>(() => logisticsService.getAuditLog());
+  const [ready] = useState(true);
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("ALL");
   const [activeTab, setActiveTab] = useState("audit");
@@ -57,8 +57,6 @@ export default function SettingsAuditPage() {
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    setLog(logisticsService.getAuditLog());
-    setReady(true);
     const unsub = logisticsService.subscribe(() => setLog(logisticsService.getAuditLog()));
     return unsub;
   }, []);

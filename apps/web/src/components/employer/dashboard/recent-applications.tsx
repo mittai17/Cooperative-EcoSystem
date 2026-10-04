@@ -1,6 +1,6 @@
 import { Eye, Inbox, Sparkles, UserRound } from "lucide-react";
 import { formatRelativeDays } from "@/components/employer/jobs/format";
-import type { ApplicationStatus, RecentApplication } from "@/lib/employer/jobs-api";
+import type { RecentApplication } from "@/lib/employer/jobs-api";
 import { cn } from "@/lib/utils";
 import { RowMenu } from "./row-menu";
 import { SectionCard, SectionEmpty, SectionError, SectionSkeleton, initials } from "./section-shell";

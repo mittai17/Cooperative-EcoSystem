@@ -9,8 +9,6 @@ import { EmptyState, ErrorState, LoadingBlock } from "@/components/trainer/state
 import { FilterSelect } from "@/components/trainer/filter-select";
 import { TrainerApiError, trainerFetch, useTrainerQuery } from "@/lib/trainer/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 interface Types {
   types: { type: string; title: string; description: string }[];
   batches: { id: string; name: string }[];
@@ -68,20 +66,10 @@ export function ReportsView() {
     setBusy(type);
     setExportError(null);
     try {
-      const p = qs();
-      p.set("fmt", "csv");
-      let blob: Blob;
-      try {
-        const res = await fetch(`${API_BASE}/api/v1/trainer/reports/${type}?${p}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        blob = await res.blob();
-      } catch {
-        // Fallback: generate CSV client-side from trainerFetch report data
-        const rep = report?.type === type ? report : await trainerFetch<ReportData>(`/reports/${type}?${qs()}`);
-        const header = rep.columns.join(",");
-        const rows = rep.rows.map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
-        blob = new Blob([`${header}\n${rows}`], { type: "text/csv;charset=utf-8;" });
-      }
+      const rep = report?.type === type ? report : await trainerFetch<ReportData>(`/reports/${type}?${qs()}`);
+      const header = rep.columns.join(",");
+      const rows = rep.rows.map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+      const blob = new Blob([`${header}\n${rows}`], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

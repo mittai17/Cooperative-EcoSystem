@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export default function middleware(req: NextRequest) {
   // If demo role cookie is set, allow access to all routes
-  const demoRole = req.cookies.get('coopsetu_demo_role')?.value;
+  const demoRole = req.cookies.get('nurvex_demo_role')?.value;
   if (demoRole) {
     return NextResponse.next();
   }

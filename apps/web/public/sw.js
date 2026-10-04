@@ -1,5 +1,5 @@
-// Service Worker for CoopSetu AI PWA & Offline Engine
-const CACHE_NAME = 'coopsetu-cache-v2';
+// Service Worker for NURVEX PWA & Offline Engine
+const CACHE_NAME = 'nurvex-cache-v2';
 const OFFLINE_URL = '/my-learning';
 
 const STATIC_PRECACHE = [

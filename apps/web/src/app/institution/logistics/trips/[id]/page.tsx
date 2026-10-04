@@ -44,15 +44,29 @@ export default function TripDetailPage() {
   const router = useRouter();
   const tripId = params.id as string;
 
-  const [trip, setTrip] = useState<TripWithDetails | null>(null);
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [trip, setTrip] = useState<TripWithDetails | null>(() => {
+    return logisticsService.getTripsWithDetails().find((t) => t.id === tripId) ?? null;
+  });
+  const [ready] = useState(true);
+  const [error, setError] = useState<string | null>(() => {
+    const found = logisticsService.getTripsWithDetails().find((t) => t.id === tripId);
+    return found ? null : "Trip not found.";
+  });
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Assign resources form
-  const [assignVehicle, setAssignVehicle] = useState("");
-  const [assignDriver, setAssignDriver] = useState("");
-  const [assignRoute, setAssignRoute] = useState("");
+  const [assignVehicle, setAssignVehicle] = useState(() => {
+    const found = logisticsService.getTripsWithDetails().find((t) => t.id === tripId);
+    return found?.vehicleId ?? "";
+  });
+  const [assignDriver, setAssignDriver] = useState(() => {
+    const found = logisticsService.getTripsWithDetails().find((t) => t.id === tripId);
+    return found?.driverId ?? "";
+  });
+  const [assignRoute, setAssignRoute] = useState(() => {
+    const found = logisticsService.getTripsWithDetails().find((t) => t.id === tripId);
+    return found?.routeId ?? "";
+  });
   const [assignReason, setAssignReason] = useState("");
   const [assigning, setAssigning] = useState(false);
 
@@ -73,11 +87,9 @@ export default function TripDetailPage() {
     } else {
       setError("Trip not found.");
     }
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   // eslint-disable-next-line react-hooks/exhaustive-deps

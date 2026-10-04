@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Bell, Pin, Calendar } from "lucide-react";
+import { ChevronRight, Pin, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { hostelService } from "@/lib/hostel/hostel-service";
 import { useT } from "@/i18n";

@@ -4,26 +4,18 @@ import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
-  BookOpen,
-  CheckCircle2,
   Clock,
-  ExternalLink,
-  FileText,
-  Filter,
   Globe,
-  Info,
-  Layers,
   Maximize2,
   Play,
   RotateCcw,
   Search,
   Sparkles,
-  Video,
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,8 +26,6 @@ import {
   DIKSHA_QUERY_MIN,
   DIKSHA_SUBJECTS,
   DikshaApiError,
-  dikshaPageUrl,
-  safeVideoUrl,
   searchDikshaVideos,
   type DikshaSubject,
   type DikshaVideo,
@@ -338,8 +328,8 @@ export default function LearnPage() {
                     <SelectItem value="DIKSHA" className="text-xs">
                       {t("trainee.learn.sourceDiksha")}
                     </SelectItem>
-                    <SelectItem value="COOPSETU" className="text-xs">
-                      {t("trainee.learn.sourceCoopsetu")}
+                    <SelectItem value="NURVEX" className="text-xs">
+                      {t("trainee.learn.sourceNurvex")}
                     </SelectItem>
                     <SelectItem value="ALL" className="text-xs">
                       {t("trainee.learn.sourceAll")}

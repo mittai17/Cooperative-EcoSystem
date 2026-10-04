@@ -156,8 +156,7 @@ export function InstitutionForm({ mode, institution }: InstitutionFormProps) {
         router.push(created?.id ? `/admin/institutions/${encodeURIComponent(created.id)}` : "/admin/institutions");
       }
       router.refresh();
-    } catch (error) {
-      // In case of unexpected synchronous error, navigate back safely
+    } catch {
       router.push(mode === "edit" && institution ? `/admin/institutions/${encodeURIComponent(institution.id)}` : "/admin/institutions");
     }
   }

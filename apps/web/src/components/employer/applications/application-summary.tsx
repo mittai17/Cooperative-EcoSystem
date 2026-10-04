@@ -29,7 +29,7 @@ export function ApplicationSummary({ application, busy, onShortlist, onReject }:
           <CandidateAvatar name={application.name} photoUrl={application.photo_url} className="size-16 text-lg" />
           <div className="flex min-w-0 flex-col gap-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">{application.name}</h2>
+              <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">{application.name}</h1>
               <Badge className={cn("hover:bg-transparent", stageTone(application.status))}>{stageLabel(application.status)}</Badge>
             </div>
             <p className="text-sm text-foreground">

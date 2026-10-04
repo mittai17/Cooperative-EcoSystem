@@ -39,7 +39,7 @@ export default function SkillPassportPage() {
         if (cancelled) return;
         setRows(data && data.length > 0 ? data : DEMO_SKILL_PASSPORT);
         setError(null);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         setRows(DEMO_SKILL_PASSPORT);
         setError(null);

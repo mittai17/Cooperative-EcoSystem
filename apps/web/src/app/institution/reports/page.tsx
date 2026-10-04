@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { 
   FileText, Download, Printer, TrendingUp, Users, CheckCircle2, 
-  CalendarDays, GraduationCap, Briefcase, ChevronDown, BarChart3,
-  Search, Filter
+  CalendarDays, GraduationCap, Briefcase,
+  Filter, AlertTriangle
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,23 @@ const BATCH_DATA = [
   { id: "B-2026-02", programme: "Dairy Cold Chain Ops", trainer: "Priya Patel", enrolled: 30, attendance: 88, pass: 90, placed: 75, status: "Active" },
   { id: "B-2026-03", programme: "PACS Digital Accounting", trainer: "Vikram Singh", enrolled: 60, attendance: 95, pass: 96, placed: 88, status: "Completed" },
   { id: "B-2026-04", programme: "Agri-Business Leadership", trainer: "N. Deshmukh", enrolled: 25, attendance: 84, pass: 88, placed: 80, status: "Active" },
+];
+
+const ATTENDANCE_MONTHLY = [
+  { month: "April 2026",    sessions: 18, avgAttendance: 89, absentees: 14, onLeave: 8,  biometricRate: 96 },
+  { month: "May 2026",      sessions: 22, avgAttendance: 91, absentees: 11, onLeave: 6,  biometricRate: 97 },
+  { month: "June 2026",     sessions: 20, avgAttendance: 87, absentees: 18, onLeave: 10, biometricRate: 95 },
+  { month: "July 2026",     sessions: 24, avgAttendance: 93, absentees: 9,  onLeave: 5,  biometricRate: 98 },
+  { month: "August 2026",   sessions: 26, avgAttendance: 90, absentees: 13, onLeave: 7,  biometricRate: 97 },
+  { month: "September 2026",sessions: 22, avgAttendance: 92, absentees: 10, onLeave: 6,  biometricRate: 99 },
+];
+
+const ATTENDANCE_DEFAULTERS = [
+  { name: "Suresh Jadhav",    programme: "PACS Digital Accounting",  batch: "PDA-02", attendance: 45, sessions: 22, status: "Critical" },
+  { name: "Priya Nair",       programme: "Dairy Cooperative Ops",    batch: "DCO-01", attendance: 52, sessions: 26, status: "Critical" },
+  { name: "Rakesh Yadav",     programme: "Cooperative Law",          batch: "CLG-01", attendance: 58, sessions: 20, status: "Warning"  },
+  { name: "Meena Patel",      programme: "Cooperative Mgmt. Fundamentals", batch: "CMF-01", attendance: 62, sessions: 24, status: "Warning"  },
+  { name: "Kiran Bhosale",    programme: "Dairy Cooperative Ops",    batch: "DCO-01", attendance: 64, sessions: 26, status: "Warning"  },
 ];
 
 export default function InstitutionReportsPage() {
@@ -238,21 +255,105 @@ export default function InstitutionReportsPage() {
             </TabsContent>
 
             <TabsContent value="attendance" className="m-0">
-                <Card>
+                <div className="flex flex-col gap-5">
+                  {/* Monthly Attendance Summary Table */}
+                  <Card>
                     <CardHeader className="px-6 py-4 border-b">
-                        <CardTitle className="text-lg">Attendance & Biometric Compliance</CardTitle>
-                        <CardDescription>Monthly breakdown of attendance modes and leave summaries.</CardDescription>
+                        <CardTitle className="text-lg">Monthly Attendance Compliance</CardTitle>
+                        <CardDescription>Session-level attendance rates and biometric verification across all active cohorts.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6">
-                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center gap-4">
-                            <BarChart3 className="size-12 opacity-20" />
-                            <div>
-                                <p className="font-medium text-foreground">Attendance Chart Visualization</p>
-                                <p className="text-sm">Detailed charts are available in the full release using Recharts.</p>
-                            </div>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Month</TableHead>
+                                        <TableHead className="text-right">Sessions Held</TableHead>
+                                        <TableHead className="text-center">Avg. Attendance</TableHead>
+                                        <TableHead className="text-right">Total Absentees</TableHead>
+                                        <TableHead className="text-right">On Approved Leave</TableHead>
+                                        <TableHead className="text-center">Biometric Scan Rate</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {ATTENDANCE_MONTHLY.map((row) => (
+                                        <TableRow key={row.month}>
+                                            <TableCell className="font-medium">{row.month}</TableCell>
+                                            <TableCell className="text-right font-mono">{row.sessions}</TableCell>
+                                            <TableCell className="text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <span className={`text-sm font-semibold ${row.avgAttendance >= 90 ? "text-emerald-600" : row.avgAttendance >= 80 ? "text-amber-600" : "text-red-600"}`}>
+                                                        {row.avgAttendance}%
+                                                    </span>
+                                                    <Progress value={row.avgAttendance} className="w-20 h-2" />
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right text-muted-foreground">{row.absentees}</TableCell>
+                                            <TableCell className="text-right text-muted-foreground">{row.onLeave}</TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge variant="outline" className={row.biometricRate >= 98 ? "border-emerald-300 text-emerald-700 bg-emerald-50" : "border-amber-300 text-amber-700 bg-amber-50"}>
+                                                    {row.biometricRate}%
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </div>
                     </CardContent>
-                </Card>
+                  </Card>
+
+                  {/* Attendance Defaulters */}
+                  <Card>
+                    <CardHeader className="px-6 py-4 border-b">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="size-4 text-amber-500" />
+                          <CardTitle className="text-lg">Attendance Defaulters (Below 75%)</CardTitle>
+                        </div>
+                        <CardDescription>Trainees at risk of losing certification eligibility. Notify or escalate immediately.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Trainee</TableHead>
+                                        <TableHead>Programme</TableHead>
+                                        <TableHead>Batch</TableHead>
+                                        <TableHead className="text-center">Attendance Rate</TableHead>
+                                        <TableHead className="text-center">Sessions Attended</TableHead>
+                                        <TableHead>Risk Level</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {ATTENDANCE_DEFAULTERS.map((d) => (
+                                        <TableRow key={d.name}>
+                                            <TableCell className="font-medium text-foreground">{d.name}</TableCell>
+                                            <TableCell className="text-xs text-muted-foreground">{d.programme}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="font-mono text-[10px]">{d.batch}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span className={`font-bold text-sm ${d.attendance < 60 ? "text-red-600" : "text-amber-600"}`}>
+                                                    {d.attendance}%
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-center text-xs text-muted-foreground">
+                                                {Math.round(d.sessions * d.attendance / 100)}/{d.sessions}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className={d.status === "Critical" ? "border-red-300 bg-red-50 text-red-700" : "border-amber-300 bg-amber-50 text-amber-700"}>
+                                                    {d.status}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                  </Card>
+                </div>
             </TabsContent>
 
             <TabsContent value="assessments" className="m-0">

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Clock, MapPin, ExternalLink, Calendar } from "lucide-react";
+import { CalendarDays, MapPin, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUpcomingEvents } from "@/lib/store/programme-store";
 import { useT } from "@/i18n";

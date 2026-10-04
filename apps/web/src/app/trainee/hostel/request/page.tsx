@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronRight,
   Check,
   Building2,
-  Calendar,
   CheckCircle2,
-  Sparkles,
   ShieldCheck,
   Users,
   Utensils,
@@ -25,8 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { hostelService } from "@/lib/hostel/hostel-service";
+import type { RoomType } from "@/lib/hostel/types";
 import { useT } from "@/i18n";
 
 export default function TraineeHostelRequestPage() {
@@ -42,8 +41,8 @@ export default function TraineeHostelRequestPage() {
   const [startDate, setStartDate] = useState("2026-10-12");
   const [endDate, setEndDate] = useState("2026-10-25");
   const [hostelPref, setHostelPref] = useState("VAMNICOM Main Hostel");
-  const [roomPref, setRoomPref] = useState("4 Sharing");
-  const [acPref, setAcPref] = useState("no");
+  const [roomPref, setRoomPref] = useState<RoomType>("4 Sharing");
+  const [acPref] = useState("no");
   const [specialReq, setSpecialReq] = useState("Non-AC, Ground or 2nd floor (if possible)");
   const [reason, setReason] = useState("Mandatory residential module enrollment under state cooperative training quota.");
   const [submitted, setSubmitted] = useState(false);
@@ -53,7 +52,7 @@ export default function TraineeHostelRequestPage() {
     hostelService.submitHostelRequest({
       traineeId: "trn-ravindra",
       requestedHostel: hostelPref,
-      roomPreference: roomPref as any,
+      roomPreference: roomPref,
       acPreference: acPref === "yes",
       specialRequirement: specialReq,
       reason,
@@ -268,7 +267,7 @@ export default function TraineeHostelRequestPage() {
                     {["Double Sharing", "4 Sharing", "6 Sharing"].map((type) => (
                       <div
                         key={type}
-                        onClick={() => setRoomPref(type)}
+                        onClick={() => setRoomPref(type as RoomType)}
                         className={`p-3.5 rounded-xl border text-center cursor-pointer transition-all ${
                           roomPref === type ? "bg-rose-50 border-primary ring-2 ring-primary/20 font-bold text-primary" : "bg-card"
                         }`}
@@ -369,10 +368,12 @@ export default function TraineeHostelRequestPage() {
             {/* Right: Why Hostel Accommodation Banner (MATCHING IMAGE 4 PANEL 2) */}
             <div className="md:col-span-5 rounded-2xl border bg-muted/15 p-5 space-y-4">
               <div className="h-36 rounded-xl overflow-hidden border">
-                <img
+                <Image
                   src="/vamnicom-campus.jpg"
                   alt={t("trainee.hostelRequest.imageAlt")}
-                  className="w-full h-full object-cover"
+                  width={640}
+                  height={288}
+                  className="size-full object-cover"
                 />
               </div>
 

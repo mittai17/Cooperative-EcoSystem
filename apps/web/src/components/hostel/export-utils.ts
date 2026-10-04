@@ -1,7 +1,7 @@
 /**
  * Generic helper to export tabular data to a CSV file and trigger browser download
  */
-export function exportToCSV<T extends Record<string, any>>(
+export function exportToCSV<T extends Record<string, unknown>>(
   data: T[],
   filename: string,
   columns?: { key: keyof T; header: string }[]

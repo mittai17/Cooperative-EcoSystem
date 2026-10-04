@@ -86,7 +86,7 @@ export default function AboutPage() {
             {t("public.aboutPage.hero.badge")}
           </Badge>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-            {heroBefore}<span className="text-primary">CoopSetu</span>{heroAfter}
+            {heroBefore}<span className="text-primary">NURVEX</span>{heroAfter}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
             {t("public.aboutPage.hero.body")}

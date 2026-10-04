@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { certificates } from "@/lib/mock-data/certificates";
+import { skillPassport } from "@/lib/mock-data/skills";
+import { courses } from "@/lib/mock-data/courses";
+import { traineeEnrolments } from "@/lib/trainee/course-catalog";
+import { traineeProfile } from "@/lib/trainee/identity";
 import {
   Pencil,
   Camera,
@@ -27,10 +32,8 @@ import {
   Bell,
   ShieldCheck,
   Globe,
-  Play,
   ArrowRight,
   TrendingUp,
-  Clock,
   ExternalLink,
   Laptop,
   Users,
@@ -41,7 +44,6 @@ import {
   X,
   Share2,
   Download,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,139 +52,121 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
+const ownedCertificates = Object.values(certificates).filter(
+  (certificate) => certificate.holderName === traineeProfile.legalName,
+);
+const inProgressCount = traineeEnrolments.filter((item) => item.progress > 0 && item.progress < 100).length;
+const completedCount = traineeEnrolments.filter((item) => item.progress >= 100).length;
+
 // ── Demo Data ─────────────────────────────────────────────────────────────────
 
 const INITIAL_PROFILE = {
-  name: "Arjun Kumar",
-  role: "Trainee",
-  rollNo: "TN20260012",
-  age: "19 years",
-  dob: "17 Feb 2007",
-  gender: "Male",
-  location: "Chennai, Tamil Nadu",
-  languages: "Tamil, English",
-  email: "arjunkumar@example.com",
-  phone: "+91 98765 43210",
-  bio: "Aspiring to build a career in cooperative management and digital technologies. Interested in learning, skill development and contributing to rural growth.",
-  careerGoal: "Cooperative Manager",
-  careerGoalDesc:
-    "I want to work in a cooperative society and contribute to rural development using digital technologies.",
+  name: traineeProfile.name,
+  role: traineeProfile.role,
+  rollNo: traineeProfile.rollNo,
+  age: traineeProfile.age,
+  dob: traineeProfile.dob,
+  gender: traineeProfile.gender,
+  location: traineeProfile.location,
+  languages: traineeProfile.languages,
+  email: traineeProfile.email,
+  phone: traineeProfile.phone,
+  bio: traineeProfile.bio,
+  careerGoal: traineeProfile.careerGoal,
+  careerGoalDesc: traineeProfile.careerGoalDesc,
 };
 
 const STATS = [
   {
     icon: BookOpen,
-    count: 5,
+    count: inProgressCount,
     label: "Courses\nIn Progress",
     bgColor: "bg-rose-50 dark:bg-rose-950/40",
     textColor: "text-red-600 dark:text-red-400",
   },
   {
     icon: CheckCircle2,
-    count: 12,
+    count: completedCount,
     label: "Courses\nCompleted",
     bgColor: "bg-emerald-50 dark:bg-emerald-950/40",
     textColor: "text-emerald-600 dark:text-emerald-400",
   },
   {
     icon: Settings,
-    count: 18,
+    count: skillPassport.length,
     label: "Skills\nEarned",
     bgColor: "bg-amber-50 dark:bg-amber-950/40",
     textColor: "text-amber-600 dark:text-amber-400",
   },
   {
     icon: FileText,
-    count: 3,
+    count: ownedCertificates.length,
     label: "Certificates",
     bgColor: "bg-indigo-50 dark:bg-indigo-950/40",
     textColor: "text-indigo-600 dark:text-indigo-400",
   },
 ];
 
-const RECENT_COURSES = [
-  {
-    id: "rc1",
-    title: "Cooperative Management Fundamentals",
-    type: "DIKSHA • Video",
-    progress: 82,
-    thumbnail: "/trainee/profile/recent-1.png",
-  },
-  {
-    id: "rc2",
-    title: "Financial Literacy for Cooperatives",
-    type: "DIKSHA • Reading",
-    progress: 60,
-    thumbnail: "/trainee/profile/recent-2.png",
-  },
-  {
-    id: "rc3",
-    title: "Digital Tools for Rural Development",
-    type: "DIKSHA • Video",
-    progress: 32,
-    thumbnail: "/trainee/profile/recent-3.png",
-  },
+const COURSE_THUMBNAILS = [
+  "/trainee/profile/recent-1.png",
+  "/trainee/profile/recent-2.png",
+  "/trainee/profile/recent-3.png",
 ];
 
-const SKILLS = [
-  { name: "Digital Literacy", icon: Laptop, color: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800" },
-  { name: "Cooperative Management", icon: Users, color: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800" },
-  { name: "Financial Literacy", icon: CreditCard, color: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800" },
-  { name: "Data Management", icon: Database, color: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800" },
-  { name: "Leadership", icon: Compass, color: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800" },
-  { name: "Communication", icon: MessageSquare, color: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800" },
+const RECENT_COURSES = traineeEnrolments
+  .filter((item) => item.progress > 0)
+  .sort((a, b) => b.progress - a.progress)
+  .slice(0, 4)
+  .map((item, index) => {
+    const course = courses.find((entry) => entry.id === item.courseId);
+    return {
+      id: item.courseId,
+      title: course?.title ?? item.courseId,
+      type: `${course?.category ?? "Course"} • ${course?.durationHours ?? 0}h`,
+      progress: item.progress,
+      thumbnail: COURSE_THUMBNAILS[index % COURSE_THUMBNAILS.length],
+    };
+  });
+
+const SKILL_TONES = [
+  "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
+  "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",
+  "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
+  "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800",
+  "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",
+  "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800",
 ];
 
-const CERTIFICATES = [
-  {
-    id: "cert1",
-    title: "Digital Literacy for Cooperatives",
-    issuedOn: "12 Sep 2026",
-    issuer: "NCCT • National Council for Cooperative Training",
-    certId: "NCCT-DL-2026-90412",
-    verified: true,
-    thumbnail: "/trainee/profile/cert-1.png",
-  },
-  {
-    id: "cert2",
-    title: "Cooperative Management Basics",
-    issuedOn: "25 Aug 2026",
-    issuer: "VAMNICOM • Pune",
-    certId: "VAM-CMB-2026-4410",
-    verified: true,
-    thumbnail: "/trainee/profile/cert-2.png",
-  },
-  {
-    id: "cert3",
-    title: "Rural Financial Inclusion",
-    issuedOn: "10 Jul 2026",
-    issuer: "NABARD • Financial Inclusion Wing",
-    certId: "NAB-RFI-2026-7819",
-    verified: true,
-    thumbnail: "/trainee/profile/cert-3.png",
-  },
-];
+const SKILL_ICONS = [Laptop, Users, CreditCard, Database, Compass, MessageSquare, Settings, Sparkles];
 
-const RECOMMENDED_COURSES = [
-  {
-    id: "rec1",
-    title: "Advanced Cooperative Management",
-    meta: "DIKSHA • Course • 4h 20m",
-    thumbnail: "/trainee/profile/rec-1.png",
-  },
-  {
-    id: "rec2",
-    title: "Digital Payments in Cooperatives",
-    meta: "DIKSHA • Course • 3h 10m",
-    thumbnail: "/trainee/profile/rec-2.png",
-  },
-  {
-    id: "rec3",
-    title: "Leadership in Rural Communities",
-    meta: "DIKSHA • Course • 2h 45m",
-    thumbnail: "/trainee/profile/rec-3.png",
-  },
-];
+const SKILLS = skillPassport.slice(0, 8).map((skill, index) => ({
+  name: skill.name,
+  icon: SKILL_ICONS[index % SKILL_ICONS.length],
+  color: SKILL_TONES[index % SKILL_TONES.length],
+}));
+
+const formatIssuedOn = (value: string) =>
+  new Date(value).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
+const CERTIFICATES = ownedCertificates.map((certificate, index) => ({
+  id: certificate.id,
+  title: certificate.programmeTitle,
+  issuedOn: formatIssuedOn(certificate.issueDate),
+  issuer: certificate.issuer,
+  certId: certificate.id,
+  verified: certificate.status === "Valid",
+  thumbnail: `/trainee/profile/cert-${(index % 3) + 1}.png`,
+}));
+
+const RECOMMENDED_COURSES = courses
+  .filter((course) => !traineeEnrolments.some((item) => item.courseId === course.id))
+  .slice(0, 3)
+  .map((course, index) => ({
+    id: course.id,
+    title: course.title,
+    meta: `${course.category} • ${course.durationHours}h • ${course.level}`,
+    thumbnail: `/trainee/profile/rec-${(index % 3) + 1}.png`,
+  }));
 
 type TabType = "overview" | "learning" | "certificates" | "skills" | "jobs" | "activity" | "settings";
 
@@ -190,12 +174,10 @@ export default function TraineeProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get("tab") as TabType | null;
-      if (tab && ["overview", "learning", "certificates", "skills", "jobs", "activity", "settings"].includes(tab)) {
-        setActiveTab(tab);
-      }
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab") as TabType | null;
+    if (tab && ["overview", "learning", "certificates", "skills", "jobs", "activity", "settings"].includes(tab)) {
+      window.setTimeout(() => setActiveTab(tab), 0);
     }
   }, []);
 
@@ -1056,7 +1038,7 @@ export default function TraineeProfilePage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold text-foreground">Verified Credentials &amp; Badges</h3>
-                <p className="text-xs text-muted-foreground">All credentials cryptographically verifiable via DigiLocker &amp; CoopSetu</p>
+                <p className="text-xs text-muted-foreground">All credentials cryptographically verifiable via DigiLocker &amp; NURVEX</p>
               </div>
               <Button
                 variant="outline"

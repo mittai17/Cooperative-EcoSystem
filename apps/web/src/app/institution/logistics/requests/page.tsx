@@ -40,8 +40,8 @@ function fmtDate(iso: string) {
 }
 
 export default function RequestsPage() {
-  const [requests, setRequests] = useState<TransportRequest[]>([]);
-  const [ready, setReady] = useState(false);
+  const [requests, setRequests] = useState<TransportRequest[]>(() => logisticsService.getRequests());
+  const [ready] = useState(true);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "All">("Submitted");
   const [page, setPage] = useState(1);
@@ -56,11 +56,9 @@ export default function RequestsPage() {
 
   function refresh() {
     setRequests(logisticsService.getRequests());
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   }, []);

@@ -1,21 +1,47 @@
 "use client";
 
-import { Award, Search, Users, Calendar, MapPin, Clock, ArrowRight, X } from "lucide-react";
+import { Award, Search, Users, Calendar, MapPin, Clock, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { MOCK_EXAMS } from "@/lib/mock-data/programmes-data";
 import { useExamRegistrations } from "@/lib/store/programme-store";
-import type { Programme } from "@/types/programme";
+import { traineeProfile } from "@/lib/trainee/identity";
 import { useT } from "@/i18n";
 
-export function ExamsSection({ onApply }: { onApply: (p: Programme) => void }) {
+export function ExamsSection() {
   const t = useT();
   const [query, setQuery] = useState("");
-  const { getByTrainee } = useExamRegistrations();
+  const { examRegs, getByTrainee, registerForExam } = useExamRegistrations();
   const myExams = getByTrainee("trainee-ravindra");
+
+  const handleRegister = (examId: string, examName: string) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const serial = String(90 + examRegs.length).padStart(5, "0");
+    registerForExam({
+      id: `EXAM-REG-${year}-${serial}`,
+      examId,
+      examName,
+      traineeId: "trainee-ravindra",
+      traineeName: traineeProfile.legalName,
+      registeredAt: now.toISOString(),
+      status: "pending",
+      slotMode: MOCK_EXAMS.find((exam) => exam.id === examId)?.mode,
+      timeline: [
+        {
+          id: `er-tl-${examId}-${serial}`,
+          timestamp: now.toISOString(),
+          actor: traineeProfile.legalName,
+          actorRole: "trainee",
+          action: "Exam registration submitted",
+        },
+      ],
+      documents: [],
+    });
+  };
 
   const filteredExams = MOCK_EXAMS.filter((e) =>
     e.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -111,7 +137,7 @@ export function ExamsSection({ onApply }: { onApply: (p: Programme) => void }) {
                   ) : isFull ? (
                     <Button size="sm" disabled>{t("trainee.programmes.slotsFull")}</Button>
                   ) : (
-                    <Button size="sm" onClick={() => alert(t("trainee.programmes.examAlert"))}>
+                    <Button size="sm" onClick={() => handleRegister(exam.id, exam.name)}>
                       {t("trainee.programmes.registerNow")}
                     </Button>
                   )}

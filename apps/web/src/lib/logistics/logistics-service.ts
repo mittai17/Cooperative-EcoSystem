@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * CoopSetu AI — Logistics Service
+ * NURVEX — Logistics Service
  *
  * Singleton reactive service for Phase 1. Mirrors the HostelService pattern:
  * - State loaded from localStorage, falling back to seed data.
@@ -66,7 +66,7 @@ interface LogisticsState {
   auditLog: AuditEvent[];
 }
 
-const STORAGE_KEY = "coopsetu_logistics_state_v1";
+const STORAGE_KEY = "nurvex_logistics_state_v1";
 
 // ---------------------------------------------------------------------------
 // Validation helpers (server-side rules enforced here in Phase 1 mock)

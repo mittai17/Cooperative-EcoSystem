@@ -20,6 +20,7 @@ import type {
   HostelFacility,
   HostelStats,
   AttendanceStatus,
+  RoomType,
 } from "./types";
 
 interface HostelState {
@@ -38,7 +39,7 @@ interface HostelState {
   stats: HostelStats;
 }
 
-const STORAGE_KEY = "coopsetu_hostel_state_v1";
+const STORAGE_KEY = "nurvex_hostel_state_v1";
 
 class HostelService {
   private state: HostelState;
@@ -451,7 +452,7 @@ class HostelService {
     const trainee = this.state.trainees.find((t) => t.id === traineeId);
     if (!trainee) return false;
 
-    let rec = this.state.attendanceRecords.find((a) => a.traineeId === traineeId && a.date === date);
+    const rec = this.state.attendanceRecords.find((a) => a.traineeId === traineeId && a.date === date);
     if (rec) {
       rec.status = status;
       rec.remarks = remarks || rec.remarks;
@@ -487,7 +488,7 @@ class HostelService {
   public submitHostelRequest(data: {
     traineeId: string;
     requestedHostel: string;
-    roomPreference: any;
+    roomPreference: RoomType;
     acPreference: boolean;
     specialRequirement: string;
     reason: string;

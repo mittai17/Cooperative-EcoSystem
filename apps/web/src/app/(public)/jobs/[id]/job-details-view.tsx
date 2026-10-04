@@ -77,7 +77,7 @@ export function JobDetailsView({ job }: { job: Job }) {
   const [isApplied, setIsApplied] = useState(() => {
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("coopsetu_applications");
+        const stored = localStorage.getItem("nurvex_applications");
         if (stored) {
           const apps = JSON.parse(stored);
           return apps.some((a: { jobId?: string; title?: string }) => a.jobId === job.id || a.title === job.title);
@@ -89,7 +89,7 @@ export function JobDetailsView({ job }: { job: Job }) {
 
   const session = getActiveDemoSession();
   const applicantName = session.name || "Ravindra Suresh Patil";
-  const applicantEmail = session.email || "ravindra.patil@coopsetu.ai";
+  const applicantEmail = session.email || "ravindra.patil@nurvex.ai";
 
   const t = useT();
   const match = getJobMatch(job);
@@ -115,9 +115,9 @@ export function JobDetailsView({ job }: { job: Job }) {
 
       if (typeof window !== "undefined") {
         try {
-          const stored = localStorage.getItem("coopsetu_applications");
+          const stored = localStorage.getItem("nurvex_applications");
           const list = stored ? JSON.parse(stored) : [];
-          localStorage.setItem("coopsetu_applications", JSON.stringify([newApp, ...list]));
+          localStorage.setItem("nurvex_applications", JSON.stringify([newApp, ...list]));
         } catch {}
       }
 

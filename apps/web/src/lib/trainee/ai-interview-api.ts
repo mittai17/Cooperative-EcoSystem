@@ -1,20 +1,26 @@
 /**
  * Typed client for the trainee AI Mock Interview (practice only).
  *
- * Endpoints (backend under /api/v1/trainee/ai-interview):
- *   GET  /target                            -> { target_role, source, skills }
- *   POST /sessions                          -> { target_role? } starts a session
- *   POST /sessions/{session_id}/turns       -> { target_role, history, answer } -> next question
- *   POST /sessions/{session_id}/evaluate    -> { target_role, history } -> practice feedback
+ * Every call is answered by the in-app route at `/api/ai-interview`, which builds
+ * the question bank locally and only reaches Gemini when GEMINI_API_KEY is set.
+ * The FastAPI endpoints under `/api/v1/trainee/ai-interview` are deliberately not
+ * used: they require a backend session that the demo does not have, and calling
+ * them returned 403 on the practice page.
+ *
+ * Shapes (unchanged contract with `app/trainee/ai-interview/page.tsx`):
+ *   target                       -> { target_role, source, skills }
+ *   start                        -> { session_id, target_role, first_question, source, disclaimer }
+ *   turn   (question|final)      -> { next_question, source, turn_index, done }
+ *   evaluate                     -> { session_id, label, scores, strengths, gaps, ... }
  */
-import { fetchWithAuth } from "@/lib/api";
 import type {
   InterviewEvaluation,
   InterviewHistoryEntry,
   InterviewSource,
 } from "@/lib/ai-interview/common";
+import { COMMON_INTERVIEW_ROLES, traineeProfile } from "@/lib/trainee/identity";
 
-const BASE = "/api/v1/trainee/ai-interview";
+const ROUTE = "/api/ai-interview";
 
 export interface TraineeTarget {
   /** null when the trainee has no target role on their profile yet. */
@@ -42,66 +48,75 @@ export interface TraineeTurnResponse {
 
 export type TraineeEvaluation = InterviewEvaluation;
 
+/** Roles offered when the learner has not typed one of their own. */
+export const interviewRoleOptions = [...COMMON_INTERVIEW_ROLES];
+
+const DISCLAIMER =
+  "AI-generated practice interview for your own use. Text only: video and audio are processed locally in your browser.";
+
+interface RouteResponse {
+  [key: string]: unknown;
+}
+
+async function callInterviewRoute(payload: RouteResponse): Promise<RouteResponse | null> {
+  try {
+    const res = await fetch(ROUTE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as RouteResponse;
+  } catch {
+    return null;
+  }
+}
+
 /** Target role and skills the practice interview is built from. */
 export async function getInterviewTarget(): Promise<TraineeTarget> {
-  try {
-    const res = await fetchWithAuth(`${BASE}/target`);
-    if (res && typeof res.target_role !== "undefined" && Array.isArray(res.skills)) {
-      return res;
-    }
-  } catch (err) {
-    console.warn("Target role fetch error:", err);
+  const data = await callInterviewRoute({
+    action: "target",
+    target_role: traineeProfile.targetRole,
+    skills: traineeProfile.targetRoleSkills,
+  });
+
+  if (data && typeof data.target_role === "string" && Array.isArray(data.skills)) {
+    return {
+      target_role: data.target_role,
+      source: typeof data.source === "string" ? data.source : "profile",
+      skills: data.skills.filter((skill): skill is string => typeof skill === "string"),
+    };
   }
 
   return {
-    target_role: "PACS Management Trainee",
+    target_role: traineeProfile.targetRole,
     source: "profile",
-    skills: ["Cooperative Accounting", "Member Relations", "PACS Computerisation", "Agricultural Credit"],
+    skills: traineeProfile.targetRoleSkills,
   };
 }
 
 /** Starts a session. Omit `targetRole` to use the trainee's own target role. */
 export async function startTraineeSession(targetRole?: string): Promise<StartTraineeSessionResponse> {
-  const role = targetRole?.trim() || "PACS Management Trainee";
-  const payload = { target_role: role };
+  const role = targetRole?.trim() || traineeProfile.targetRole;
+  const payload = { target_role: role, skills: traineeProfile.targetRoleSkills };
 
-  // 1. Try backend
-  try {
-    const res = await fetchWithAuth(`${BASE}/sessions`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    if (res && res.first_question && res.session_id) {
-      return res;
-    }
-  } catch (err) {
-    console.warn("Backend start failed, attempting Next.js fallback route:", err);
+  const data = await callInterviewRoute({ action: "start", ...payload });
+  if (data && typeof data.session_id === "string" && typeof data.first_question === "string") {
+    return {
+      session_id: data.session_id,
+      target_role: typeof data.target_role === "string" ? data.target_role : role,
+      first_question: data.first_question,
+      source: (typeof data.source === "string" ? data.source : "fallback") as InterviewSource,
+      disclaimer: typeof data.disclaimer === "string" ? data.disclaimer : DISCLAIMER,
+    };
   }
 
-  // 2. Try Next.js API route
-  try {
-    const res = await fetch("/api/ai-interview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "start", ...payload }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.first_question) {
-        return data;
-      }
-    }
-  } catch (err) {
-    console.warn("Next.js API route failed:", err);
-  }
-
-  // 3. Guaranteed client-side fallback
   return {
-    session_id: "client-session-" + Date.now(),
+    session_id: `client-session-${role.replace(/\s+/g, "-").toLowerCase()}`,
     target_role: role,
     first_question: `Welcome to the interview for the ${role} position. To start, could you please introduce yourself and explain what motivates you to pursue this career in the cooperative sector?`,
     source: "fallback",
-    disclaimer: "AI-generated practice interview for your own use. Text only: video and audio are processed locally in your browser.",
+    disclaimer: DISCLAIMER,
   };
 }
 
@@ -109,37 +124,16 @@ export async function submitTraineeTurn(
   sessionId: string,
   payload: { target_role: string; history: InterviewHistoryEntry[]; answer: string },
 ): Promise<TraineeTurnResponse> {
-  // 1. Try backend
-  try {
-    const res = await fetchWithAuth(`${BASE}/sessions/${encodeURIComponent(sessionId)}/turns`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    if (res && (res.next_question !== undefined || res.done !== undefined)) {
-      return res;
-    }
-  } catch (err) {
-    console.warn("Backend turn failed, attempting Next.js fallback route:", err);
+  const data = await callInterviewRoute({ action: "turn", session_id: sessionId, ...payload });
+  if (data && (data.next_question !== undefined || data.done !== undefined)) {
+    return {
+      next_question: typeof data.next_question === "string" ? data.next_question : null,
+      source: (typeof data.source === "string" ? data.source : null) as InterviewSource | null,
+      turn_index: typeof data.turn_index === "number" ? data.turn_index : payload.history.length,
+      done: data.done === true,
+    };
   }
 
-  // 2. Try Next.js API route
-  try {
-    const res = await fetch("/api/ai-interview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "turn", ...payload }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && (data.next_question !== undefined || data.done !== undefined)) {
-        return data;
-      }
-    }
-  } catch (err) {
-    console.warn("Next.js turn API failed:", err);
-  }
-
-  // 3. Guaranteed client-side fallback
   const answersCount = payload.history.filter((h) => h.role === "candidate").length + 1;
   if (answersCount >= 3) {
     return {
@@ -167,48 +161,27 @@ export async function evaluateTraineeInterview(
   sessionId: string,
   payload: { target_role: string; history: InterviewHistoryEntry[] },
 ): Promise<TraineeEvaluation> {
-  // 1. Try backend
-  try {
-    const res = await fetchWithAuth(`${BASE}/sessions/${encodeURIComponent(sessionId)}/evaluate`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    if (res && res.scores && res.label) {
-      return res;
-    }
-  } catch (err) {
-    console.warn("Backend evaluate failed, attempting Next.js fallback route:", err);
+  const data = await callInterviewRoute({ action: "evaluate", session_id: sessionId, ...payload });
+  if (data && data.scores && data.label) {
+    return data as unknown as TraineeEvaluation;
   }
 
-  // 2. Try Next.js API route
-  try {
-    const res = await fetch("/api/ai-interview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "evaluate", ...payload }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.scores) {
-        return data;
-      }
-    }
-  } catch (err) {
-    console.warn("Next.js evaluate API failed:", err);
-  }
-
-  // 3. Guaranteed client-side fallback
   const answersEvaluated = payload.history.filter((h) => h.role === "candidate").length;
+  const substance = payload.history
+    .filter((h) => h.role === "candidate")
+    .reduce((total, h) => total + (h.text ? h.text.trim().split(/\s+/).length : 0), 0);
+  const score = substance > 40 ? 4 : substance > 15 ? 3 : 2;
+
   return {
     session_id: sessionId,
     label: "PRACTICE FEEDBACK — AI-generated, for your own practice, not shared with employers and not a hiring decision",
     source: "fallback",
     answers_evaluated: Math.max(1, answersEvaluated),
     scores: {
-      communication: 4,
-      domain_knowledge: 4,
-      problem_solving: 4,
-      cooperative_sector_knowledge: 4,
+      communication: score,
+      domain_knowledge: score,
+      problem_solving: score,
+      cooperative_sector_knowledge: score,
     },
     strengths: [
       "Clear communication and relevant cooperative context",

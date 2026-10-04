@@ -48,8 +48,8 @@ function fmtDateTime(iso: string) {
 }
 
 export default function TripsPage() {
-  const [trips, setTrips] = useState<TripWithDetails[]>([]);
-  const [ready, setReady] = useState(false);
+  const [trips, setTrips] = useState<TripWithDetails[]>(() => logisticsService.getTripsWithDetails());
+  const [ready] = useState(true);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TripStatus | "All">("All");
   const [page, setPage] = useState(1);
@@ -57,11 +57,9 @@ export default function TripsPage() {
 
   function refresh() {
     setTrips(logisticsService.getTripsWithDetails());
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   }, []);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { X, ChevronRight, ChevronLeft, CheckCircle2, Upload, Trash2, Eye, AlertCircle, Save, Loader2 } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, CheckCircle2, Upload, Trash2, AlertCircle, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,9 +11,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Programme } from "@/types/programme";
-import type { Application, DocumentRecord } from "@/types/application";
+import type { Application, ApplicationPreferences, DocumentRecord } from "@/types/application";
 import { useApplications, useApplicationDrafts, generateApplicationId } from "@/lib/store/programme-store";
 import { checkEligibility, DEMO_TRAINEE_PROFILE } from "@/lib/services/eligibility-service";
+import { traineeProfile } from "@/lib/trainee/identity";
 import { useT } from "@/i18n";
 
 // ─── Step config ──────────────────────────────────────────────────────────────
@@ -25,6 +26,23 @@ const STEPS = [
   { id: 5, shortKey: "trainee.wizard.stepReview" },
   { id: 6, shortKey: "trainee.wizard.stepConfirm" },
 ];
+
+type PersonalInfo = NonNullable<Application["personalInfo"]>;
+type PreferenceFlag = "hostelRequired" | "mealRequired" | "transportRequired";
+
+const DEFAULT_PERSONAL_INFO: PersonalInfo = {
+  fullName: traineeProfile.legalName,
+  dateOfBirth: "2003-06-12",
+  gender: "Male",
+  phone: traineeProfile.phone,
+  address: "Plot 12, Shivaji Nagar, Sangli 416 415",
+  state: "Maharashtra",
+  district: "Sangli",
+  occupation: "Dairy Cooperative Operations trainee",
+  cooperativeMembership: "Sangli Taluka Dairy Producers Cooperative",
+  education: "Undergraduate",
+  experience: "1 year",
+};
 
 /** Stored values stay English; these maps only translate what is displayed. */
 const GENDER_KEYS: Record<string, string> = {
@@ -59,21 +77,12 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
 
   const draft = getDraft(programme.id);
 
-  const [personalInfo, setPersonalInfo] = useState({
-    fullName: (draft?.personalInfo as any)?.fullName ?? "Ravindra Suresh Patil",
-    dateOfBirth: (draft?.personalInfo as any)?.dateOfBirth ?? "1992-07-15",
-    gender: (draft?.personalInfo as any)?.gender ?? "Male",
-    phone: (draft?.personalInfo as any)?.phone ?? "+91 98765 43210",
-    address: (draft?.personalInfo as any)?.address ?? "Plot 12, Govind Nagar, Nashik 422 001",
-    state: (draft?.personalInfo as any)?.state ?? "Maharashtra",
-    district: (draft?.personalInfo as any)?.district ?? "Nashik",
-    occupation: (draft?.personalInfo as any)?.occupation ?? "PACS Secretary",
-    cooperativeMembership: (draft?.personalInfo as any)?.cooperativeMembership ?? "Haveli Taluka PACS",
-    education: (draft?.personalInfo as any)?.education ?? "Graduate",
-    experience: (draft?.personalInfo as any)?.experience ?? "4 years",
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    ...DEFAULT_PERSONAL_INFO,
+    ...(draft?.personalInfo ?? {}),
   });
 
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<ApplicationPreferences>({
     preferredLanguage: draft?.preferences?.preferredLanguage ?? "Marathi",
     preferredBatch: draft?.preferences?.preferredBatch ?? "Batch A — Morning",
     modePreference: draft?.preferences?.modePreference ?? programme.mode,
@@ -96,7 +105,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
 
   const handleSaveDraft = useCallback(() => {
     setSaving(true);
-    saveDraft(programme.id, { personalInfo: personalInfo as any, preferences, documents, draftStep: step });
+    saveDraft(programme.id, { personalInfo, preferences, documents, draftStep: step });
     setTimeout(() => setSaving(false), 800);
   }, [programme.id, personalInfo, preferences, documents, step, saveDraft]);
 
@@ -128,7 +137,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
       institutionName: programme.institution,
       traineeId: "trainee-ravindra",
       traineeName: personalInfo.fullName,
-      traineeEmail: "ravindra.patil@coopsetu.ai",
+      traineeEmail: "ravindra.patil@nurvex.ai",
       submittedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: "pending_trainer",
@@ -141,7 +150,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
         { id: "tl-1", timestamp: new Date().toISOString(), actor: personalInfo.fullName, actorRole: "trainee", action: "Submitted application", status: "submitted" },
         { id: "tl-2", timestamp: new Date(Date.now() + 60000).toISOString(), actor: "System", actorRole: "system", action: "Eligibility check completed — " + (eligibility.overall === "eligible" ? "Eligible" : "Flagged"), status: "pending_trainer" },
       ],
-      personalInfo: personalInfo as any,
+      personalInfo,
     };
     createApplication(app);
     clearDraft(programme.id);
@@ -149,13 +158,9 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
     setStep(6);
   }, [programme, personalInfo, preferences, documents, eligibility, createApplication, clearDraft]);
 
-  const canProceed = useCallback(() => {
-    if (step === 4) {
-      const requiredDocs = documents.filter((d) => d.required);
-      return requiredDocs.every((d) => d.status === "uploaded" || d.status === "verified");
-    }
-    return true;
-  }, [step, documents]);
+  const requiredDocumentsPending = documents.filter(
+    (document) => document.required && document.status !== "uploaded" && document.status !== "verified",
+  ).length;
 
   return (
     <>
@@ -214,17 +219,17 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                 <p className="text-sm text-muted-foreground mt-0.5">{t("trainee.wizard.personalDesc")}</p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {[
+                {([
                   { key: "fullName", label: t("trainee.wizard.fullName") },
                   { key: "dateOfBirth", label: t("trainee.wizard.dateOfBirth"), type: "date" },
                   { key: "phone", label: t("trainee.wizard.phone") },
                   { key: "occupation", label: t("trainee.wizard.occupation") },
-                ].map((f) => (
+                ] satisfies { key: keyof PersonalInfo; label: string; type?: string }[]).map((f) => (
                   <div key={f.key}>
                     <Label className="text-xs mb-1.5 block">{f.label} *</Label>
                     <Input
                       type={f.type ?? "text"}
-                      value={(personalInfo as any)[f.key]}
+                      value={personalInfo[f.key]}
                       onChange={(e) => setPersonalInfo((prev) => ({ ...prev, [f.key]: e.target.value }))}
                     />
                   </div>
@@ -375,7 +380,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                     <div key={f.key} className="flex items-center gap-2.5">
                       <Checkbox
                         id={f.key}
-                        checked={(preferences as any)[f.key]}
+                        checked={preferences[f.key as PreferenceFlag]}
                         onCheckedChange={(v) => setPreferences((prev) => ({ ...prev, [f.key]: Boolean(v) }))}
                       />
                       <Label htmlFor={f.key} className="text-sm cursor-pointer">{f.label}</Label>
@@ -621,7 +626,15 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
             </div>
 
             {step < 5 && (
-              <Button onClick={() => setStep((s) => s + 1)}>
+              <Button
+                onClick={() => setStep((s) => s + 1)}
+                disabled={step === 4 && requiredDocumentsPending > 0}
+                title={
+                  step === 4 && requiredDocumentsPending > 0
+                    ? `${requiredDocumentsPending} required document(s) still pending`
+                    : undefined
+                }
+              >
                 {t("trainee.wizard.continue")} <ChevronRight className="size-4 ml-1" />
               </Button>
             )}

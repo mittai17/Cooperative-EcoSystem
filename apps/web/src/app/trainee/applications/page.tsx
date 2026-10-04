@@ -21,10 +21,14 @@ interface ApplicationItem {
 }
 
 const DEFAULT_APPLICATIONS: ApplicationItem[] = [
-  { id: 1, jobId: "job-amul-01", title: "Dairy Procurement Supervisor", employer: "Amul Dairy Cooperative Union", date: "2026-09-15", status: "Interview" },
-  { id: 2, jobId: "job-vaikunth-01", title: "Cooperative Society Accountant", employer: "Vaikunth Cooperative Credit Society", date: "2026-09-10", status: "Shortlisted" },
-  { id: 3, jobId: "job-navbharat-01", title: "Junior Loan Officer", employer: "Navbharat Credit Coop", date: "2026-09-01", status: "Applied" },
-  { id: 4, jobId: "job-ncdc-01", title: "Data Analyst", employer: "National Cooperative Dev Corp", date: "2026-08-20", status: "Rejected" },
+  { id: 1, jobId: "job-dairy-supervisor-anand", title: "Dairy Procurement Supervisor", employer: "Amul Dairy Cooperative Union", location: "Anand, Gujarat", date: "2026-09-28", status: "Offered" },
+  { id: 2, jobId: "job-society-accountant-pune", title: "Cooperative Society Accountant", employer: "Vaikunth Cooperative Credit Society", location: "Pune, Maharashtra", date: "2026-09-24", status: "Interview" },
+  { id: 3, jobId: "job-mis-analyst-delhi", title: "MIS & Data Analyst - Cooperative Sector", employer: "National Cooperative Development Corporation", location: "New Delhi", date: "2026-09-19", status: "Shortlisted" },
+  { id: 4, jobId: "job-credit-officer-nagpur", title: "Agricultural Credit Officer", employer: "Vidarbha Farmers Cooperative Bank", location: "Nagpur, Maharashtra", date: "2026-09-12", status: "Interview" },
+  { id: 5, jobId: "job-fpo-manager-indore", title: "FPO Operations Manager", employer: "Malwa Farmer Producer Company Ltd.", location: "Indore, Madhya Pradesh", date: "2026-09-05", status: "Applied" },
+  { id: 6, jobId: "job-digital-marketing-exec-kolkata", title: "Digital Marketing Executive", employer: "Bengal Handloom Weavers Cooperative", location: "Kolkata, West Bengal", date: "2026-08-27", status: "Shortlisted" },
+  { id: 7, jobId: "job-apprentice-coop-secretary-jaipur", title: "Apprentice Cooperative Society Secretary", employer: "Rajasthan State Cooperative Union", location: "Jaipur, Rajasthan", date: "2026-08-20", status: "Rejected" },
+  { id: 8, jobId: "job-fisheries-coord-kochi", title: "Fisheries Cooperative Coordinator", employer: "Kerala State Fisheries Cooperative Federation", location: "Kochi, Kerala", date: "2026-08-11", status: "Rejected" },
 ];
 
 export default function ApplicationsPage() {
@@ -34,13 +38,13 @@ export default function ApplicationsPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("coopsetu_applications");
+      const stored = localStorage.getItem("nurvex_applications");
       if (stored) {
         const parsed = JSON.parse(stored) as ApplicationItem[];
         // Filter out any duplicates against default items by jobId or title
         const existingTitles = new Set(parsed.map((p) => p.title));
         const combined = [...parsed, ...DEFAULT_APPLICATIONS.filter((d) => !existingTitles.has(d.title))];
-        setList(combined);
+        window.setTimeout(() => setList(combined), 0);
       }
     } catch {}
   }, []);
@@ -51,11 +55,11 @@ export default function ApplicationsPage() {
     setList(next);
 
     try {
-      const stored = localStorage.getItem("coopsetu_applications");
+      const stored = localStorage.getItem("nurvex_applications");
       if (stored) {
         const parsed = JSON.parse(stored) as ApplicationItem[];
         const filteredStored = parsed.filter((a) => a.id !== id);
-        localStorage.setItem("coopsetu_applications", JSON.stringify(filteredStored));
+        localStorage.setItem("nurvex_applications", JSON.stringify(filteredStored));
       }
     } catch {}
 
@@ -65,6 +69,8 @@ export default function ApplicationsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case "Offered":
+        return <Badge className="bg-success/20 text-success hover:bg-success/30">Offer</Badge>;
       case "Interview":
         return <Badge className="bg-primary/20 text-primary hover:bg-primary/30">{t("trainee.common.interviewing")}</Badge>;
       case "Shortlisted":
@@ -82,6 +88,11 @@ export default function ApplicationsPage() {
   const shortlisted = list.filter((a) => a.status === "Shortlisted").length;
   const interviews = list.filter((a) => a.status === "Interview").length;
   const offers = list.filter((a) => a.status === "Offered").length;
+  const formatDate = (value: string) => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -176,7 +187,7 @@ export default function ApplicationsPage() {
                       </td>
                       <td className="px-4 py-4 text-muted-foreground">
                         <div className="flex items-center text-xs">
-                          <Calendar className="size-3 mr-1.5" /> {app.date}
+                          <Calendar className="size-3 mr-1.5" /> {formatDate(app.date)}
                         </div>
                       </td>
                       <td className="px-4 py-4">

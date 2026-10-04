@@ -17,6 +17,26 @@ import { trainerPost, useTrainerQuery } from "@/lib/trainer/api";
 
 type Draft = { marks: string; feedback: string };
 
+const REASON = "The response for this attempt is incomplete or malformed, so it cannot be graded here.";
+
+function isRenderableAttempt(value: AttemptDetail | null): value is AttemptDetail {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<AttemptDetail>;
+  if (!Array.isArray(candidate.questions) || candidate.questions.length === 0) return false;
+  if (!candidate.attempt || typeof candidate.attempt !== "object") return false;
+  if (!candidate.trainee || typeof candidate.trainee.name !== "string") return false;
+  if (!candidate.assessment || typeof candidate.assessment.title !== "string") return false;
+  return candidate.questions.every(
+    (q) =>
+      q &&
+      typeof q.id === "string" &&
+      typeof q.position === "number" &&
+      typeof q.max_marks === "number" &&
+      Array.isArray(q.expected) &&
+      q.expected.every((v) => typeof v === "string"),
+  );
+}
+
 function answerText(q: AttemptDetail["questions"][number], value: unknown): string {
   if (value === undefined || value === null || value === "") return "No answer";
   const arr = Array.isArray(value) ? value : [value];
@@ -30,6 +50,7 @@ export default function ReviewAttemptPage() {
   if (loading) return <div className="flex flex-col gap-4"><Skeleton className="h-10 w-64" />{[0, 1, 2].map((i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}</div>;
   if (error) return <ErrorState message={error} onRetry={refetch} />;
   if (!data) return null;
+  if (!isRenderableAttempt(data)) return <ErrorState message={REASON} onRetry={refetch} />;
   return <ReviewBody id={id} attemptId={attemptId} data={data} refetch={refetch} />;
 }
 

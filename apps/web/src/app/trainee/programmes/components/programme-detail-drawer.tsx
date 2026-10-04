@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { X, CheckCircle2, XCircle, AlertCircle, ChevronRight, Clock, MapPin, Users, Star, Calendar, Building2, BookOpen, Award } from "lucide-react";
+import { X, CheckCircle2, XCircle, ChevronRight, Clock, Users, Calendar, Building2, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { Programme } from "@/types/programme";
 import { checkEligibility, DEMO_TRAINEE_PROFILE } from "@/lib/services/eligibility-service";

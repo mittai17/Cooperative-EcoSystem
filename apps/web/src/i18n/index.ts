@@ -19,8 +19,8 @@ export { DEFAULT_LOCALE, LOCALES, getLocaleConfig, isLocale, type Locale } from 
 /** A catalog is a nested object; leaves are the translated strings. */
 export type MessageTree = { [key: string]: string | MessageTree };
 
-export const LOCALE_COOKIE = "coopsetu_locale";
-const LOCALE_STORAGE_KEY = "coopsetu_locale";
+export const LOCALE_COOKIE = "nurvex_locale";
+const LOCALE_STORAGE_KEY = "nurvex_locale";
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
 const englishMessages: MessageTree = en;

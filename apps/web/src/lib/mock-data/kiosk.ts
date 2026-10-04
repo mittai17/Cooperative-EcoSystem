@@ -69,7 +69,7 @@ export const kioskDevice: KioskDevice = {
   hardware: "Raspberry Pi 4 Model B, 4 GB",
   os: "Raspberry Pi OS Lite 64-bit (bookworm)",
   firmwareVersion: "kiosk-runtime 1.8.4",
-  appVersion: "CoopSetu Kiosk 2.4.0",
+  appVersion: "NURVEX Kiosk 2.4.0",
   serialNumber: "RPI4-ANAND-0X41C9",
   installedAt: "2026-07-22",
   uptimeSecondsAtBoot: 5 * 3600 + 42 * 60,
@@ -166,7 +166,7 @@ export interface FaceEngineStatus {
 
 export const faceEngine: FaceEngineStatus = {
   engine: "OpenCV DNN + InsightFace buffalo_l (ArcFace, 512-d embeddings)",
-  runtime: "WASM module coopsetu-face@0.9.2 — not bundled in this build",
+  runtime: "WASM module nurvex-face@0.9.2 — not bundled in this build",
   matching: "Cosine similarity, 0.62 threshold, liveness by 2-frame motion check",
   accuracyTarget: "Target 97.5% TAR at 0.1% FAR on the NCCT validation set",
   enrolledCount: 11,
@@ -282,7 +282,7 @@ export const kioskHealthSignals: HealthSignal[] = [
     label: "Network",
     state: "ok",
     reading: "Online · Wi-Fi",
-    detail: "coopsetu-institute-wifi · RSSI -58 dBm",
+    detail: "nurvex-institute-wifi · RSSI -58 dBm",
     ageSeconds: 6,
   },
   {
@@ -461,7 +461,7 @@ export const deviceActions: DeviceActionSpec[] = [
     label: "Restart kiosk service",
     summary: "Re-run device health checks and reload the viewer session state.",
     consequence:
-      "On deployed hardware this button calls `systemctl restart coopsetu-kiosk`. This build has no shell access, so it re-runs every health probe, re-reads the register and records the event in the log below.",
+      "On deployed hardware this button calls `systemctl restart nurvex-kiosk`. This build has no shell access, so it re-runs every health probe, re-reads the register and records the event in the log below.",
     scope: "Device-local. The offline register is left untouched.",
     destructive: false,
   },
@@ -470,7 +470,7 @@ export const deviceActions: DeviceActionSpec[] = [
     label: "Clear local cache",
     summary: "Delete cached course content and the offline sync queue from this device.",
     consequence:
-      "Removes every cached course and every queued sync item from this browser's IndexedDB (coopsetu_offline_db), then reports how many records were deleted.",
+      "Removes every cached course and every queued sync item from this browser's IndexedDB (nurvex_offline_db), then reports how many records were deleted.",
     scope: "Device-local and irreversible. Unsynced attendance records are lost.",
     confirmPhrase: "CLEAR",
     destructive: true,
@@ -508,7 +508,7 @@ export interface CertificateDetail {
   id: string;
   /** National Cooperative Certification Council registry reference. */
   ncctReference: string;
-  /** CoopSetu AI programme code used on the Skill Passport. */
+  /** NURVEX programme code used on the Skill Passport. */
   programmeCode: string;
   learnerCode: string;
   durationHours: number;
@@ -560,7 +560,7 @@ export const certificateDetails: Record<string, CertificateDetail> = {
     ],
     anchors: [
       { label: "Registry entry", value: "NCCT/2026/DAI/ANAND/00842" },
-      { label: "CoopSetu anchor", value: "0x8f3ac41d…09c219" },
+      { label: "NURVEX anchor", value: "0x8f3ac41d…09c219" },
       { label: "Hash algorithm", value: "SHA-256 over the canonical certificate JSON" },
     ],
   },
@@ -599,7 +599,7 @@ export const certificateDetails: Record<string, CertificateDetail> = {
     ],
     anchors: [
       { label: "Registry entry", value: "NCCT/2025/COOP/DELHI/01193" },
-      { label: "CoopSetu anchor", value: "0x51b7d0aa…7f41c8" },
+      { label: "NURVEX anchor", value: "0x51b7d0aa…7f41c8" },
       { label: "Hash algorithm", value: "SHA-256 over the canonical certificate JSON" },
     ],
   },
@@ -638,7 +638,7 @@ export const certificateDetails: Record<string, CertificateDetail> = {
     ],
     anchors: [
       { label: "Registry entry", value: "NCCT/2024/CRD/PUNE/00317" },
-      { label: "CoopSetu anchor", value: "0xa91c4477…2be05d" },
+      { label: "NURVEX anchor", value: "0xa91c4477…2be05d" },
       { label: "Hash algorithm", value: "SHA-256 over the canonical certificate JSON" },
     ],
   },
@@ -670,7 +670,90 @@ export const certificateDetails: Record<string, CertificateDetail> = {
     ],
     anchors: [
       { label: "Registry entry", value: "NCCT/2026/DMK/GANDHINAGAR/00459" },
-      { label: "CoopSetu anchor", value: "0xc4e80f13…5a2d7b" },
+      { label: "NURVEX anchor", value: "0xc4e80f13…5a2d7b" },
+      { label: "Hash algorithm", value: "SHA-256 over the canonical certificate JSON" },
+    ],
+  },
+  "CST-2026-LDR-00518": {
+    id: "CST-2026-LDR-00518",
+    ncctReference: "NCCT/2026/LDR/DELHI/00518",
+    programmeCode: "CSAI-PGM-COOPF-11",
+    learnerCode: "LEARNER-IN-MH-118420",
+    durationHours: 80,
+    deliveryMode: "Online · 60 h self-paced, 20 h synchronous practice",
+    assessmentBoard: "NCCT Sector Skill Council · Cooperative Governance",
+    seatNumber: "DL-2026-COOP-27",
+    coordinator: "Smt. Kavita Rane, Principal",
+    skills: [
+      {
+        skill: "Cooperative Management",
+        outcome: "Planned and presented the agenda and resolutions of a 12-seat committee's annual meeting.",
+        evidence: [
+          { type: "Assessment", title: "Written paper 1 · governance and the seven principles", date: "2026-07-24" },
+          { type: "Project", title: "Capstone · annual general meeting plan for a 1,200-member society", date: "2026-07-28" },
+        ],
+      },
+      {
+        skill: "Governance",
+        outcome: "Ran a mock board election for a 12-seat committee and documented the poll count.",
+        evidence: [
+          { type: "Assessment", title: "Written paper 2 · elections, quorum and board composition", date: "2026-07-26" },
+          { type: "Course", title: "Module 5 · governance, elections and the model bylaws", date: "2026-06-30" },
+        ],
+      },
+      {
+        skill: "Bylaws Drafting",
+        outcome: "Drafted a compliant set of bylaws for a new primary marketing society of 400 members.",
+        evidence: [
+          { type: "Project", title: "Capstone · model bylaws and amendment clause set", date: "2026-08-01" },
+          { type: "Employer Feedback", title: "Field internship review · Sangli dairy union", date: "2026-08-04" },
+        ],
+      },
+    ],
+    anchors: [
+      { label: "Registry entry", value: "NCCT/2026/LDR/DELHI/00518" },
+      { label: "NURVEX anchor", value: "0xb7d40e29…51c7a3" },
+      { label: "Hash algorithm", value: "SHA-256 over the canonical certificate JSON" },
+    ],
+  },
+  "CST-2026-BKP-00674": {
+    id: "CST-2026-BKP-00674",
+    ncctReference: "NCCT/2026/BKP/PUNE/00674",
+    programmeCode: "CSAI-PGM-AGCR-07",
+    learnerCode: "LEARNER-IN-MH-118420",
+    durationHours: 96,
+    deliveryMode: "Blended · 64 h classroom, 32 h cooperative field placement",
+    assessmentBoard: "NCCT Sector Skill Council · Finance and Accounts",
+    seatNumber: "PN-2026-BKP-08",
+    coordinator: "Dr. Lata Mhaske, Faculty Head",
+    skills: [
+      {
+        skill: "Bookkeeping",
+        outcome: "Maintained the day-book and cash scroll of a 4,000-member credit society for six weeks.",
+        evidence: [
+          { type: "Project", title: "Field placement report · day-book and cash scroll of Vaikunth PACS", date: "2026-09-04" },
+          { type: "Assessment", title: "Practical paper 1 · day-book, cash scroll and reconciliation", date: "2026-08-29" },
+        ],
+      },
+      {
+        skill: "Statutory Compliance",
+        outcome: "Prepared an inspection-ready audit file for a PACS covering members, shares and loans.",
+        evidence: [
+          { type: "Assessment", title: "Practical paper 2 · statutory registers and audit schedule", date: "2026-08-30" },
+          { type: "Course", title: "Module 4 · RBI norms, KYC and cooperative audit", date: "2026-07-14" },
+        ],
+      },
+      {
+        skill: "Tally",
+        outcome: "Migrated a three-year manual ledger into Tally with a reconciled opening balance sheet.",
+        evidence: [
+          { type: "Project", title: "Capstone · Tally migration and reconciliation report", date: "2026-09-08" },
+        ],
+      },
+    ],
+    anchors: [
+      { label: "Registry entry", value: "NCCT/2026/BKP/PUNE/00674" },
+      { label: "NURVEX anchor", value: "0x3ac9f5d8…b02e6f" },
       { label: "Hash algorithm", value: "SHA-256 over the canonical certificate JSON" },
     ],
   },
@@ -682,7 +765,7 @@ export const certificateDetails: Record<string, CertificateDetail> = {
  * documented production origin so the printed text, the QR preview and the
  * copied link stay byte-identical between server render and print.
  */
-export const PUBLIC_SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? "https://coopsetu.ai";
+export const PUBLIC_SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nurvex.ai";
 
 export function verificationPath(certificateId: string): string {
   return `/verify-certificate/${certificateId}`;

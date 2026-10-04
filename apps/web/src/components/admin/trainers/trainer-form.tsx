@@ -17,7 +17,6 @@ import {
 import { createTrainer, listInstitutions, type TrainerInput } from "@/lib/admin/admin-api";
 
 import { FormCard, FormField, FormFooter, ListNotice } from "./people-ui";
-import { errorMessage } from "./people-utils";
 
 type InstitutionOption = { id: string; name: string };
 

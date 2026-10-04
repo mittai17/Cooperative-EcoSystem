@@ -1,5 +1,5 @@
 // Mock widget data for role-based dashboards. All figures are illustrative
-// demo data for the CoopSetu AI frontend-first build.
+// demo data for the NURVEX frontend-first build.
 
 export const traineeProgress = [
   { month: "Apr", hours: 6 },

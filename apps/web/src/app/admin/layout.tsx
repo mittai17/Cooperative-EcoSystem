@@ -142,7 +142,7 @@ function NeedHelpBox() {
   return (
     <div className="mx-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
       <p className="text-sm font-semibold text-foreground">Need Help?</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">Chat with CoopSetu AI</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">Chat with NURVEX</p>
       <button
         type="button"
         className="mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-primary bg-white px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-rose-50"
@@ -255,7 +255,7 @@ function AdminProfileMenu() {
 function AdminFooter() {
   return (
     <footer className="mt-auto border-t border-border/80 pt-4 pb-2 text-xs text-muted-foreground">
-      CoopSetu AI · National Cooperative Training Council (NCCT)
+      NURVEX · National Cooperative Training Council (NCCT)
     </footer>
   );
 }

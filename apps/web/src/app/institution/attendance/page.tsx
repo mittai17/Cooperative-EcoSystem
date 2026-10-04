@@ -108,6 +108,7 @@ export default function AttendancePage() {
   const [sessionRoster, setSessionRoster] = useState<TraineeAttendance[]>([]);
   const [qrOpen, setQrOpen] = useState(false);
   const [selectedQrSessionId, setSelectedQrSessionId] = useState<string>(sessions[0]?.id || "s-101");
+  const [qrToken, setQrToken] = useState<string>("COOP-ATT-S-101-894210");
   const [filterProgramme, setFilterProgramme] = useState<string>("ALL");
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -208,7 +209,14 @@ export default function AttendancePage() {
             <Button variant="outline" size="sm" onClick={handleDownloadCsv}>
               <Download className="mr-1.5 size-4" /> Download Report
             </Button>
-            <Button size="sm" onClick={() => setQrOpen(true)}>
+            <Button
+              size="sm"
+              onClick={() => {
+                const code = Date.now().toString().slice(-6);
+                setQrToken(`COOP-ATT-${selectedQrSessionId.toUpperCase()}-${code}`);
+                setQrOpen(true);
+              }}
+            >
               <QrCode className="mr-1.5 size-4" /> Generate Session QR
             </Button>
           </div>
@@ -456,12 +464,21 @@ export default function AttendancePage() {
           <DialogHeader>
             <DialogTitle className="text-center">Live Session Attendance QR</DialogTitle>
             <DialogDescription className="text-center">
-              Display on the classroom projector screen. Trainees scan with the CoopSetu mobile app to auto-log presence.
+              Display on the classroom projector screen. Trainees scan with the NURVEX mobile app to auto-log presence.
             </DialogDescription>
           </DialogHeader>
 
           <div className="my-2">
-            <Select value={selectedQrSessionId} onValueChange={(val) => val && setSelectedQrSessionId(val)}>
+            <Select
+              value={selectedQrSessionId}
+              onValueChange={(val) => {
+                if (val) {
+                  setSelectedQrSessionId(val);
+                  const code = Date.now().toString().slice(-6);
+                  setQrToken(`COOP-ATT-${val.toUpperCase()}-${code}`);
+                }
+              }}
+            >
               <SelectTrigger className="w-full text-xs">
                 <SelectValue placeholder="Choose Session" />
               </SelectTrigger>
@@ -481,7 +498,7 @@ export default function AttendancePage() {
 
           <div className="text-xs text-muted-foreground space-y-1">
             <p className="font-mono bg-muted p-2 rounded text-foreground font-semibold">
-              TOKEN: COOP-ATT-{selectedQrSessionId.toUpperCase()}-{Date.now().toString().slice(-6)}
+              TOKEN: {qrToken}
             </p>
             <p>QR refreshes dynamically every 45 seconds to prevent sharing.</p>
           </div>

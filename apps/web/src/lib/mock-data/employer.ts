@@ -1,10 +1,10 @@
 /**
  * Employer workspace demo data: explainable AI candidate matches plus the
- * application pipeline for the CoopSetu AI frontend-first build (SIH 2026,
+ * application pipeline for the NURVEX frontend-first build (SIH 2026,
  * problem statement PS 26087).
  *
  * Every candidate, posting, mark, certificate and feedback record below is
- * SYNTHETIC. Names are drawn from the shared CoopSetu demo cast (see
+ * SYNTHETIC. Names are drawn from the shared NURVEX demo cast (see
  * `mock-data/dashboards.ts`, `mock-data/institution.ts`) so the employer,
  * institution and trainee screens describe one coherent fictional world.
  * Nothing here is a real learner, employer or NCCT record, and pages must say so
@@ -268,7 +268,7 @@ function matchedSkills(candidate: EmployerMatchCandidate, posting: EmployerPosti
         level: "Foundational",
         confidence: 0,
         verified: true,
-        source: { type: "Course", title: "Imported record", date: EMPLOYER_DEMO_TODAY, issuer: "CoopSetu passport import" },
+        source: { type: "Course", title: "Imported record", date: EMPLOYER_DEMO_TODAY, issuer: "NURVEX passport import" },
       };
       return { skill: signal, certificateBacked: validCertified.has(normalise(skill)) };
     });
@@ -464,7 +464,7 @@ export const employerPostings: EmployerPosting[] = [
     sector: "Dairy & Agri-processing",
     location: "Anand, Gujarat",
     type: "Full-time",
-    salaryRange: "Rs 22,000 - 28,000 / month",
+    salaryRange: "₹22,000 - ₹28,000 / month",
     openings: 4,
     required: ["Dairy Operations", "Quality Testing", "Logistics Planning"],
     mandatory: ["Dairy Operations", "Quality Testing"],
@@ -475,7 +475,7 @@ export const employerPostings: EmployerPosting[] = [
     sector: "Quality & Compliance",
     location: "Anand, Gujarat",
     type: "Full-time",
-    salaryRange: "Rs 26,000 - 34,000 / month",
+    salaryRange: "₹26,000 - ₹34,000 / month",
     openings: 2,
     required: ["Quality Testing", "Documentation", "Six Sigma Basics"],
     mandatory: ["Quality Testing"],
@@ -486,7 +486,7 @@ export const employerPostings: EmployerPosting[] = [
     sector: "Data & Analytics",
     location: "New Delhi",
     type: "Full-time",
-    salaryRange: "Rs 35,000 - 45,000 / month",
+    salaryRange: "₹35,000 - ₹45,000 / month",
     openings: 2,
     required: ["Data Analysis", "Dashboarding", "Spreadsheets"],
     mandatory: ["Data Analysis"],
@@ -497,7 +497,7 @@ export const employerPostings: EmployerPosting[] = [
     sector: "Rural Finance",
     location: "Pune, Maharashtra",
     type: "Full-time",
-    salaryRange: "Rs 18,000 - 24,000 / month",
+    salaryRange: "₹18,000 - ₹24,000 / month",
     openings: 2,
     required: ["Bookkeeping", "Tally", "Statutory Compliance"],
     mandatory: ["Bookkeeping", "Tally"],
@@ -508,10 +508,43 @@ export const employerPostings: EmployerPosting[] = [
     sector: "Marketing & Sales",
     location: "Vadodara, Gujarat",
     type: "Full-time",
-    salaryRange: "Rs 19,000 - 25,000 / month",
+    salaryRange: "₹19,000 - ₹25,000 / month",
     openings: 1,
     required: ["Retail Operations", "Digital Marketing", "E-commerce"],
     mandatory: ["Retail Operations"],
+  },
+  {
+    id: "emp-job-cold-chain",
+    title: "Cold Chain Logistics Coordinator",
+    sector: "Supply Chain",
+    location: "Anand, Gujarat",
+    type: "Full-time",
+    salaryRange: "₹24,000 - ₹30,000 / month",
+    openings: 3,
+    required: ["Cold Chain Handling", "Logistics Planning", "Quality Testing"],
+    mandatory: ["Cold Chain Handling", "Logistics Planning"],
+  },
+  {
+    id: "emp-job-pacs-trainee",
+    title: "PACS Management Trainee",
+    sector: "Cooperative Governance",
+    location: "Kheda, Gujarat",
+    type: "Apprenticeship",
+    salaryRange: "₹15,000 - ₹18,000 / month",
+    openings: 6,
+    required: ["Cooperative Operations", "Cooperative Management", "Member Relations"],
+    mandatory: ["Cooperative Operations"],
+  },
+  {
+    id: "emp-job-fpo-coordinator",
+    title: "FPO Operations Coordinator",
+    sector: "Agri Value Chains",
+    location: "Surat, Gujarat",
+    type: "Full-time",
+    salaryRange: "₹25,000 - ₹32,000 / month",
+    openings: 3,
+    required: ["Cooperative Management", "Supply Chain Logistics", "Rural Development"],
+    mandatory: ["Cooperative Management", "Supply Chain Logistics"],
   },
 ];
 
@@ -1301,7 +1334,7 @@ export interface JobApplication {
   stage: ApplicationStage;
   appliedOn: string;
   updatedOn: string;
-  source: "AI match" | "Direct apply" | "Institution referral" | "CoopSetu job board";
+  source: "AI match" | "Direct apply" | "Institution referral" | "NURVEX job board";
   noticePeriod: string;
   /** True once the employer has confirmed the hire. Drives the feedback prompt. */
   hired: boolean;
@@ -1426,7 +1459,7 @@ export const employerApplicationsSeed: JobApplication[] = [
     stage: "Hired",
     appliedOn: "2026-08-14",
     updatedOn: "2026-09-11",
-    source: "CoopSetu job board",
+    source: "NURVEX job board",
     noticePeriod: "Serving notice accepted",
     hired: true,
     feedbackSubmitted: false,
@@ -1488,7 +1521,7 @@ export const employerApplicationsSeed: JobApplication[] = [
     stage: "Applied",
     appliedOn: "2026-09-21",
     updatedOn: "2026-09-21",
-    source: "CoopSetu job board",
+    source: "NURVEX job board",
     noticePeriod: "30 days",
     hired: false,
     feedbackSubmitted: false,
@@ -1629,7 +1662,7 @@ export const employerApplicationsSeed: JobApplication[] = [
     stage: "Shortlisted",
     appliedOn: "2026-09-13",
     updatedOn: "2026-09-22",
-    source: "CoopSetu job board",
+    source: "NURVEX job board",
     noticePeriod: "60 days",
     hired: false,
     feedbackSubmitted: false,
@@ -1716,7 +1749,7 @@ export const employerApplicationsSeed: JobApplication[] = [
     stage: "Offered",
     appliedOn: "2026-08-25",
     updatedOn: "2026-09-20",
-    source: "CoopSetu job board",
+    source: "NURVEX job board",
     noticePeriod: "30 days",
     hired: false,
     feedbackSubmitted: false,

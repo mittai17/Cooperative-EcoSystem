@@ -164,20 +164,18 @@ function ActionQueueRow({ item }: { item: ActionQueueItem }) {
 // Page
 // ---------------------------------------------------------------------------
 export default function LogisticsOverviewPage() {
-  const [stats, setStats] = useState<LogisticsOverviewStats | null>(null);
-  const [actionQueue, setActionQueue] = useState<ActionQueueItem[]>([]);
-  const [todayTrips, setTodayTrips] = useState<TripWithDetails[]>([]);
-  const [ready, setReady] = useState(false);
+  const [stats, setStats] = useState<LogisticsOverviewStats | null>(() => logisticsService.getOverviewStats());
+  const [actionQueue, setActionQueue] = useState<ActionQueueItem[]>(() => logisticsService.getActionQueue());
+  const [todayTrips, setTodayTrips] = useState<TripWithDetails[]>(() => logisticsService.getTodayTrips());
+  const [ready] = useState(true);
 
   function refresh() {
     setStats(logisticsService.getOverviewStats());
     setActionQueue(logisticsService.getActionQueue());
     setTodayTrips(logisticsService.getTodayTrips());
-    setReady(true);
   }
 
   useEffect(() => {
-    refresh();
     const unsub = logisticsService.subscribe(refresh);
     return unsub;
   }, []);
@@ -290,7 +288,7 @@ export default function LogisticsOverviewPage() {
               <div>
                 <CardTitle className="font-heading text-base flex items-center gap-2">
                   <Clock className="size-4 text-primary" />
-                  Today's Operations
+                  Today&apos;s Operations
                 </CardTitle>
                 <CardDescription>
                   {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}

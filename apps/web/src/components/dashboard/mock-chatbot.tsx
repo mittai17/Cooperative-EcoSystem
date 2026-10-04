@@ -95,7 +95,7 @@ export function MockChatbot() {
             <Bot className="size-4" />
           </div>
           <div>
-            <CardTitle className="text-sm font-bold">CoopSetu AI</CardTitle>
+            <CardTitle className="text-sm font-bold">NURVEX</CardTitle>
             <p className="text-[10px] text-green-600 font-medium flex items-center gap-1">
               <span className="size-1.5 rounded-full bg-green-500" /> {t("shell.chatbot.online")}
             </p>

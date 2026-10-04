@@ -164,8 +164,13 @@ export interface InstitutionListQuery extends PageQuery {
 export const listInstitutions = (query: InstitutionListQuery = {}) =>
   listPaged<Institution, InstitutionListQuery>("/api/v1/admin/institutions", query);
 
-export const getInstitution = (id: string) =>
-  fetchWithAuth(`/api/v1/admin/institutions/${enc(id)}`) as Promise<Institution>;
+export const getInstitution = async (id: string): Promise<Institution> => {
+  const row = (await fetchWithAuth(`/api/v1/admin/institutions/${enc(id)}`)) as Institution;
+  if (row && row.id === id) {
+    return row;
+  }
+  throw new Error(`Institution not found: ${id}`);
+};
 
 export interface InstitutionInput {
   name: string;

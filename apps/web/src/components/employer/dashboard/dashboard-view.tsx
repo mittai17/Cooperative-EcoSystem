@@ -39,7 +39,7 @@ const DEFAULT_TIMELINE: TimelineRange = "6m";
 const DEMO_FALLBACK_ENABLED = process.env.NEXT_PUBLIC_EMPLOYER_DEMO_FALLBACK !== "false";
 
 function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : "Could not reach the CoopSetu API";
+  return err instanceof Error ? err.message : "Could not reach the NURVEX API";
 }
 
 export function EmployerDashboardView() {

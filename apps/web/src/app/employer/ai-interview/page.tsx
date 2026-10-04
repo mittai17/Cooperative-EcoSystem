@@ -248,7 +248,7 @@ export default function AiInterviewPage() {
       <div className="flex items-start gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-slate-700">
         <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
         <p>
-          Your camera feed stays in your browser. Only typed or transcribed answers are sent to CoopSetu
+          Your camera feed stays in your browser. Only typed or transcribed answers are sent to NURVEX
           AI for questions and evaluation.
         </p>
       </div>

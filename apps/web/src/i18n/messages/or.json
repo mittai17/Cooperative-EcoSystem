@@ -228,7 +228,7 @@
       }
     },
     "chatbot": {
-      "greeting": "ନମସ୍କାର {name}! ମୁଁ CoopSetu AI, ଆପଣଙ୍କ କ୍ୟାରିଅର ଓ ଶିକ୍ଷା ସହାୟକ। ଆଜି ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?",
+      "greeting": "ନମସ୍କାର {name}! ମୁଁ NURVEX, ଆପଣଙ୍କ କ୍ୟାରିଅର ଓ ଶିକ୍ଷା ସହାୟକ। ଆଜି ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?",
       "online": "ଅନଲାଇନ୍",
       "placeholder": "ମୋତେ ଯାହା ଇଚ୍ଛା ପଚାରନ୍ତୁ...",
       "suggestions": {
@@ -258,7 +258,7 @@
       "toggleMenu": "ନେଭିଗେସନ ମେନୁ ଟୋଗଲ କରନ୍ତୁ"
     },
     "hero": {
-      "badgeBrand": "CoopSetu AI",
+      "badgeBrand": "NURVEX",
       "badgeInitiative": "NCCT ଉଦ୍ୟମ",
       "titleLine1": "ଶିକ୍ଷଣରୁ",
       "titleLine2": "ଆଡ଼କୁ",
@@ -330,18 +330,18 @@
     },
     "cta": {
       "title": "ଆପଣଙ୍କ ସମବାୟ ସଂସ୍ଥାକୁ ଏହି ଚକ୍ରରେ ସାମିଲ କରିବାକୁ ପ୍ରସ୍ତୁତ କି?",
-      "body": "ଆପଣ ପ୍ରଶିକ୍ଷଣ ଦିଅନ୍ତି, ଶିକ୍ଷାଦାନ କରନ୍ତି, ନିଯୁକ୍ତି କରନ୍ତି ବା ପରିଚାଳନା କରନ୍ତି, ଆପଣଙ୍କ ଭୂମିକା ପାଇଁ ଏକ CoopSetu କାର୍ଯ୍ୟକ୍ଷେତ୍ର ଉପଲବ୍ଧ ଅଛି।",
+      "body": "ଆପଣ ପ୍ରଶିକ୍ଷଣ ଦିଅନ୍ତି, ଶିକ୍ଷାଦାନ କରନ୍ତି, ନିଯୁକ୍ତି କରନ୍ତି ବା ପରିଚାଳନା କରନ୍ତି, ଆପଣଙ୍କ ଭୂମିକା ପାଇଁ ଏକ NURVEX କାର୍ଯ୍ୟକ୍ଷେତ୍ର ଉପଲବ୍ଧ ଅଛି।",
       "getStarted": "ଆରମ୍ଭ କରନ୍ତୁ",
       "signIn": "ସାଇନ ଇନ"
     },
     "banner": {
       "title": "ଦକ୍ଷତା, ସୁଯୋଗ ଓ AI ମାଧ୍ୟମରେ ଶକ୍ତିଶାଳୀ ସମବାୟ ଭାରତ",
-      "ariaGetStarted": "CoopSetu AI ସହ ଆରମ୍ଭ କରନ୍ତୁ"
+      "ariaGetStarted": "NURVEX ସହ ଆରମ୍ଭ କରନ୍ତୁ"
     },
     "footer": {
       "description": "ସମବାୟ ପ୍ରଶିକ୍ଷଣକୁ ପ୍ରତ୍ୟକ୍ଷ ଭାବେ ଯାଞ୍ଚିତ ଦକ୍ଷତା ଓ ନିଯୁକ୍ତି ସହ ଯୋଡ଼ୁଥିବା ଏକ ଜାତୀୟ ସମବାୟ କ୍ଷମତା ନିର୍ମାଣ ଉଦ୍ୟମ। Smart India Hackathon 2026, PS 26087 ପାଇଁ ନିର୍ମିତ।",
       "demoTag": "ଡେମୋ ସଂସ୍କରଣ, ସର୍ବତ୍ର ନମୁନା ତଥ୍ୟ ଦେଖାଯାଉଛି",
-      "copyright": "CoopSetu AI। Smart India Hackathon 2026 ପାଇଁ ପ୍ରୋଟୋଟାଇପ।",
+      "copyright": "NURVEX। Smart India Hackathon 2026 ପାଇଁ ପ୍ରୋଟୋଟାଇପ।",
       "ministry": "ସମବାୟ ମନ୍ତ୍ରଣାଳୟ · ଜାତୀୟ ସମବାୟ ପ୍ରଶିକ୍ଷଣ ପରିଷଦ (NCCT)",
       "columns": {
         "platform": "ପ୍ଲାଟଫର୍ମ",
@@ -409,7 +409,7 @@
       "mission": {
         "label": "ଆମର ଲକ୍ଷ୍ୟ",
         "title": "ପ୍ରଶିକ୍ଷଣ ଓ ଜୀବିକା ମଧ୍ୟରେ ଚକ୍ର ସମ୍ପୂର୍ଣ୍ଣ କରିବା",
-        "body": "ଭାରତର ସମବାୟ କ୍ଷେତ୍ର ପ୍ରତିବର୍ଷ ହଜାର ହଜାର ଲୋକଙ୍କୁ ପ୍ରଶିକ୍ଷଣ ଦିଏ, ତଥାପି ଫଳାଫଳ ଅଦୃଶ୍ୟ ରହେ — ସଂସ୍ଥାଗୁଡ଼ିକରେ ବିଚ୍ଛିନ୍ନ, ଯେଉଁଠାରେ ପ୍ରଶିକ୍ଷାର୍ଥୀର ଶିକ୍ଷଣ ଯାତ୍ରାକୁ ନିଯୁକ୍ତି ସହ ଯୋଡ଼ୁଥିବା କୌଣସି ଡିଜିଟାଲ ସୂତ୍ର ନାହିଁ। CoopSetu AI ତାହା ବଦଳାଏ।",
+        "body": "ଭାରତର ସମବାୟ କ୍ଷେତ୍ର ପ୍ରତିବର୍ଷ ହଜାର ହଜାର ଲୋକଙ୍କୁ ପ୍ରଶିକ୍ଷଣ ଦିଏ, ତଥାପି ଫଳାଫଳ ଅଦୃଶ୍ୟ ରହେ — ସଂସ୍ଥାଗୁଡ଼ିକରେ ବିଚ୍ଛିନ୍ନ, ଯେଉଁଠାରେ ପ୍ରଶିକ୍ଷାର୍ଥୀର ଶିକ୍ଷଣ ଯାତ୍ରାକୁ ନିଯୁକ୍ତି ସହ ଯୋଡ଼ୁଥିବା କୌଣସି ଡିଜିଟାଲ ସୂତ୍ର ନାହିଁ। NURVEX ତାହା ବଦଳାଏ।",
         "passportBody": "ଆମେ ପ୍ରତ୍ୟେକ ପ୍ରଶିକ୍ଷାର୍ଥୀଙ୍କୁ ଏକ ଜୀବନ୍ତ, AI-ଆଧାରିତ {passport} ଦିଏ ଯାହାକୁ ନିଯୁକ୍ତିଦାତାମାନେ ବିଶ୍ୱାସ କରିପାରିବେ; ପ୍ରତ୍ୟେକ ସଂସ୍ଥାକୁ ଏକ ରିଅଲ-ଟାଇମ ଡ୍ୟାସବୋର୍ଡ, ଏବଂ NCCTକୁ ଦକ୍ଷତା ଯୋଗାଣ ଓ ଚାହିଦାର ଜାତୀୟ ବିଶ୍ଳେଷଣ ଦିଏ।",
         "passport": "ଦକ୍ଷତା ପାସପୋର୍ଟ",
         "tiles": {
@@ -430,7 +430,7 @@
           "3": "ନିଯୁକ୍ତିଦାତାମାନେ ଦାବି କରାଯାଇଥିବା ସମବାୟ ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରିପାରନ୍ତି ନାହିଁ",
           "4": "ଜାତୀୟ ପ୍ରଶିକ୍ଷଣ ପ୍ରବାହ ଉପରେ NCCTର ରିଅଲ-ଟାଇମ ଦୃଶ୍ୟମାନତା ନାହିଁ"
         },
-        "closing": "CoopSetu AI ଏକ ସମନ୍ୱିତ ମଞ୍ଚ ମାଧ୍ୟମରେ ଏହି ପ୍ରତ୍ୟେକ ଫାଙ୍କକୁ ସିଧାସଳଖ ସମାଧାନ କରେ।"
+        "closing": "NURVEX ଏକ ସମନ୍ୱିତ ମଞ୍ଚ ମାଧ୍ୟମରେ ଏହି ପ୍ରତ୍ୟେକ ଫାଙ୍କକୁ ସିଧାସଳଖ ସମାଧାନ କରେ।"
       },
       "howItWorks": {
         "label": "ଏହା କିପରି କାର୍ଯ୍ୟ କରେ",
@@ -479,7 +479,7 @@
       },
       "partners": {
         "label": "ସହଭାଗୀ ଓ ସଂସ୍ଥା",
-        "title": "CoopSetuକୁ ଶକ୍ତି ଦେଉଥିବା ଇକୋସିଷ୍ଟମ ସହଭାଗୀ",
+        "title": "NURVEXକୁ ଶକ୍ତି ଦେଉଥିବା ଇକୋସିଷ୍ଟମ ସହଭାଗୀ",
         "names": {
           "ncct": "ଜାତୀୟ ସମବାୟ ପ୍ରଶିକ୍ଷଣ ପରିଷଦ",
           "vamnicom": "ବୈକୁଣ୍ଠ ମେହେତା ଜାତୀୟ ସଂସ୍ଥା",
@@ -596,7 +596,7 @@
           "2Many": "{count}ଟି ପଦବୀ ସହ {type} କାମ ପାଇଁ ଉପଲବ୍ଧତା।",
           "3": "ସମବାୟ କ୍ଷେତ୍ର ବା ଗ୍ରାମୀଣ ବିକାଶରେ ପୂର୍ବ ଅଭିଜ୍ଞତା ଅଗ୍ରାଧିକାର ଯୋଗ୍ୟ, ବାଧ୍ୟତାମୂଳକ ନୁହେଁ।"
         },
-        "companyBlurb": "{employer} ହେଉଛି {location} ଠାରୁ ପରିଚାଳିତ, {sector} କ୍ଷେତ୍ରର ଏକ ସମବାୟ ନିଯୁକ୍ତିଦାତା। ସେମାନେ CoopSetuରେ ସତ୍ୟାପିତ ପଦବୀ ସିଧାସଳଖ ପ୍ରକାଶ କରନ୍ତି ଏବଂ କେବଳ ରିଜ୍ୟୁମେ କୀୱାର୍ଡ ବଦଳରେ AI-କ୍ରମାନ୍ୱିତ, ଦକ୍ଷତା-ପାସପୋର୍ଟ-ସମର୍ଥିତ ପ୍ରାର୍ଥୀ ମେଳ ଆଧାରରେ ନିଯୁକ୍ତି କରନ୍ତି।"
+        "companyBlurb": "{employer} ହେଉଛି {location} ଠାରୁ ପରିଚାଳିତ, {sector} କ୍ଷେତ୍ରର ଏକ ସମବାୟ ନିଯୁକ୍ତିଦାତା। ସେମାନେ NURVEXରେ ସତ୍ୟାପିତ ପଦବୀ ସିଧାସଳଖ ପ୍ରକାଶ କରନ୍ତି ଏବଂ କେବଳ ରିଜ୍ୟୁମେ କୀୱାର୍ଡ ବଦଳରେ AI-କ୍ରମାନ୍ୱିତ, ଦକ୍ଷତା-ପାସପୋର୍ଟ-ସମର୍ଥିତ ପ୍ରାର୍ଥୀ ମେଳ ଆଧାରରେ ନିଯୁକ୍ତି କରନ୍ତି।"
       }
     },
     "courseLearning": {
@@ -703,7 +703,7 @@
     },
     "demo": {
       "badge": "ସ୍ମାର୍ଟ ଇଣ୍ଡିଆ ହ୍ୟାକାଥନ 2026 ମୂଲ୍ୟାଙ୍କନ କେନ୍ଦ୍ର",
-      "title": "CoopSetu AI ଡେମୋ କେନ୍ଦ୍ର",
+      "title": "NURVEX ଡେମୋ କେନ୍ଦ୍ର",
       "body": "ସମବାୟ ଦକ୍ଷତା ଇକୋସିଷ୍ଟମର ପ୍ରତ୍ୟେକ ବୈଶିଷ୍ଟ୍ୟ ପରୀକ୍ଷା କରନ୍ତୁ। ତଳର 6ଟି ଭୂମିକା ମଧ୍ୟରୁ ଯେକୌଣସି ବାଛନ୍ତୁ ଏବଂ ପୂର୍ବ-ଲୋଡ ହୋଇଥିବା ପ୍ରୋଫାଇଲ, ସକ୍ରିୟ ପାଠ୍ୟକ୍ରମ, ସତ୍ୟାପିତ ପ୍ରମାଣପତ୍ର ଓ ଲାଇଭ ଡ୍ୟାସବୋର୍ଡ ସହ ପ୍ରବେଶ କରନ୍ତୁ।",
       "guideTitle": "ପ୍ରତ୍ୟେକ ଭୂମିକାରେ ମୂଲ୍ୟାଙ୍କନକାରୀମାନେ କ'ଣ ପରୀକ୍ଷା କରିପାରିବେ",
       "guideBody": "ଉପରର ସ୍ୱିଚର ବାର ବ୍ୟବହାର କରି ଯେକୌଣସି ସମୟରେ ଭୂମିକା ବଦଳାନ୍ତୁ",
@@ -727,16 +727,16 @@
       }
     },
     "login": {
-      "badge": "CoopSetu AI ଡେମୋ ଓ ଉତ୍ପାଦନ ପ୍ରବେଶ",
+      "badge": "NURVEX ଡେମୋ ଓ ଉତ୍ପାଦନ ପ୍ରବେଶ",
       "title": "ପ୍ରବେଶ ପାଇଁ ଆପଣଙ୍କ ଭୂମିକା ବାଛନ୍ତୁ",
-      "body": "ଆମର 6ଟି ଇକୋସିଷ୍ଟମ ଭୂମିକା ମଧ୍ୟରୁ ଯେକୌଣସି ଭାବରେ CoopSetu AI ଅନ୍ୱେଷଣ କରନ୍ତୁ। ସମ୍ପୂର୍ଣ୍ଣ ସ୍ଥିତି ଓ ପୂର୍ବ-ଭରିତ ତଥ୍ୟ ସହ ତୁରନ୍ତ ଲଗ ଇନ୍ କରିବାକୁ ତଳୁ ଯେକୌଣସି ଭୂମିକା ବାଛନ୍ତୁ।",
+      "body": "ଆମର 6ଟି ଇକୋସିଷ୍ଟମ ଭୂମିକା ମଧ୍ୟରୁ ଯେକୌଣସି ଭାବରେ NURVEX ଅନ୍ୱେଷଣ କରନ୍ତୁ। ସମ୍ପୂର୍ଣ୍ଣ ସ୍ଥିତି ଓ ପୂର୍ବ-ଭରିତ ତଥ୍ୟ ସହ ତୁରନ୍ତ ଲଗ ଇନ୍ କରିବାକୁ ତଳୁ ଯେକୌଣସି ଭୂମିକା ବାଛନ୍ତୁ।",
       "credentialsTitle": "ଆପଣଙ୍କ ପାଖରେ ଲଗଇନ ବିବରଣୀ ବା କଷ୍ଟମ ବିବରଣୀ ଅଛି କି?",
       "credentialsBody": "ଆପଣଙ୍କ ଇମେଲ ସହ ମାନକ ପ୍ରାମାଣିକରଣ ପୋର୍ଟାଲ ମାଧ୍ୟମରେ ଲଗ ଇନ କରନ୍ତୁ।",
       "standardSignIn": "ମାନକ ସାଇନ-ଇନ"
     },
     "verify": {
       "title": "ପ୍ରମାଣପତ୍ର ଯାଞ୍ଚ",
-      "body": "CoopSetu AI ଜାରି କରିଥିବା ଯେକୌଣସି ପ୍ରମାଣପତ୍ରର ପ୍ରାମାଣିକତା ତୁରନ୍ତ ଯାଞ୍ଚ କରନ୍ତୁ। ଫଳାଫଳ {ledger} ସହ ଯାଞ୍ଚ କରାଯାଏ।",
+      "body": "NURVEX ଜାରି କରିଥିବା ଯେକୌଣସି ପ୍ରମାଣପତ୍ରର ପ୍ରାମାଣିକତା ତୁରନ୍ତ ଯାଞ୍ଚ କରନ୍ତୁ। ଫଳାଫଳ {ledger} ସହ ଯାଞ୍ଚ କରାଯାଏ।",
       "trySample": "ନମୁନା ପ୍ରମାଣପତ୍ର ଚେଷ୍ଟା କରନ୍ତୁ",
       "searchPlaceholder": "ପ୍ରମାଣପତ୍ର ID ଲେଖନ୍ତୁ, ଉଦା. CST-2026-DAI-00842",
       "submit": "ଯାଞ୍ଚ କରନ୍ତୁ",
@@ -775,7 +775,7 @@
       },
       "print": "ପ୍ରିଣ୍ଟ / PDF ସଞ୍ଚୟ କରନ୍ତୁ",
       "viewFull": "ସମ୍ପୂର୍ଣ୍ଣ ପ୍ରମାଣପତ୍ର ଦେଖନ୍ତୁ",
-      "watermark": "🔒 {date} IST ରେ ଯାଞ୍ଚ ହୋଇଛି · CoopSetu AI ପ୍ରମାଣପତ୍ର ରେଜିଷ୍ଟ୍ରି · NCCT Apex Ledger",
+      "watermark": "🔒 {date} IST ରେ ଯାଞ୍ଚ ହୋଇଛି · NURVEX ପ୍ରମାଣପତ୍ର ରେଜିଷ୍ଟ୍ରି · NCCT Apex Ledger",
       "notFound": {
         "title": "“{id}” ପାଇଁ କୌଣସି ପ୍ରମାଣପତ୍ର ମିଳିଲା ନାହିଁ",
         "body": "ଆପଣଙ୍କ ଦଲିଲରେ ଛପା ପ୍ରମାଣପତ୍ର ID ପୁଣି ଯାଞ୍ଚ କରନ୍ତୁ, କିମ୍ବା ତଳର ନମୁନା ପ୍ରମାଣପତ୍ରଗୁଡ଼ିକ ମଧ୍ୟରୁ ଗୋଟିଏ ଚେଷ୍ଟା କରନ୍ତୁ।"
@@ -856,7 +856,7 @@
       "openFullPlayer": "Loading...",
       "sourceDiksha": "Source",
       "sizeUnknown": "All Languages",
-      "sourceCoopsetu": "Source",
+      "sourceNurvex": "Source",
       "inAppPlayer": "Loading...",
       "catalogTitle": "ସନ୍ଧାନ କରନ୍ତୁ results",
       "play": "All Languages",
@@ -880,7 +880,7 @@
       "viewerAria": "Loading...",
       "startLearning": "ଶିଖିବା ଆରମ୍ଭ କରନ୍ତୁ",
       "title": "Learn",
-      "selectPrompt": "Select any resource from the left to watch or read directly in CoopSetu.",
+      "selectPrompt": "Select any resource from the left to watch or read directly in NURVEX.",
       "allSubjects": "All Subjects",
       "startLesson": "outline",
       "infoEnd": "Learn",
@@ -902,7 +902,7 @@
       "timeline": "Goal Overview",
       "targetRoleValue": "Goal Overview",
       "currentRole": "Goal Overview",
-      "greeting": "Hello! I am your CoopSetu AI Career Advisor. Ask me anything about skills, training, or job paths.",
+      "greeting": "Hello! I am your NURVEX Career Advisor. Ask me anything about skills, training, or job paths.",
       "step2Title": "Roadmap",
       "reply1": "Great goal! To become a Dairy Cooperative Manager in Gujarat (e.g., at Amul or local unions), you need strong financial and supply chain skills to complement your dairy operations knowledge.",
       "viewCourse": "Roadmap",
@@ -1639,7 +1639,7 @@
   "auth": {
     "signIn": {
       "backHome": "ହୋମକୁ ଫେରନ୍ତୁ",
-      "footer": "CoopSetu AI · ଜାତୀୟ ସମବାୟ ଦକ୍ଷତା ଓ ନିଯୁକ୍ତି ମଞ୍ଚ · SIH 2026"
+      "footer": "NURVEX · ଜାତୀୟ ସମବାୟ ଦକ୍ଷତା ଓ ନିଯୁକ୍ତି ମଞ୍ଚ · SIH 2026"
     },
     "signUp": {
       "disabledTitle": "ସାଇନ ଅପ୍ ଅକ୍ଷମ ଅଛି",
@@ -1647,7 +1647,8 @@
     }
   },
   "brand": {
-    "logoAlt": "CoopSetu AI - ଶିଖନ୍ତୁ, ଦକ୍ଷତା, କାମ, ଏକତ୍ର ବଢ଼ନ୍ତୁ",
-    "emblemAlt": "CoopSetu AI ପ୍ରତୀକ"
+    "logoAlt": "NURVEX - ଶିଖନ୍ତୁ, ଦକ୍ଷତା, କାମ, ଏକତ୍ର ବଢ଼ନ୍ତୁ",
+    "emblemAlt": "NURVEX ପ୍ରତୀକ",
+    "tagline": "Learn · Skill · Work · Grow Together"
   }
 }

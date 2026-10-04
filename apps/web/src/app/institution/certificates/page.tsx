@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Award,
   CheckCircle,
@@ -129,11 +129,12 @@ export default function CertificatesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  const addToast = (message: string, type: "success" | "error") => {
-    const id = Date.now();
+  const toastCounterRef = useRef(1);
+  const addToast = useCallback((message: string, type: "success" | "error") => {
+    const id = toastCounterRef.current++;
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
-  };
+  }, []);
 
   // Issue a single certificate
   const handleIssue = (id: string) => {

@@ -6,6 +6,7 @@
  */
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CalendarDays, Check, ChevronRight, Truck, Users, MapPin, ClipboardCheck, ArrowLeft, XCircle,
@@ -211,7 +212,7 @@ export default function NewPlanPage() {
         title="New Transport Plan"
         description="Create a transport plan in 5 steps. You can save as draft at any point."
         action={
-          <Button variant="outline" size="sm" render={<a href="/institution/logistics/plans" />}>
+          <Button variant="outline" size="sm" render={<Link href="/institution/logistics/plans" />}>
             <ArrowLeft className="size-4 mr-1.5" /> Back to Plans
           </Button>
         }

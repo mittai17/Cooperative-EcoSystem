@@ -22,9 +22,9 @@ export interface LogoProps {
   size?: "sm" | "default" | "lg";
   /**
    * Variant:
-   * - "default" (or "mark"): Official glossy ribbon emblem + responsive text typography
-   * - "full": Full official graphic wordmark with emblem, typography, and tagline
-   * - "emblem": Official glossy ribbon emblem icon only (no typography)
+   * - "default" (or "mark"): NURVEX ribbon emblem + wordmark typography
+   * - "full": emblem + wordmark + "Learn · Skill · Work · Grow Together" tagline
+   * - "emblem": standalone ribbon emblem icon only (no typography)
    */
   variant?: "default" | "mark" | "full" | "emblem";
   /**
@@ -39,36 +39,32 @@ const sizeMap = {
     emblemClass: "size-[30px]",
     textClass: "text-base tracking-tight leading-none",
     gap: "gap-2.5",
-    fullWidth: 92,
-    fullHeight: 35,
-    fullClass: "h-[30px] w-auto",
+    taglineClass: "text-[10px] tracking-[0.18em] leading-none",
   },
   default: {
     emblemPx: 38,
     emblemClass: "size-[38px]",
     textClass: "text-xl tracking-tight leading-none",
     gap: "gap-2.5",
-    fullWidth: 120,
-    fullHeight: 46,
-    fullClass: "h-[38px] w-auto",
+    taglineClass: "text-[11px] tracking-[0.2em] leading-none",
   },
   lg: {
     emblemPx: 52,
     emblemClass: "size-[52px]",
     textClass: "text-2xl sm:text-3xl tracking-tight leading-none",
     gap: "gap-3",
-    fullWidth: 160,
-    fullHeight: 61,
-    fullClass: "h-[50px] w-auto",
+    taglineClass: "text-xs sm:text-sm tracking-[0.22em] leading-none",
   },
 } as const;
 
+const MARK_SRC = "/brand/nurvex-mark.png";
+
 /**
- * Official CoopSetu AI Brand Logo Component.
+ * NURVEX Brand Logo Component.
  *
- * Integrates the official 3D glossy red ribbon book emblem and official wordmark:
- * - Default: Ribbon emblem alongside bold responsive typography ("CoopSetu AI").
- * - Full: The complete official brand logo graphic with the "Learn • Skill • Work • Grow Together" tagline.
+ * Integrates the glossy red ribbon "N" emblem:
+ * - Default: Ribbon emblem alongside bold responsive typography ("NURVEX").
+ * - Full: Emblem + wordmark + the "Learn · Skill · Work · Grow Together" tagline.
  * - Emblem: Standalone ribbon emblem icon.
  *
  * Fully supports dark mode, light mode, and inverted backgrounds.
@@ -85,93 +81,59 @@ export function Logo({
   const s = sizeMap[size];
   const t = useT();
 
-  // Full Wordmark Graphic Logo (with tagline)
-  if (variant === "full") {
-    return (
-      <span className={cn("inline-flex items-center select-none", className)}>
-        {/* Light mode full graphic logo */}
-        <Image
-          src="/brand/logo-full.png"
-          alt={t("brand.logoAlt")}
-          width={s.fullWidth}
-          height={s.fullHeight}
-          priority={priority}
-          unoptimized
-          className={cn(
-            "object-contain select-none",
-            inverted ? "hidden" : "block dark:hidden",
-            s.fullClass,
-            iconClassName
-          )}
-        />
-        {/* Dark mode / Inverted full graphic logo */}
-        <Image
-          src="/brand/logo-full-dark.png"
-          alt={t("brand.logoAlt")}
-          width={s.fullWidth}
-          height={s.fullHeight}
-          priority={priority}
-          unoptimized
-          className={cn(
-            "object-contain select-none",
-            inverted ? "block" : "hidden dark:block",
-            s.fullClass,
-            iconClassName
-          )}
-        />
-      </span>
-    );
-  }
+  const mark = (
+    <Image
+      src={MARK_SRC}
+      alt={t("brand.emblemAlt")}
+      width={s.emblemPx}
+      height={s.emblemPx}
+      priority={priority}
+      unoptimized
+      className={cn("shrink-0 object-contain", s.emblemClass, iconClassName)}
+    />
+  );
 
   // Emblem Only Icon
   if (variant === "emblem") {
-    return (
-      <span className={cn("inline-flex items-center shrink-0 select-none", className)}>
-        <Image
-          src="/brand/logo-emblem.png"
-          alt={t("brand.emblemAlt")}
-          width={s.emblemPx}
-          height={s.emblemPx}
-          priority={priority}
-          unoptimized
-          className={cn("shrink-0 object-contain", s.emblemClass, iconClassName)}
-        />
-      </span>
-    );
+    return <span className={cn("inline-flex items-center shrink-0 select-none", className)}>{mark}</span>;
   }
 
-  // Default: Ribbon Emblem + Responsive Typography
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center font-heading font-extrabold select-none",
-        s.gap,
-        s.textClass,
-        className
-      )}
-    >
-      <Image
-        src="/brand/logo-emblem.png"
-        alt={t("brand.emblemAlt")}
-        width={s.emblemPx}
-        height={s.emblemPx}
-        priority={priority}
-        unoptimized
-        className={cn(
-          "shrink-0 object-contain transition-transform duration-200",
-          s.emblemClass,
-          iconClassName
-        )}
-      />
+  const wordmark = (
+    <span className="flex flex-col gap-1">
       <span
         className={cn(
+          "font-heading font-extrabold tracking-tight",
           inverted ? "text-white" : "text-slate-900 dark:text-white",
-          "font-extrabold tracking-tight",
+          s.textClass,
           textClassName
         )}
       >
-        CoopSetu<span className="text-[#E30B1C]"> AI</span>
+        NURVEX
       </span>
+      {variant === "full" && (
+        <span
+          className={cn(
+            "font-medium uppercase",
+            inverted ? "text-white/70" : "text-slate-500 dark:text-slate-400",
+            s.taglineClass
+          )}
+        >
+          {t("brand.tagline")}
+        </span>
+      )}
+    </span>
+  );
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center font-heading select-none",
+        s.gap,
+        className
+      )}
+    >
+      {mark}
+      {wordmark}
     </span>
   );
 }

@@ -47,7 +47,7 @@ const stats: { value: string; labelKey: string; icon: LucideIcon; tile: string }
 const heroBadges: { labelKey: string; icon: LucideIcon; position: string; photo?: string }[] = [
   { labelKey: "public.hero.badgeLearnSkills", icon: BookOpen, position: "top-2 left-2 sm:top-4 sm:-left-6" },
   { labelKey: "public.hero.badgeGetCertified", icon: BadgeCheck, position: "top-2 right-2 sm:top-4 sm:-right-6" },
-  { labelKey: "public.hero.badgeFindJobs", icon: Briefcase, position: "top-1/2 right-2 -translate-y-1/2 sm:-right-6", photo: "https://picsum.photos/seed/coopsetu-find-jobs/64/64" },
+  { labelKey: "public.hero.badgeFindJobs", icon: Briefcase, position: "top-1/2 right-2 -translate-y-1/2 sm:-right-6", photo: "https://picsum.photos/seed/nurvex-find-jobs/64/64" },
   { labelKey: "public.hero.badgeBuildCareer", icon: TrendingUp, position: "bottom-2 right-2 sm:bottom-4 sm:-right-6" },
 ];
 
@@ -84,7 +84,7 @@ export default function LandingPage() {
             <div className="relative">
               <div className="overflow-hidden rounded-3xl border border-border shadow-sm">
                 <Image
-                  src="https://picsum.photos/seed/coopsetu-hero/900/700"
+                  src="https://picsum.photos/seed/nurvex-hero/900/700"
                   alt={t("public.hero.imageAlt")}
                   width={900}
                   height={700}
@@ -186,7 +186,7 @@ export default function LandingPage() {
                   {isTrainee && (
                     <>
                       <Image
-                        src="https://picsum.photos/seed/coopsetu-trainee-role-card/900/900"
+                        src="https://picsum.photos/seed/nurvex-trainee-role-card/900/900"
                         alt=""
                         fill
                         className="object-cover"
@@ -252,7 +252,7 @@ export default function LandingPage() {
           >
             <div className="relative h-56 w-full sm:h-72">
               <Image
-                src="https://picsum.photos/seed/coopsetu-skill-passport-evidence/1200/700"
+                src="https://picsum.photos/seed/nurvex-skill-passport-evidence/1200/700"
                 alt={t("public.features.skillPassportImageAlt")}
                 fill
                 className="object-cover"
@@ -325,7 +325,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://picsum.photos/seed/coopsetu-closing-banner/1200/500"
+            src="https://picsum.photos/seed/nurvex-closing-banner/1200/500"
             alt=""
             fill
             className="object-cover"

@@ -1420,7 +1420,7 @@ export const PLACEMENT_SOURCES: PlacementSourcePoint[] = [
   { source: "AI match", hires: 168 },
   { source: "Direct apply", hires: 97 },
   { source: "Institution referral", hires: 74 },
-  { source: "CoopSetu job board", hires: 52 },
+  { source: "NURVEX job board", hires: 52 },
 ];
 
 export interface MatchingWeightSetting {

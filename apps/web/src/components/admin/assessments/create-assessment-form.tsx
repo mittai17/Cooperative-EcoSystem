@@ -69,10 +69,16 @@ export function CreateAssessmentForm() {
     let cancelled = false;
     fetchAllProgrammes()
       .then((rows) => {
-        if (!cancelled) setProgrammes(rows && rows.length > 0 ? rows : DEMO_PROGRAMMES);
+        if (!cancelled) {
+          setProgrammes(rows && rows.length > 0 ? rows : DEMO_PROGRAMMES);
+          setProgrammesError(null);
+        }
       })
-      .catch(() => {
-        if (!cancelled) setProgrammes(DEMO_PROGRAMMES);
+      .catch((err) => {
+        if (!cancelled) {
+          setProgrammes(DEMO_PROGRAMMES);
+          setProgrammesError(err instanceof Error ? err.message : "Could not load programs");
+        }
       });
     return () => {
       cancelled = true;

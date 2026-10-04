@@ -27,12 +27,10 @@ function fmtDt(iso: string) {
 }
 
 export default function IncidentsPage() {
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [ready, setReady] = useState(false);
+  const [incidents, setIncidents] = useState<Incident[]>(() => logisticsService.getIncidents());
+  const [ready] = useState(true);
 
   useEffect(() => {
-    setIncidents(logisticsService.getIncidents());
-    setReady(true);
     const unsub = logisticsService.subscribe(() => setIncidents(logisticsService.getIncidents()));
     return unsub;
   }, []);

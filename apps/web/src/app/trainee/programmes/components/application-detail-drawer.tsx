@@ -1,11 +1,10 @@
 "use client";
 
-import { X, FileText, CheckCircle2, Clock, Download, ExternalLink, Calendar, MapPin, Briefcase } from "lucide-react";
+import { X, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Application } from "@/types/application";
-import { generateApplicationId } from "@/lib/store/programme-store"; // Unused here, but kept for type completeness if needed
 import { useT } from "@/i18n";
 
 export function ApplicationDetailDrawer({

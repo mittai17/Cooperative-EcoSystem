@@ -44,6 +44,28 @@ export const certificates: Record<string, Certificate> = {
     skillsCertified: ["Digital Marketing", "E-commerce"],
     grade: "B",
   },
+  "CST-2026-LDR-00518": {
+    id: "CST-2026-LDR-00518",
+    holderName: "Ravindra Suresh Patil",
+    programmeTitle: "Leadership for Cooperative Board Members",
+    issuer: "National Cooperative Union of India Training Centre, Delhi",
+    issueDate: "2026-08-06",
+    expiryDate: "2029-08-06",
+    status: "Valid",
+    skillsCertified: ["Cooperative Management", "Governance", "Bylaws Drafting"],
+    grade: "A",
+  },
+  "CST-2026-BKP-00674": {
+    id: "CST-2026-BKP-00674",
+    holderName: "Ravindra Suresh Patil",
+    programmeTitle: "Cooperative Bookkeeping with Tally",
+    issuer: "Vaikunth Mehta National Institute of Cooperative Management, Pune",
+    issueDate: "2026-09-11",
+    expiryDate: "2029-09-11",
+    status: "Valid",
+    skillsCertified: ["Bookkeeping", "Tally", "Statutory Compliance"],
+    grade: "B+",
+  },
 };
 
 export const sampleCertificateId = "CST-2026-DAI-00842";

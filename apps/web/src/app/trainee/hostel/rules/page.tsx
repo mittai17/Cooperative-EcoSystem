@@ -13,7 +13,6 @@ import {
   FileDown, 
   Search,
   BookOpen,
-  MapPin,
   HeartPulse,
   Info
 } from "lucide-react";

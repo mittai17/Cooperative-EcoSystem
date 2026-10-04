@@ -86,7 +86,7 @@ export function ReportIssueModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Category</Label>
-              <Select value={category} onValueChange={(v: any) => setCategory(v)}>
+              <Select value={category} onValueChange={(v) => v && setCategory(v as MaintenanceCategory)}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -106,7 +106,7 @@ export function ReportIssueModal({
 
             <div className="space-y-1.5">
               <Label className="text-xs">Priority</Label>
-              <Select value={priority} onValueChange={(v: any) => setPriority(v)}>
+              <Select value={priority} onValueChange={(v) => v && setPriority(v as PriorityLevel)}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>

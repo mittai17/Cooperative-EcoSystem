@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
+  type LucideIcon,
   Sparkles,
   ChevronRight,
   Wifi,
@@ -16,7 +18,6 @@ import {
   Dumbbell,
   ShieldAlert,
   Bell,
-  Clock,
   Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { hostelService } from "@/lib/hostel/hostel-service";
 import { useT } from "@/i18n";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   Wifi,
   Utensils,
   Shirt,
@@ -78,7 +79,7 @@ export default function TraineeFacilitiesPage() {
       <div className="p-4 sm:p-5 rounded-2xl border bg-card shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="size-16 rounded-xl overflow-hidden border shrink-0">
-            <img src="/vamnicom-campus.jpg" alt="VAMNICOM" className="w-full h-full object-cover" />
+            <Image src="/vamnicom-campus.jpg" alt="VAMNICOM Main Hostel campus" width={64} height={64} className="size-full object-cover" />
           </div>
           <div>
             <h3 className="font-bold text-base text-foreground font-heading">

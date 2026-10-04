@@ -9,131 +9,31 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchWithAuth } from "@/lib/api";
 import { useT } from "@/i18n";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-// Shape returned by GET /api/v1/courses/
-interface ApiCourse {
-  id: string;
-  title: string;
-  description?: string;
-  category: string | null;
-  level: string | null;
-  duration_hours: number | null;
-  instructor: string | null;
-  rating: number | null;
-  enrolled: number | null;
-  skills: string[];
-  thumbnailGradient?: string;
-  progress?: number; // 0-100, if enrolled
-}
-
-interface CoursesResponse {
-  courses?: ApiCourse[];
-  total?: number;
-}
-
-const FALLBACK_COURSES: ApiCourse[] = [
-  {
-    id: "course-dairy-ops-201",
-    title: "Dairy Cooperative Operations",
-    description: "Hands-on modules on milk procurement software, FAT/SNF-based pricing, and route-level cold-chain quality control.",
-    category: "Dairy & Livestock",
-    level: "Intermediate",
-    duration_hours: 32,
-    instructor: "Er. Rajendra Patil",
-    rating: 4.8,
-    enrolled: 1240,
-    skills: ["Dairy Operations", "Quality Testing", "Logistics Planning"],
-    thumbnailGradient: "from-blue-500 to-cyan-400",
-    progress: 35,
-  },
-  {
-    id: "course-coop-bookkeeping",
-    title: "PACS Bookkeeping & Financial Reporting",
-    description: "Day-to-day daybook writing, cash scroll balancing, and statutory audit schedule preparation.",
-    category: "PACS Accounting",
-    level: "Beginner",
-    duration_hours: 40,
-    instructor: "CA Rameshwar Joshi",
-    rating: 4.9,
-    enrolled: 3400,
-    skills: ["Bookkeeping", "PACS Accounting", "Audit Preparation"],
-    thumbnailGradient: "from-green-500 to-emerald-400",
-    progress: 60,
-  },
-  {
-    id: "course-coop-mgmt-101",
-    title: "Cooperative Management Fundamentals",
-    description: "Understand the seven cooperative principles, board composition, and bylaws drafting through real primary-society case studies.",
-    category: "Cooperative Law",
-    level: "Beginner",
-    duration_hours: 24,
-    instructor: "Dr. Meenal Kulkarni",
-    rating: 4.7,
-    enrolled: 1842,
-    skills: ["Cooperative Management", "Governance", "Bylaws Drafting"],
-    thumbnailGradient: "from-purple-500 to-indigo-400",
-    progress: 100,
-  },
-  {
-    id: "course-agri-credit-appraisal",
-    title: "Agricultural Credit Appraisal & Risk",
-    description: "Underwrite crop, Kisan Credit Card, and term loans while managing delinquency risks.",
-    category: "Agri-Business",
-    level: "Advanced",
-    duration_hours: 36,
-    instructor: "K. S. Venkatraman",
-    rating: 4.8,
-    enrolled: 2100,
-    skills: ["Credit Appraisal", "KCC Lending", "Risk Rating"],
-    thumbnailGradient: "from-orange-500 to-amber-400",
-  },
-  {
-    id: "course-leadership-coop-boards",
-    title: "Governance & Ethics for Cooperative Boards",
-    description: "Fiduciary responsibilities, conflict-of-interest declarations, and statutory compliance under state cooperative acts.",
-    category: "Cooperative Law",
-    level: "Advanced",
-    duration_hours: 20,
-    instructor: "Adv. Hemant Gokhale",
-    rating: 4.9,
-    enrolled: 1560,
-    skills: ["Board Governance", "Statutory Compliance", "Conflict Resolution"],
-    thumbnailGradient: "from-rose-500 to-red-400",
-  },
-  {
-    id: "course-digital-marketing-101",
-    title: "Digital Marketing for Cooperatives",
-    description: "Build a low-budget digital presence: Instagram/WhatsApp catalogues, ONDC seller onboarding, and basic ad campaigns.",
-    category: "Digital Skills",
-    level: "Beginner",
-    duration_hours: 18,
-    instructor: "Ananya Bose",
-    rating: 4.6,
-    enrolled: 2800,
-    skills: ["Digital Marketing", "E-commerce", "Content Creation"],
-    thumbnailGradient: "from-teal-500 to-emerald-400",
-  }
-];
-
-const CATEGORIES = ["All", "Dairy & Livestock", "PACS Accounting", "Cooperative Law", "Agri-Business", "Digital Skills"];
-const LEVELS = ["All", "Beginner", "Intermediate", "Advanced"];
+import {
+  getCatalogueCategories,
+  getCatalogueLevels,
+  getTraineeCourses,
+  type TraineeCourse,
+} from "@/lib/trainee/course-catalog";
 
 export default function TraineeCoursesPage() {
   const t = useT();
-  const [courses, setCourses] = useState<ApiCourse[]>([]);
+  const [courses, setCourses] = useState<TraineeCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedLevel, setSelectedLevel] = useState("All");
 
   const [reloadKey, setReloadKey] = useState(0);
+
+  const categories = useMemo(() => getCatalogueCategories(), []);
+  const levels = useMemo(() => getCatalogueLevels(), []);
 
   const refresh = () => {
     setLoading(true);
@@ -142,28 +42,19 @@ export default function TraineeCoursesPage() {
   };
 
   useEffect(() => {
-    let cancelled = false;
-    fetchWithAuth("/api/v1/courses/")
-      .then((data: CoursesResponse | null) => {
-        if (cancelled) return;
-        if (data && Array.isArray(data.courses) && data.courses.length > 0) {
-            setCourses(data.courses);
-        } else {
-            setCourses(FALLBACK_COURSES); // Use fallbacks if API returns empty
-        }
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        console.warn("API failed, using fallback data:", err);
-        setCourses(FALLBACK_COURSES);
-        // We do not set error if we successfully apply fallback, to keep UX good
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    const id = window.setTimeout(() => {
+      setLoading(true);
+      setError(null);
+      try {
+        setCourses(getTraineeCourses());
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [reloadKey]);
 
   const filteredCourses = useMemo(() => {
@@ -207,7 +98,7 @@ export default function TraineeCoursesPage() {
                     <SelectValue placeholder="Level" />
                 </SelectTrigger>
                 <SelectContent>
-                    {LEVELS.map(level => (
+                    {levels.map(level => (
                         <SelectItem key={level} value={level}>{level}</SelectItem>
                     ))}
                 </SelectContent>
@@ -216,7 +107,7 @@ export default function TraineeCoursesPage() {
       </div>
       
       <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar">
-        {CATEGORIES.map(category => (
+        {categories.map(category => (
             <Badge 
                 key={category} 
                 variant={selectedCategory === category ? "default" : "outline"}
@@ -254,7 +145,7 @@ export default function TraineeCoursesPage() {
             </div>
             <p className="font-semibold text-lg text-foreground">No courses found</p>
             <p className="max-w-md text-sm text-muted-foreground">
-              Try adjusting your search or filter criteria to find what you're looking for.
+              Try adjusting your search or filter criteria to find what you are looking for.
             </p>
             <Button variant="outline" className="mt-4" onClick={() => { setSearchQuery(""); setSelectedCategory("All"); setSelectedLevel("All"); }}>
                 Clear Filters
@@ -287,9 +178,9 @@ export default function TraineeCoursesPage() {
                   {course.instructor && (
                       <span className="font-medium text-foreground">By {course.instructor}</span>
                   )}
-                  {course.duration_hours != null && (
+                  {course.durationHours != null && (
                     <span className="inline-flex items-center gap-1.5">
-                      <Clock className="size-3.5" /> {course.duration_hours}h
+                      <Clock className="size-3.5" /> {course.durationHours}h
                     </span>
                   )}
                   {course.rating != null && (

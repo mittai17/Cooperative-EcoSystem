@@ -257,7 +257,7 @@ export const DEMO_TRAINEE_RAVINDRA: TraineeProfile = {
   gender: "Male",
   age: 28,
   phone: "+91 98220 98765",
-  email: "ravindra.patil@coopsetu.ai",
+  email: "ravindra.patil@nurvex.ai",
   state: "Maharashtra",
   district: "Kolhapur",
   cooperative: "Kolhapur District Central Cooperative Bank",
@@ -416,7 +416,7 @@ export function generateFullHostelDataset() {
       trainingEnd: "24 Oct 2026",
       requestedHostel: "VAMNICOM Main Hostel",
       requestedHostelId: "h-1",
-      roomPreference: "2 Sharing" as any,
+      roomPreference: "Double",
       acPreference: false,
       specialRequirement: "Study table required",
       reason: "State legal cell advisor training.",
@@ -891,7 +891,7 @@ export function generateFullHostelDataset() {
     const traineeId = `trn-${i + 1000}`;
     const traineeCode = `TRN-0${i < 100 ? "0" + i : i}-${(i * 17) % 99 + 10}`;
 
-    let hStatus = isAllocated ? "Checked In" : isPending ? "Pending" : "Not Applied";
+    const hStatus = isAllocated ? "Checked In" : isPending ? "Pending" : "Not Applied";
     let roomNum = "";
     let bedNum = "";
     let block = "";
@@ -971,7 +971,7 @@ export function generateFullHostelDataset() {
       gender,
       age: 22 + (i % 25),
       phone: `+91 ${98000 + (i % 999)} ${10000 + (i * 37) % 89999}`,
-      email: `${fn.toLowerCase()}.${ln.toLowerCase()}@coopsetu.ai`,
+      email: `${fn.toLowerCase()}.${ln.toLowerCase()}@nurvex.ai`,
       state: i % 2 === 0 ? "Maharashtra" : "Gujarat",
       district: i % 3 === 0 ? "Pune" : i % 3 === 1 ? "Kolhapur" : "Anand",
       cooperative: `${prog.name} Society Federation`,

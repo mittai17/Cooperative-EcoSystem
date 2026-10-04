@@ -56,7 +56,7 @@ export const AttendanceSessionsScreen = () => {
   return (
     <ScrollScreen
       title="Attendance Sessions"
-      subtitle="Trainer Cohort Check-In Hub"
+      subtitle="NURVEX trainer attendance hub"
       tab
       refreshing={refreshing}
       onRefresh={onRefresh}

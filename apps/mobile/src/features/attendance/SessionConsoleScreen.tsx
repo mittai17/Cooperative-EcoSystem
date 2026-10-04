@@ -49,7 +49,7 @@ export const SessionConsoleScreen = () => {
 
   // Manual Override State
   const [overrideStudent, setOverrideStudent] = useState<SessionRosterStudent | null>(null);
-  const [overrideStatus, setOverrideStatus] = useState<'present' | 'late' | 'absent'>('present');
+  const [overrideStatus, setOverrideStatus] = useState<'present' | 'late' | 'absent' | 'excused'>('present');
   const [overrideReason, setOverrideReason] = useState('Manual verification by trainer');
   const [submittingOverride, setSubmittingOverride] = useState(false);
 
@@ -119,6 +119,7 @@ export const SessionConsoleScreen = () => {
 
     try {
       await attendanceApi.markAttendanceManualOverride(
+        sessionId,
         overrideStudent.trainee_id,
         overrideStatus,
         overrideReason
@@ -159,7 +160,11 @@ export const SessionConsoleScreen = () => {
       {
         text: 'Close Session',
         style: 'destructive',
-        onPress: () => navigation.goBack(),
+        onPress: () => {
+          void attendanceApi.closeSession(sessionId).then(() => navigation.goBack()).catch(() => {
+            Alert.alert('Close Failed', 'The attendance session could not be closed. Try again.');
+          });
+        },
       },
     ]);
   };

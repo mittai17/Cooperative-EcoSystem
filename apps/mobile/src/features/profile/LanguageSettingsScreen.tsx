@@ -15,11 +15,11 @@ import { SUPPORTED_LANGUAGES, setLanguage, SupportedLanguageCode } from '../../i
 import { COLORS, ICON, RADII, SPACE, TEXT } from '../../constants/theme';
 
 const GREETINGS: Record<SupportedLanguageCode, string> = {
-  en: 'Welcome to CoopSetu AI',
-  hi: 'कूपसेतु एआई में आपका स्वागत है',
-  mr: 'कूपसेतू एआय मध्ये आपले स्वागत आहे',
-  gu: 'કૂપસેતુ એઆઈ માં આપનું સ્વાગત છે',
-  ta: 'கூப்சேது AI-க்கு உங்களை வரவேற்கிறோம்',
+  en: 'Welcome to NURVEX',
+  hi: 'NURVEX में आपका स्वागत है',
+  mr: 'NURVEX मध्ये आपले स्वागत आहे',
+  gu: 'NURVEX માં આપનું સ્વાગત છે',
+  ta: 'NURVEX-க்கு உங்களை வரவேற்கிறோம்',
 };
 
 export const LanguageSettingsScreen: React.FC = () => {

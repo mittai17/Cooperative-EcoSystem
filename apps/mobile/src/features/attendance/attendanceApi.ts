@@ -1,5 +1,5 @@
-import { API_BASE_URL, normalizeAttendanceToken } from '../../services/api';
 import { apiClient, ApiError } from '../../api/client';
+import { API_BASE_URL } from '../../services/api';
 import { AttendanceRecordItem } from '../../types';
 
 /** Thrown by attendanceApi calls when the real backend request fails (network
@@ -28,7 +28,7 @@ export interface AttendanceSessionInfo {
 export interface SessionRosterStudent {
   trainee_id: string;
   name: string;
-  status: 'present' | 'late' | 'absent' | 'unmarked';
+  status: 'present' | 'late' | 'absent' | 'excused' | 'unmarked';
   method?: string | null;
   scanned_at?: string;
 }
@@ -60,34 +60,27 @@ export interface ExcuseRequestPayload {
 
 export const attendanceApi = {
   async getActiveSessions(): Promise<AttendanceSessionInfo[]> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/attendance/sessions/active`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.sessions) && data.sessions.length > 0) {
-          return data.sessions;
-        }
-      }
-    } catch {
-      // Fallback
-    }
-
-    const now = new Date();
-    const closes = new Date(now.getTime() + 25 * 60 * 1000);
-    return [
-      {
-        session_id: 'sess-pacs-101',
-        session_name: 'PACS Accounting & Ledger Maintenance',
-        programme_name: 'Diploma in Cooperative Management',
-        batch_name: 'Cohort 2026-A',
-        room: 'Lecture Hall 2 · NCCT Pune',
-        opens_at: now.toISOString(),
-        closes_at: closes.toISOString(),
-        valid_minutes: 30,
-        allowed_methods: ['qr', 'nfc', 'face'],
-        is_rotating: true,
-      },
-    ];
+    const data = await apiClient<{ items: Array<{
+      session_id: string | null;
+      course: string;
+      batch: string;
+      room: string | null;
+      start: string | null;
+      end: string | null;
+      status: string;
+    }> }>('/trainer/attendance?tab=today');
+    return data.items.filter((item) => item.session_id).map((item) => ({
+      session_id: item.session_id as string,
+      session_name: item.course,
+      programme_name: item.course,
+      batch_name: item.batch,
+      room: item.room ?? undefined,
+      opens_at: item.start ?? new Date().toISOString(),
+      closes_at: item.end ?? new Date().toISOString(),
+      valid_minutes: 30,
+      allowed_methods: ['qr', 'manual'],
+      is_rotating: true,
+    }));
   },
 
   async createSession(payload: {
@@ -96,52 +89,26 @@ export const attendanceApi = {
     room?: string;
     allowed_methods: string[];
     is_rotating?: boolean;
+    slot_id?: string;
   }): Promise<{ session_id: string; qr_data: string }> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/attendance/sessions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_name: payload.session_name,
-          programme_id: '00000000-0000-0000-0000-000000000001',
-          valid_minutes: payload.duration_minutes,
-          room: payload.room,
-          allowed_methods: payload.allowed_methods,
-        }),
-      });
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch {
-      // Fallback
-    }
-
-    const sid = `sess-${Date.now().toString(36)}`;
-    return {
-      session_id: sid,
-      qr_data: `coopsetu:attend:${sid}.1001.a89fdc9834b`,
-    };
+    const data = await apiClient<{ id: string; qr: string | null }>('/trainer/attendance/session', {
+      method: 'POST',
+      body: JSON.stringify({
+        slot_id: payload.slot_id,
+        valid_minutes: payload.duration_minutes,
+        room: payload.room,
+        methods: payload.allowed_methods,
+      }),
+    });
+    return { session_id: data.id, qr_data: data.qr ?? '' };
   },
 
   async getSessionQR(sessionId: string): Promise<{ qr_token: string; qr_data: string; expires_in: number }> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/attendance/sessions/${encodeURIComponent(sessionId)}/qr`);
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch {
-      // Fallback
-    }
-
-    const windowIndex = Math.floor(Date.now() / 15000);
-    const mockToken = `${sessionId}.${windowIndex}.${Math.random().toString(36).substring(2, 10)}`;
-    const nowSecs = Math.floor(Date.now() / 1000);
-    const expiresIn = 15 - (nowSecs % 15);
-    return {
-      qr_token: mockToken,
-      qr_data: `coopsetu:attend:${mockToken}`,
-      expires_in: expiresIn,
-    };
+    const data = await apiClient<{ qr: string | null; qr_expires_in: number | null }>(
+      `/trainer/attendance/session/${encodeURIComponent(sessionId)}`
+    );
+    if (!data.qr) throw new AttendanceApiError('The attendance QR is not active.');
+    return { qr_token: data.qr, qr_data: data.qr, expires_in: data.qr_expires_in ?? 15 };
   },
 
   /**
@@ -155,59 +122,38 @@ export const attendanceApi = {
    * explicit "unavailable" state.
    */
   async getSessionConsole(sessionId: string): Promise<LiveSessionData> {
-    const qrInfo = await this.getSessionQR(sessionId);
-    const now = new Date();
-    const closes = new Date(now.getTime() + 20 * 60 * 1000);
-
-    let sessionName = 'Attendance Session';
-    let opensAt = now.toISOString();
-    let closesAt = closes.toISOString();
-    let roster: SessionRosterStudent[] = [];
-    let rosterAvailable = true;
-
-    try {
-      const data = await apiClient<{
-        session_id: string;
-        session_name: string;
-        opens_at: string;
-        closes_at: string;
-        roster: Array<{ trainee_id: string; name: string; status: string; method: string | null }>;
-      }>(`/attendance/sessions/${encodeURIComponent(sessionId)}`);
-      sessionName = data.session_name || sessionName;
-      opensAt = data.opens_at || opensAt;
-      closesAt = data.closes_at || closesAt;
-      roster = (data.roster || []).map((r) => ({
-        trainee_id: r.trainee_id,
-        name: r.name,
-        status: (r.status as SessionRosterStudent['status']) || 'unmarked',
-        method: r.method,
-      }));
-    } catch (e) {
-      // Offline / demo fallback: supply active cohort roster for interactive testing
-      rosterAvailable = true;
-      sessionName = 'PACS Accounting & Statutory Compliance';
-      roster = [
-        { trainee_id: 't-001', name: 'Ravindra Suresh Patil', status: 'present', method: 'qr', scanned_at: '10:04 AM' },
-        { trainee_id: 't-002', name: 'Priya Sharma', status: 'present', method: 'face', scanned_at: '10:08 AM' },
-        { trainee_id: 't-003', name: 'Amit Kumar Verma', status: 'late', method: 'nfc', scanned_at: '10:18 AM' },
-        { trainee_id: 't-004', name: 'Sneha Joshi', status: 'unmarked', method: null },
-        { trainee_id: 't-005', name: 'Vikram Rathore', status: 'absent', method: null },
-        { trainee_id: 't-006', name: 'Anjali Ramesh Kulkarni', status: 'unmarked', method: null },
-      ];
-    }
+    const data = await apiClient<{
+      id: string;
+      name: string;
+      opens_at: string;
+      closes_at: string;
+      qr: string | null;
+      qr_expires_in: number | null;
+      present: number;
+      roster_size: number;
+      roster: Array<{ trainee_id: string; name: string; status: string; method: string | null; time: string | null }>;
+    }>(`/trainer/attendance/session/${encodeURIComponent(sessionId)}`);
+    const roster = (data.roster || []).map((r) => ({
+      trainee_id: r.trainee_id,
+      name: r.name,
+      status: (r.status as SessionRosterStudent['status']) || 'unmarked',
+      method: r.method,
+      scanned_at: r.time ?? undefined,
+    }));
+    if (!data.qr) throw new AttendanceApiError('The attendance QR is not active.');
 
     return {
       session_id: sessionId,
-      session_name: sessionName,
-      opens_at: opensAt,
-      closes_at: closesAt,
-      qr_token: qrInfo.qr_token,
-      qr_data: qrInfo.qr_data,
-      expires_in: qrInfo.expires_in,
-      total_students: roster.length,
-      present_count: roster.filter((s) => s.status === 'present' || s.status === 'late').length,
+      session_name: data.name,
+      opens_at: data.opens_at,
+      closes_at: data.closes_at,
+      qr_token: data.qr,
+      qr_data: data.qr,
+      expires_in: data.qr_expires_in ?? 15,
+      total_students: data.roster_size,
+      present_count: data.present,
       roster,
-      roster_available: rosterAvailable,
+      roster_available: true,
     };
   },
 
@@ -216,21 +162,20 @@ export const attendanceApi = {
    * Updates locally on offline/demo so status toggles work seamlessly.
    */
   async markAttendanceManualOverride(
-    recordId: string,
-    status: 'present' | 'late' | 'absent',
+    sessionId: string,
+    traineeId: string,
+    status: 'present' | 'late' | 'absent' | 'excused',
     reason: string
   ): Promise<boolean> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/attendance/records/${encodeURIComponent(recordId)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, reason }),
-      });
-      if (res.ok) return true;
-    } catch {
-      // Demo / offline fallback
-    }
+    await apiClient('/trainer/attendance/mark', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId, records: [{ trainee_id: traineeId, status, reason }] }),
+    });
     return true;
+  },
+
+  async closeSession(sessionId: string): Promise<void> {
+    await apiClient(`/trainer/attendance/session/${encodeURIComponent(sessionId)}/close`, { method: 'POST' });
   },
 
   /** Submits a real excuse/regularization request. Throws on failure instead

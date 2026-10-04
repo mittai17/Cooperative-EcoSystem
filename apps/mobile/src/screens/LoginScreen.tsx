@@ -7,13 +7,12 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useClerk } from '@clerk/expo';
 import { useSignIn, useSignUp } from '@clerk/expo/legacy';
-import { COLORS, HIT, ICON, SPACE, TEXT, RADII, CARD } from '../constants/theme';
+import { COLORS, ICON, SPACE, TEXT, RADII, CARD } from '../constants/theme';
 import {
   GraduationCap,
   Eye,
@@ -32,6 +31,7 @@ import {
   ChevronUp,
 } from 'lucide-react-native';
 import { Button } from '../components/Button';
+import { NurvexLogo } from '../components/NurvexLogo';
 import { FIELD_ICON, TextField } from '../components/TextField';
 import { describeAuthError } from '../services/authErrors';
 import { useAuthContext } from '../navigation/AuthContext';
@@ -206,10 +206,7 @@ export const LoginScreen = () => {
         >
           {/* Brand Banner */}
           <View style={styles.brandSection}>
-            <View style={styles.logo}>
-              <GraduationCap size={ICON.lg + 4} color={COLORS.textInverse} />
-            </View>
-            <Text style={styles.appName}>CoopSetu AI</Text>
+            <NurvexLogo size="lg" showTagline />
             <Text style={styles.caption}>{CAPTION[mode]}</Text>
           </View>
 

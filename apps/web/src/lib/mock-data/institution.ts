@@ -407,7 +407,7 @@ export const institutionBatchesSeed: Batch[] = [
 ];
 
 /* -------------------------------------------------------------------------- */
-/* LMS course links (Moodle)                                                   */
+/* LMS course links                                                            */
 /* -------------------------------------------------------------------------- */
 
 export type CourseSyncStatus = "Synced" | "Pending sync" | "Sync failed";
@@ -417,11 +417,7 @@ export interface LmsCourse {
   title: string;
   mappedProgramme: string;
   programmeCode: ProgrammeCode;
-  /** Identifier used by the Moodle web service, not a CoopSetu id. */
-  lmsCourseId: string;
   syncStatus: CourseSyncStatus;
-  /** ISO date-time of the last successful or attempted pull from Moodle. */
-  lastSyncedAt: string | null;
   completionPct: number;
   /** Null until at least one learner has been graded. */
   avgScore: number | null;
@@ -438,9 +434,7 @@ export const institutionCoursesSeed: LmsCourse[] = [
     title: "Cooperative Governance Essentials",
     mappedProgramme: "Cooperative Management Fundamentals",
     programmeCode: "CMF",
-    lmsCourseId: "MOODLE-IRM-1042",
     syncStatus: "Synced",
-    lastSyncedAt: "2026-09-26T06:15:00Z",
     completionPct: 71,
     avgScore: 78,
     enrolled: 47,
@@ -454,9 +448,7 @@ export const institutionCoursesSeed: LmsCourse[] = [
     title: "Bookkeeping with Tally — Society Ledger",
     mappedProgramme: "Cooperative Bookkeeping & Statutory Audit Readiness",
     programmeCode: "CBK",
-    lmsCourseId: "MOODLE-IRM-1078",
     syncStatus: "Synced",
-    lastSyncedAt: "2026-09-26T06:15:00Z",
     completionPct: 64,
     avgScore: 74,
     enrolled: 45,
@@ -470,9 +462,7 @@ export const institutionCoursesSeed: LmsCourse[] = [
     title: "Dairy Procurement & Cold Chain Basics",
     mappedProgramme: "Dairy Cooperative Operations",
     programmeCode: "DCO",
-    lmsCourseId: "MOODLE-IRM-1103",
     syncStatus: "Pending sync",
-    lastSyncedAt: null,
     completionPct: 58,
     avgScore: 81,
     enrolled: 40,
@@ -486,9 +476,7 @@ export const institutionCoursesSeed: LmsCourse[] = [
     title: "PACS Digitisation & NABARD Compliance",
     mappedProgramme: "Agricultural Credit Cooperative Management",
     programmeCode: "ACC",
-    lmsCourseId: "MOODLE-IRM-1119",
     syncStatus: "Sync failed",
-    lastSyncedAt: "2026-09-20T22:40:00Z",
     completionPct: 12,
     avgScore: null,
     enrolled: 12,
@@ -502,9 +490,7 @@ export const institutionCoursesSeed: LmsCourse[] = [
     title: "Handloom Design & Market Linkages",
     mappedProgramme: "Handloom & Handicraft Cooperative Enterprise",
     programmeCode: "HCE",
-    lmsCourseId: "MOODLE-IRM-1126",
     syncStatus: "Synced",
-    lastSyncedAt: "2026-09-25T18:05:00Z",
     completionPct: 44,
     avgScore: 69,
     enrolled: 28,
@@ -518,9 +504,7 @@ export const institutionCoursesSeed: LmsCourse[] = [
     title: "Cooperative Accounting Standards (ICA 2011)",
     mappedProgramme: "Cooperative Bookkeeping & Statutory Audit Readiness",
     programmeCode: "CBK",
-    lmsCourseId: "MOODLE-IRM-1131",
     syncStatus: "Pending sync",
-    lastSyncedAt: null,
     completionPct: 0,
     avgScore: null,
     enrolled: 0,
@@ -534,9 +518,7 @@ export const institutionCoursesSeed: LmsCourse[] = [
     title: "Rural Credit Appraisal Case Studies",
     mappedProgramme: "Agricultural Credit Cooperative Management",
     programmeCode: "ACC",
-    lmsCourseId: "MOODLE-IRM-1140",
     syncStatus: "Synced",
-    lastSyncedAt: "2026-09-24T07:30:00Z",
     completionPct: 33,
     avgScore: 72,
     enrolled: 12,
@@ -1193,7 +1175,7 @@ export interface AssessmentQuestion {
 export interface Assessment {
   id: string;
   title: string;
-  /** Linked LMS course title, as returned by the Moodle sync. */
+  /** Linked LMS course title. */
   course: string;
   batchCode: string;
   programme: string;

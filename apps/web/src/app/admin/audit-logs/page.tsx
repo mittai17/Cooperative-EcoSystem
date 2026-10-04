@@ -4,11 +4,22 @@ import { useEffect, useState } from "react";
 import { ScrollText } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
 import { AdminToolbar } from "@/components/admin/shared/admin-toolbar";
-import { DemoBanner } from "@/components/admin/shared/demo-banner";
 import { Pager } from "@/components/admin/shared/pager";
 import { listAuditLogs, type AuditLog } from "@/lib/admin/admin-api";
 import { DEMO_AUDIT_LOGS } from "@/components/admin/audit/audit-data";
 import { formatDate } from "@/components/admin/programmes/admin-helpers";
+import {
+  EmptyState,
+  InitialsAvatar,
+  ListCard,
+  ListErrorBanner,
+  TableScroll,
+  TableSkeleton,
+  rowClass,
+  tableClass,
+  tdClass,
+  thClass,
+} from "@/components/admin/programmes/admin-ui";
 
 function formatWhen(value: string | null): string {
   if (!value) return "-";
@@ -72,20 +83,8 @@ export default function AuditLogsPage() {
         description="Review who changed what, and when, across the admin portal."
       />
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        {error && (
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <DemoBanner />
-            <span className="text-xs text-slate-500">Live data unavailable: {error}</span>
-            <button
-              type="button"
-              onClick={() => setReloadKey((k) => k + 1)}
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              Retry
-            </button>
-          </div>
-        )}
+      <ListCard>
+        <ListErrorBanner error={error} onRetry={() => setReloadKey((k) => k + 1)} />
 
         <AdminToolbar
           search={query}
@@ -98,49 +97,49 @@ export default function AuditLogsPage() {
             setQuery("");
             setPage(1);
           }}
-          filters={null}
         />
 
-        <div className="mt-5 overflow-x-auto">
-          {loading ? (
-            <div className="space-y-3" aria-busy="true" aria-label="Loading audit logs">
-              {Array.from({ length: 5 }, (_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-100" />
-              ))}
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
-              No audit entries match this search.
-            </div>
-          ) : (
-            <table className="w-full min-w-[760px] text-left text-sm">
+        {loading ? (
+          <TableSkeleton label="Loading audit logs" />
+        ) : rows.length === 0 ? (
+          <EmptyState message="No audit entries match this search." />
+        ) : (
+          <TableScroll>
+            <table className={tableClass}>
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-3 py-3 font-semibold">When</th>
-                  <th className="px-3 py-3 font-semibold">Actor</th>
-                  <th className="px-3 py-3 font-semibold">Action</th>
-                  <th className="px-3 py-3 font-semibold">Entity</th>
-                  <th className="px-3 py-3 font-semibold">Entity ID</th>
+                <tr>
+                  <th className={thClass}>When</th>
+                  <th className={thClass}>Actor</th>
+                  <th className={thClass}>Action</th>
+                  <th className={thClass}>Entity</th>
+                  <th className={thClass}>Entity ID</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((entry) => (
-                  <tr key={entry.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                    <td className="px-3 py-3 whitespace-nowrap text-slate-600">{formatWhen(entry.created_at)}</td>
-                    <td className="px-3 py-3 font-medium text-slate-900">{entry.actor_name ?? "System"}</td>
-                    <td className="px-3 py-3">
-                      <code className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{entry.action}</code>
+                  <tr key={entry.id} className={rowClass}>
+                    <td className={`${tdClass} whitespace-nowrap text-muted-foreground`}>
+                      {formatWhen(entry.created_at)}
                     </td>
-                    <td className="px-3 py-3 text-slate-600">{entry.entity}</td>
-                    <td className="px-3 py-3 text-slate-600">{entry.entity_id ?? "-"}</td>
+                    <td className={tdClass}>
+                      <div className="flex items-center gap-3">
+                        <InitialsAvatar name={entry.actor_name ?? "System"} />
+                        <span className="font-medium">{entry.actor_name ?? "System"}</span>
+                      </div>
+                    </td>
+                    <td className={tdClass}>
+                      <code className="rounded-md bg-muted px-2 py-0.5 text-xs text-foreground">{entry.action}</code>
+                    </td>
+                    <td className={`${tdClass} text-muted-foreground`}>{entry.entity}</td>
+                    <td className={`${tdClass} text-muted-foreground`}>{entry.entity_id ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </TableScroll>
+        )}
 
-        <div className="mt-5">
+        <div className="px-1">
           <Pager
             page={page}
             pageCount={pageCount}
@@ -153,7 +152,7 @@ export default function AuditLogsPage() {
             }}
           />
         </div>
-      </div>
+      </ListCard>
     </div>
   );
 }

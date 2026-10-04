@@ -44,10 +44,8 @@ class User(Base):
     role = Column(String(50), default="trainee")
     organisation_id = Column(UUID(as_uuid=True), ForeignKey("organisations.id"), nullable=True)
     is_active = Column(Boolean, default=True)
-    # Additive, nullable: UI language (en|hi|mr|gu|ta), chosen career goal and
-    # the linked Moodle account id (when the Moodle integration is configured).
+    # Additive, nullable: UI language (en|hi|mr|gu|ta) and chosen career goal.
     preferred_language = Column(String(5), nullable=True, server_default="en")
     career_target_role = Column(String(255), nullable=True)
-    moodle_user_id = Column(Integer, nullable=True, unique=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

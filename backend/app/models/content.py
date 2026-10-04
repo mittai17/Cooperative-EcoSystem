@@ -1,5 +1,5 @@
 """Learning-content tables: generic translations, per-lesson progress, media
-assets and the external (Moodle/YouTube) course catalogue. All additive."""
+assets and the external (YouTube) course catalogue. All additive."""
 from sqlalchemy import (
     BigInteger, Boolean, CheckConstraint, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text,
     UniqueConstraint,
@@ -58,8 +58,8 @@ class LessonProgress(Base):
 
 class MediaAsset(Base):
     """A media file or external media reference attached to a lesson. The
-    source of the offline manifest. provider: native|youtube|bhashini_tts|
-    moodle. `downloadable` is false for streaming-only providers (YouTube)."""
+    source of the offline manifest. provider: native|youtube|bhashini_tts.
+    `downloadable` is false for streaming-only providers (YouTube)."""
 
     __tablename__ = "media_assets"
     __table_args__ = (UniqueConstraint("lesson_id", "provider", "external_id", name="uq_media_asset_lesson_provider_ext"),)
@@ -79,8 +79,8 @@ class MediaAsset(Base):
 
 
 class ExternalCourse(Base):
-    """Catalogue entry discovered on an external platform (Moodle, YouTube
-    playlist...). `course_id` links it to the native course once imported."""
+    """Catalogue entry discovered on an external platform (YouTube playlist...).
+    `course_id` links it to the native course once imported."""
 
     __tablename__ = "external_courses"
     __table_args__ = (UniqueConstraint("source", "external_id", name="uq_external_courses_source_external_id"),)

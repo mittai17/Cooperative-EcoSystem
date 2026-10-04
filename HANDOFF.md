@@ -65,7 +65,7 @@ Keys present in `backend/.env`:
 `apps/mobile` (Expo) has real screens, not just a scaffold: Dashboard, CoursePlayer, QRAttendance, CareerAI, JobMatches, SkillPassport, OfflineLearning, Certificates, Profile, CoursesCatalog, plus navigation/services/theme. Status (matches web red theme? wired to real backend API or `src/services/mockData.ts`?) not yet audited — do that before assuming it needs building from scratch.
 
 ## Not started (from the original full spec, out of scope so far)
-ERP/LMS integration (OpenEduCat/Moodle), face-recognition attendance, offline-first PWA/service worker (web), hostel/timetable/logistics modules, S3-compatible object storage, production deployment.
+ERP/LMS integration, face-recognition attendance, offline-first PWA/service worker (web), hostel/timetable/logistics modules, S3-compatible object storage, production deployment.
 
 ## Status update
 All items below through auth reconciliation, JWT-secured write endpoints, and Programme↔Course linkage are now DONE and verified (build: 57 routes/0 errors, pytest 32/32, alembic head at `d7e48ec4b5f3`, e2e 25/25). Full detail in `memory.md`. What follows is the next phase.
@@ -89,7 +89,7 @@ All items below through auth reconciliation, JWT-secured write endpoints, and Pr
 
 7. **Kiosk/QR attendance polish** — this is the most demo-visible "hardware-adjacent" feature; make sure the QR generate → scan → record flow is smooth end-to-end in the UI, not just via API tests.
 
-8. **Lower priority / stub is fine per the original spec's own allowance** ("integration-ready, don't let it block the main flow"): face-recognition attendance, ERP (OpenEduCat) / LMS (Moodle) integration, mobile app (Expo/React Native), hostel/timetable/logistics depth. Build these only if time remains after 1-7; a clearly-labeled "prototype integration" placeholder is acceptable per the spec.
+8. **Lower priority / stub is fine per the original spec's own allowance** ("integration-ready, don't let it block the main flow"): face-recognition attendance, ERP / LMS integration, mobile app (Expo/React Native), hostel/timetable/logistics depth. Build these only if time remains after 1-7; a clearly-labeled "prototype integration" placeholder is acceptable per the spec.
 
 9. **Demo prep** — once 1-6 are solid, prepare the 30-second narrative: rural youth registers → trains → attendance → assessment → certificate → Skill Passport updates → gap identified → recommendation → employer posts job → explainable match → applies → employer feedback → NCCT sees skill demand. Walk this live end-to-end in the deployed app before presenting.
 

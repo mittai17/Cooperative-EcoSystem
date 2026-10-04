@@ -1,14 +1,20 @@
 "use client";
 
-import { Briefcase, Eye, RefreshCw, SearchX } from "lucide-react";
+import { Briefcase, Eye } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
 import { AdminToolbar } from "@/components/admin/shared/admin-toolbar";
-import { DemoBanner } from "@/components/admin/shared/demo-banner";
 import { Pager } from "@/components/admin/shared/pager";
 import { StatusPill } from "@/components/admin/shared/status-pill";
-import { errorMessage, initials } from "@/components/admin/trainers/people-utils";
+import {
+  EmptyRows,
+  ListCard,
+  ListNotice,
+  PersonAvatar,
+  TableLoading,
+} from "@/components/admin/trainers/people-ui";
+import { errorMessage } from "@/components/admin/trainers/people-utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,15 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listEmployers, type PersonRow } from "@/lib/admin/admin-api";
 
 const PAGE_SIZE = 10;
@@ -95,17 +93,12 @@ export function EmployersDirectory() {
   const demoFiltered = useMemo(() => {
     const q = query.toLowerCase();
     return DEMO_EMPLOYERS.filter(
-      (e) =>
-        !q ||
-        e.full_name.toLowerCase().includes(q) ||
-        (e.state ?? "").toLowerCase().includes(q),
+      (e) => !q || e.full_name.toLowerCase().includes(q) || (e.state ?? "").toLowerCase().includes(q),
     );
   }, [query]);
 
   const usingDemo = error !== null;
-  const visibleRows = usingDemo
-    ? demoFiltered.slice((page - 1) * pageSize, page * pageSize)
-    : rows;
+  const visibleRows = usingDemo ? demoFiltered.slice((page - 1) * pageSize, page * pageSize) : rows;
   const visibleTotal = usingDemo ? demoFiltered.length : total;
   const pageCount = Math.max(1, Math.ceil(visibleTotal / pageSize));
 
@@ -124,87 +117,19 @@ export function EmployersDirectory() {
       />
 
       {usingDemo ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <span>{error}</span>
-          <DemoBanner />
-          <Button variant="outline" size="sm" onClick={() => setReloadKey((k) => k + 1)}>
-            <RefreshCw className="size-3.5" />
-            Retry
-          </Button>
-        </div>
+        <ListNotice message={`${error} Showing sample rows.`} onRetry={() => setReloadKey((k) => k + 1)} />
       ) : null}
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <AdminToolbar
-          search={search}
-          onSearch={setSearch}
-          placeholder="Search employers..."
-          onReset={resetFilters}
-        />
-
-        <div className="mt-4 overflow-x-auto">
-          {loading ? (
-            <div className="space-y-2" aria-busy="true" aria-label="Loading employers">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          ) : visibleRows.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-center text-sm text-muted-foreground">
-              <SearchX className="size-8" />
-              <p>{query ? "No employers match this search." : "No employers have been registered yet."}</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">#</TableHead>
-                  <TableHead>Employer</TableHead>
-                  <TableHead>Organisation</TableHead>
-                  <TableHead>State</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleRows.map((employer, index) => (
-                  <TableRow key={employer.id}>
-                    <TableCell className="text-muted-foreground">
-                      {(page - 1) * pageSize + index + 1}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-xs font-semibold text-primary">
-                          {initials(employer.full_name)}
-                        </span>
-                        <span className="font-medium text-foreground">{employer.full_name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{employer.organisation_name || "—"}</TableCell>
-                    <TableCell>{employer.state || "—"}</TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatJoined(employer.created_at)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusPill status={employer.status} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end">
-                        <Button variant="outline" size="sm" onClick={() => setDetail(employer)}>
-                          <Eye className="size-3.5" />
-                          View
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-
-        <div className="mt-4">
+      <ListCard
+        toolbar={
+          <AdminToolbar
+            search={search}
+            onSearch={setSearch}
+            placeholder="Search employers..."
+            onReset={resetFilters}
+          />
+        }
+        pager={
           <Pager
             page={page}
             pageCount={pageCount}
@@ -216,8 +141,57 @@ export function EmployersDirectory() {
               setPage(1);
             }}
           />
-        </div>
-      </div>
+        }
+      >
+        {loading ? (
+          <TableLoading label="Loading employers" />
+        ) : visibleRows.length === 0 ? (
+          <EmptyRows message={query ? "No employers match this search." : "No employers have been registered yet."} />
+        ) : (
+          <Table className="min-w-[760px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">#</TableHead>
+                <TableHead>Employer</TableHead>
+                <TableHead>Organisation</TableHead>
+                <TableHead>State</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visibleRows.map((employer, index) => (
+                <TableRow key={employer.id}>
+                  <TableCell className="text-muted-foreground">{(page - 1) * pageSize + index + 1}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <PersonAvatar name={employer.full_name} />
+                      <span className="font-medium text-foreground">{employer.full_name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{employer.organisation_name || "—"}</TableCell>
+                  <TableCell>{employer.state || "—"}</TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {formatJoined(employer.created_at)}
+                  </TableCell>
+                  <TableCell>
+                    <StatusPill status={employer.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end">
+                      <Button variant="outline" size="sm" onClick={() => setDetail(employer)}>
+                        <Eye className="size-3.5" aria-hidden="true" />
+                        View
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </ListCard>
 
       <Dialog open={detail !== null} onOpenChange={(open) => !open && setDetail(null)}>
         <DialogContent>

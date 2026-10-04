@@ -8,7 +8,6 @@ router = APIRouter()
 def integration_capabilities(settings):
     requirements = {
         "gemini": ("gemini_api_key",),
-        "moodle": ("moodle_url", "moodle_token"),
         "youtube": ("youtube_api_key",),
         "adzuna": ("adzuna_app_id", "adzuna_app_key"),
         "jooble": ("jooble_api_key",),

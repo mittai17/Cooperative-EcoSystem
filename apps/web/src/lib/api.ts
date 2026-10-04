@@ -27,7 +27,7 @@ function readDemoRoleCookie(): string | null {
 }
 
 /** Bearer token for a request: `demo:<key>` for an active demo persona, else the legacy placeholder. */
-function resolveAuthToken(): string {
+export function resolveAuthToken(): string {
   const role = readDemoRoleCookie();
   const key = role ? DEMO_ROLE_TO_KEY.get(role) : undefined;
   return key ? `demo:${key}` : 'mock_token';

@@ -2,14 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { EllipsisVertical, Eye, GraduationCap, Plus, RefreshCw, SearchX } from "lucide-react";
+import { EllipsisVertical, Eye, GraduationCap, Plus } from "lucide-react";
 
 import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
 import { AdminSelect, AdminToolbar } from "@/components/admin/shared/admin-toolbar";
-import { DemoBanner } from "@/components/admin/shared/demo-banner";
 import { Pager } from "@/components/admin/shared/pager";
 import { StatusPill } from "@/components/admin/shared/status-pill";
-import { PERSON_STATUS_OPTIONS, STATE_OPTIONS, errorMessage, initials, statusParam } from "@/components/admin/trainers/people-utils";
+import {
+  EmptyRows,
+  ListCard,
+  ListNotice,
+  PersonAvatar,
+  TableLoading,
+} from "@/components/admin/trainers/people-ui";
+import { PERSON_STATUS_OPTIONS, STATE_OPTIONS, errorMessage, statusParam } from "@/components/admin/trainers/people-utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,15 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listTrainees, type PersonRow } from "@/lib/admin/admin-api";
 
 import { useProgrammes } from "./use-programmes";
@@ -44,7 +42,7 @@ const ALL = "all";
 // Demo rows mirror the backend row shape. The backend trainee row carries no programme
 // name yet, so the Program column reads "—" for live rows.
 const DEMO_TRAINEES: PersonRow[] = [
-  { id: "demo-e1", full_name: "Arjun Kumar", email: "arjun.kumar@example.org", role: "trainee", organisation_id: null, organisation_name: "Anand Dairy Training Centre", state: "Gujarat", status: "active", created_at: "2026-01-20T10:00:00Z" },
+  { id: "demo-e1", full_name: "Arjun Kumar", email: "arjun.kumar@example.org", role: "trainee", organisation_id: null, organisation_name: "Amul Dairy Training Centre", state: "Gujarat", status: "active", created_at: "2026-01-20T10:00:00Z" },
   { id: "demo-e2", full_name: "Priya Sharma", email: "priya.sharma@example.org", role: "trainee", organisation_id: null, organisation_name: "NCCU Training Institute", state: "Delhi", status: "active", created_at: "2026-02-11T10:00:00Z" },
   { id: "demo-e3", full_name: "Ravi Teja", email: "ravi.teja@example.org", role: "trainee", organisation_id: null, organisation_name: "VAMNICOM", state: "Maharashtra", status: "active", created_at: "2026-03-02T10:00:00Z" },
   { id: "demo-e4", full_name: "Sneha Reddy", email: "sneha.reddy@example.org", role: "trainee", organisation_id: null, organisation_name: "Gujarat Cooperative College", state: "Gujarat", status: "inactive", created_at: "2026-04-18T10:00:00Z" },
@@ -82,14 +80,14 @@ export function TraineesDirectory() {
   useEffect(() => {
     let cancelled = false;
     listTrainees({
-        q: query || undefined,
-        // The backend filters trainees by programme id.
-        program: program === ALL ? undefined : program,
-        state: state === ALL ? undefined : state,
-        status: statusParam(status),
-        page,
-        page_size: pageSize,
-      })
+      q: query || undefined,
+      // The backend filters trainees by programme id.
+      program: program === ALL ? undefined : program,
+      state: state === ALL ? undefined : state,
+      status: statusParam(status),
+      page,
+      page_size: pageSize,
+    })
       .then((res) => {
         if (cancelled) return;
         setRows(res.items);
@@ -118,11 +116,10 @@ export function TraineesDirectory() {
   }, [query, state, status]);
 
   const usingDemo = error !== null;
-  const visibleRows = usingDemo
-    ? demoFiltered.slice((page - 1) * pageSize, page * pageSize)
-    : rows;
+  const visibleRows = usingDemo ? demoFiltered.slice((page - 1) * pageSize, page * pageSize) : rows;
   const visibleTotal = usingDemo ? demoFiltered.length : total;
   const pageCount = Math.max(1, Math.ceil(visibleTotal / pageSize));
+  const hasFilters = query !== "" || program !== ALL || state !== ALL || status !== ALL;
 
   const resetFilters = () => {
     setSearch("");
@@ -141,125 +138,60 @@ export function TraineesDirectory() {
         description="Manage registered trainees."
         action={
           <Button render={<Link href="/admin/trainees/new" />}>
-            <Plus className="size-4" />
+            <Plus className="size-4" aria-hidden="true" />
             Enroll Trainee
           </Button>
         }
       />
 
       {usingDemo ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <span>{error}</span>
-          <DemoBanner />
-          <Button variant="outline" size="sm" onClick={() => setReloadKey((k) => k + 1)}>
-            <RefreshCw className="size-3.5" />
-            Retry
-          </Button>
-        </div>
+        <ListNotice message={`${error} Showing sample rows.`} onRetry={() => setReloadKey((k) => k + 1)} />
       ) : null}
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <AdminToolbar
-          search={search}
-          onSearch={setSearch}
-          placeholder="Search trainees..."
-          onReset={resetFilters}
-          filters={
-            <>
-              <FilterSelect
-                label="Filter by program"
-                value={program}
-                allLabel="All Programs"
-                options={programmeOptions.programmes.map((p) => ({ value: p.id, label: p.name }))}
-                onChange={(v) => { setProgram(v); setPage(1); }}
-              />
-              <FilterSelect label="Filter by state" value={state} allLabel="All States" options={STATE_OPTIONS.map((s) => ({ value: s, label: s }))} onChange={(v) => { setState(v); setPage(1); }} />
-              <FilterSelect label="Filter by status" value={status} allLabel="All Status" options={PERSON_STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))} onChange={(v) => { setStatus(v); setPage(1); }} />
-            </>
-          }
-        />
-
-        <div className="mt-4 overflow-x-auto">
-          {loading ? (
-            <div className="space-y-2" aria-busy="true" aria-label="Loading trainees">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          ) : visibleRows.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-center text-sm text-muted-foreground">
-              <SearchX className="size-8" />
-              <p>No trainees match these filters.</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">#</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Program</TableHead>
-                  <TableHead>Institution</TableHead>
-                  <TableHead>State</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleRows.map((trainee, index) => (
-                  <TableRow key={trainee.id}>
-                    <TableCell className="text-muted-foreground">
-                      {(page - 1) * pageSize + index + 1}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                          {initials(trainee.full_name)}
-                        </span>
-                        <span className="font-medium text-foreground">{trainee.full_name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>—</TableCell>
-                    <TableCell>{trainee.organisation_name || "—"}</TableCell>
-                    <TableCell>{trainee.state || "—"}</TableCell>
-                    <TableCell>
-                      <StatusPill status={trainee.status} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setDetail(trainee)}>
-                          <Eye className="size-3.5" />
-                          View
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button variant="ghost" size="icon-sm" aria-label={`More actions for ${trainee.full_name}`} />
-                            }
-                          >
-                            <EllipsisVertical className="size-4" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setDetail(trainee)}>View details</DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={!trainee.email}
-                              onClick={() => {
-                                if (trainee.email) window.location.href = `mailto:${trainee.email}`;
-                              }}
-                            >
-                              Email trainee
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-
-        <div className="mt-4">
+      <ListCard
+        toolbar={
+          <AdminToolbar
+            search={search}
+            onSearch={setSearch}
+            placeholder="Search trainees..."
+            onReset={resetFilters}
+            filters={
+              <>
+                <FilterSelect
+                  label="Filter by program"
+                  value={program}
+                  allLabel="All Programs"
+                  options={programmeOptions.programmes.map((p) => ({ value: p.id, label: p.name }))}
+                  onChange={(v) => {
+                    setProgram(v);
+                    setPage(1);
+                  }}
+                />
+                <FilterSelect
+                  label="Filter by state"
+                  value={state}
+                  allLabel="All States"
+                  options={STATE_OPTIONS.map((s) => ({ value: s, label: s }))}
+                  onChange={(v) => {
+                    setState(v);
+                    setPage(1);
+                  }}
+                />
+                <FilterSelect
+                  label="Filter by status"
+                  value={status}
+                  allLabel="All Status"
+                  options={PERSON_STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))}
+                  onChange={(v) => {
+                    setStatus(v);
+                    setPage(1);
+                  }}
+                />
+              </>
+            }
+          />
+        }
+        pager={
           <Pager
             page={page}
             pageCount={pageCount}
@@ -271,8 +203,75 @@ export function TraineesDirectory() {
               setPage(1);
             }}
           />
-        </div>
-      </div>
+        }
+      >
+        {loading ? (
+          <TableLoading label="Loading trainees" />
+        ) : visibleRows.length === 0 ? (
+          <EmptyRows message={hasFilters ? "No trainees match these filters." : "No trainees have been enrolled yet."} />
+        ) : (
+          <Table className="min-w-[820px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">#</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Program</TableHead>
+                <TableHead>Institution</TableHead>
+                <TableHead>State</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visibleRows.map((trainee, index) => (
+                <TableRow key={trainee.id}>
+                  <TableCell className="text-muted-foreground">{(page - 1) * pageSize + index + 1}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <PersonAvatar name={trainee.full_name} />
+                      <span className="font-medium text-foreground">{trainee.full_name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>—</TableCell>
+                  <TableCell>{trainee.organisation_name || "—"}</TableCell>
+                  <TableCell>{trainee.state || "—"}</TableCell>
+                  <TableCell>
+                    <StatusPill status={trainee.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setDetail(trainee)}>
+                        <Eye className="size-3.5" aria-hidden="true" />
+                        View
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button variant="ghost" size="icon-sm" aria-label={`More actions for ${trainee.full_name}`} />
+                          }
+                        >
+                          <EllipsisVertical className="size-4" aria-hidden="true" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setDetail(trainee)}>View details</DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={!trainee.email}
+                            onClick={() => {
+                              if (trainee.email) window.location.href = `mailto:${trainee.email}`;
+                            }}
+                          >
+                            Email trainee
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </ListCard>
 
       <Dialog open={detail !== null} onOpenChange={(open) => !open && setDetail(null)}>
         <DialogContent>
@@ -317,11 +316,6 @@ function FilterSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <AdminSelect
-      label={label}
-      value={value}
-      onChange={onChange}
-      options={[{ value: ALL, label: allLabel }, ...options]}
-    />
+    <AdminSelect label={label} value={value} onChange={onChange} options={[{ value: ALL, label: allLabel }, ...options]} />
   );
 }

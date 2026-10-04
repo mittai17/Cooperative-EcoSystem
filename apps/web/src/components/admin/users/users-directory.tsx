@@ -2,14 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { EllipsisVertical, Eye, Plus, RefreshCw, SearchX, ShieldCheck } from "lucide-react";
+import { EllipsisVertical, Eye, Plus, ShieldCheck } from "lucide-react";
 
 import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
 import { AdminSelect, AdminToolbar } from "@/components/admin/shared/admin-toolbar";
-import { DemoBanner } from "@/components/admin/shared/demo-banner";
 import { Pager } from "@/components/admin/shared/pager";
 import { StatusPill } from "@/components/admin/shared/status-pill";
-import { errorMessage, initials } from "@/components/admin/trainers/people-utils";
+import {
+  EmptyRows,
+  ListCard,
+  ListNotice,
+  PersonAvatar,
+  TableLoading,
+} from "@/components/admin/trainers/people-ui";
+import { errorMessage } from "@/components/admin/trainers/people-utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,15 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listUsers, updateUser, type AdminUser, type PlatformRole } from "@/lib/admin/admin-api";
 
 import { ROLE_OPTIONS, roleLabel, roleParam } from "./user-roles";
@@ -91,11 +89,11 @@ export function UsersDirectory() {
   useEffect(() => {
     let cancelled = false;
     listUsers({
-        q: query || undefined,
-        role: roleParam(role),
-        page,
-        page_size: pageSize,
-      })
+      q: query || undefined,
+      role: roleParam(role),
+      page,
+      page_size: pageSize,
+    })
       .then((res) => {
         if (cancelled) return;
         setRows(res.items);
@@ -123,11 +121,10 @@ export function UsersDirectory() {
   }, [demoRows, query, role]);
 
   const usingDemo = error !== null;
-  const visibleRows = usingDemo
-    ? demoFiltered.slice((page - 1) * pageSize, page * pageSize)
-    : rows;
+  const visibleRows = usingDemo ? demoFiltered.slice((page - 1) * pageSize, page * pageSize) : rows;
   const visibleTotal = usingDemo ? demoFiltered.length : total;
   const pageCount = Math.max(1, Math.ceil(visibleTotal / pageSize));
+  const hasFilters = query !== "" || role !== ALL;
 
   const resetFilters = () => {
     setSearch("");
@@ -163,21 +160,14 @@ export function UsersDirectory() {
         description="Manage admin users and access control."
         action={
           <Button render={<Link href="/admin/user-management/new" />}>
-            <Plus className="size-4" />
+            <Plus className="size-4" aria-hidden="true" />
             Add User
           </Button>
         }
       />
 
       {usingDemo ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <span>{error}</span>
-          <DemoBanner />
-          <Button variant="outline" size="sm" onClick={() => setReloadKey((k) => k + 1)}>
-            <RefreshCw className="size-3.5" />
-            Retry
-          </Button>
-        </div>
+        <ListNotice message={`${error} Showing sample rows.`} onRetry={() => setReloadKey((k) => k + 1)} />
       ) : null}
 
       {actionError ? (
@@ -186,106 +176,27 @@ export function UsersDirectory() {
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <AdminToolbar
-          search={search}
-          onSearch={setSearch}
-          placeholder="Search users..."
-          onReset={resetFilters}
-          filters={
-            <AdminSelect
-              label="Filter by role"
-              value={role}
-              onChange={(value) => {
-                setRole(roleParam(value) ?? ALL);
-                setPage(1);
-              }}
-              options={[{ value: ALL, label: "All Roles" }, ...ROLE_OPTIONS.map((r) => ({ value: r.value, label: r.label }))]}
-            />
-          }
-        />
-
-        <div className="mt-4 overflow-x-auto">
-          {loading ? (
-            <div className="space-y-2" aria-busy="true" aria-label="Loading users">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          ) : visibleRows.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-center text-sm text-muted-foreground">
-              <SearchX className="size-8" />
-              <p>No users match these filters.</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleRows.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                          {initials(user.full_name)}
-                        </span>
-                        <span className="font-medium text-foreground">{user.full_name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{user.email || "—"}</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-xs font-semibold text-primary whitespace-nowrap">
-                        {roleLabel(user.role)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <StatusPill status={user.status} />
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatLastActive(user.last_active)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setDetail(user)}>
-                          <Eye className="size-3.5" />
-                          View
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button variant="ghost" size="icon-sm" aria-label={`More actions for ${user.full_name}`} />
-                            }
-                          >
-                            <EllipsisVertical className="size-4" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setDetail(user)}>View details</DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={pendingId === user.id}
-                              onClick={() => void toggleActive(user)}
-                            >
-                              {user.status === "active" ? "Deactivate user" : "Activate user"}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-
-        <div className="mt-4">
+      <ListCard
+        toolbar={
+          <AdminToolbar
+            search={search}
+            onSearch={setSearch}
+            placeholder="Search users..."
+            onReset={resetFilters}
+            filters={
+              <AdminSelect
+                label="Filter by role"
+                value={role}
+                onChange={(value) => {
+                  setRole(roleParam(value) ?? ALL);
+                  setPage(1);
+                }}
+                options={[{ value: ALL, label: "All Roles" }, ...ROLE_OPTIONS.map((r) => ({ value: r.value, label: r.label }))]}
+              />
+            }
+          />
+        }
+        pager={
           <Pager
             page={page}
             pageCount={pageCount}
@@ -297,8 +208,66 @@ export function UsersDirectory() {
               setPage(1);
             }}
           />
-        </div>
-      </div>
+        }
+      >
+        {loading ? (
+          <TableLoading label="Loading users" />
+        ) : visibleRows.length === 0 ? (
+          <EmptyRows message={hasFilters ? "No users match these filters." : "No users have been added yet."} />
+        ) : (
+          <Table className="min-w-[760px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">#</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visibleRows.map((user, index) => (
+                <TableRow key={user.id}>
+                  <TableCell className="text-muted-foreground">{(page - 1) * pageSize + index + 1}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <PersonAvatar name={user.full_name} />
+                      <span className="font-medium text-foreground">{user.full_name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{user.email || "—"}</TableCell>
+                  <TableCell className="whitespace-nowrap">{roleLabel(user.role)}</TableCell>
+                  <TableCell>
+                    <StatusPill status={user.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setDetail(user)}>
+                        <Eye className="size-3.5" aria-hidden="true" />
+                        View
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={<Button variant="ghost" size="icon-sm" aria-label={`More actions for ${user.full_name}`} />}
+                        >
+                          <EllipsisVertical className="size-4" aria-hidden="true" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setDetail(user)}>View details</DropdownMenuItem>
+                          <DropdownMenuItem disabled={pendingId === user.id} onClick={() => void toggleActive(user)}>
+                            {user.status === "active" ? "Deactivate user" : "Activate user"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </ListCard>
 
       <Dialog open={detail !== null} onOpenChange={(open) => !open && setDetail(null)}>
         <DialogContent>

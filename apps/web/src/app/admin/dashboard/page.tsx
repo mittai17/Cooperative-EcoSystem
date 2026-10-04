@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { getAdminDashboard, type AdminDashboard } from "@/lib/admin/admin-api";
+import { DemoBanner } from "@/components/admin/shared/demo-banner";
 import { WelcomeBanner } from "@/components/admin/dashboard/welcome-banner";
 import { KpiCardsRow } from "@/components/admin/dashboard/kpi-cards-row";
 import { EnrollmentTrendCard } from "@/components/admin/dashboard/enrollment-trend-card";
-import { InstitutionsByStateCard } from "@/components/admin/dashboard/institutions-by-state-card";
+import { StateTileMap } from "@/components/admin/dashboard/state-tile-map";
 import { RecentActivityCard } from "@/components/admin/dashboard/recent-activity-card";
 import { ProgramDistributionCard } from "@/components/admin/dashboard/program-distribution-card";
 import { PlacementOverviewCard } from "@/components/admin/dashboard/placement-overview-card";
@@ -11,67 +14,93 @@ import { QuickActions } from "@/components/admin/dashboard/quick-actions";
 import { TopInstitutionsCard } from "@/components/admin/dashboard/top-institutions-card";
 import { RecentPlacementsCard } from "@/components/admin/dashboard/recent-placements-card";
 import { AiInsightsCard } from "@/components/admin/dashboard/ai-insights-card";
+import { DashboardPanelPlaceholder } from "@/components/admin/dashboard/loading";
+import { DEMO_DASHBOARD } from "@/components/admin/dashboard/demo-data";
 
-const KPI_INITIAL_DATA = {
-  institutions: 128,
-  trainers: 842,
-  trainees: 12460,
-  certified: 2180,
-  employers: 215,
-  deltas: {
-    institutions: 12,
-    trainers: 48,
-    trainees: 1240,
-    certified: 320,
-    employers: 28,
-  },
-};
+type DashboardState =
+  | { status: "loading" }
+  | { status: "live"; data: AdminDashboard }
+  | { status: "demo"; data: AdminDashboard };
 
 export default function AdminDashboardPage() {
+  const [state, setState] = useState<DashboardState>({ status: "loading" });
+
+  useEffect(() => {
+    let cancelled = false;
+    getAdminDashboard()
+      .then((data) => {
+        if (!cancelled) setState({ status: "live", data });
+      })
+      .catch(() => {
+        if (!cancelled) setState({ status: "demo", data: DEMO_DASHBOARD });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (state.status === "loading") {
+    return (
+      <div className="flex flex-col gap-6" aria-busy="true" aria-label="Loading dashboard">
+        <DashboardPanelPlaceholder className="h-28" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <DashboardPanelPlaceholder key={index} className="h-24" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <DashboardPanelPlaceholder className="h-80 lg:col-span-5" />
+          <DashboardPanelPlaceholder className="h-80 lg:col-span-7" />
+        </div>
+      </div>
+    );
+  }
+
+  const { data } = state;
+
   return (
-    <div className="flex flex-col gap-5 max-w-[1600px] mx-auto pb-10">
-      {/* 1. Welcome Banner */}
+    <div className="flex flex-col gap-6">
+      {state.status === "demo" ? (
+        <DemoBanner message="The live dashboard could not be reached. Showing fictional sample figures." />
+      ) : null}
+
       <WelcomeBanner />
 
-      {/* 2. 5 KPI Cards in 1 Row */}
-      <KpiCardsRow data={KPI_INITIAL_DATA} />
+      <KpiCardsRow data={data.kpis} />
 
-      {/* 3. Row 1: Trainee Enrollment Trend | Institutions by State | Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        <div className="lg:col-span-5 flex flex-col">
-          <EnrollmentTrendCard />
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
+        <div className="flex min-w-0 flex-col lg:col-span-5">
+          <EnrollmentTrendCard points={data.enrollment_trend} />
         </div>
-        <div className="lg:col-span-4 flex flex-col">
-          <InstitutionsByStateCard />
+        <div className="flex min-w-0 flex-col lg:col-span-4">
+          <StateTileMap data={data.institutions_by_state} />
         </div>
-        <div className="lg:col-span-3 flex flex-col">
-          <RecentActivityCard />
+        <div className="flex min-w-0 flex-col lg:col-span-3">
+          <RecentActivityCard items={data.recent_activity} />
         </div>
       </div>
 
-      {/* 4. Row 2: Program Distribution | Placement Overview | Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        <div className="lg:col-span-4 flex flex-col">
-          <ProgramDistributionCard />
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
+        <div className="flex min-w-0 flex-col lg:col-span-4">
+          <ProgramDistributionCard points={data.program_distribution} trainees={data.kpis.trainees} />
         </div>
-        <div className="lg:col-span-5 flex flex-col">
-          <PlacementOverviewCard />
+        <div className="flex min-w-0 flex-col lg:col-span-5">
+          <PlacementOverviewCard points={data.placement_overview} />
         </div>
-        <div className="lg:col-span-3 flex flex-col">
+        <div className="flex min-w-0 flex-col lg:col-span-3">
           <QuickActions />
         </div>
       </div>
 
-      {/* 5. Row 3: Top Institutions | Recent Job Placements | AI Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        <div className="lg:col-span-5 flex flex-col">
-          <TopInstitutionsCard />
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
+        <div className="flex min-w-0 flex-col lg:col-span-5">
+          <TopInstitutionsCard rows={data.top_institutions} />
         </div>
-        <div className="lg:col-span-4 flex flex-col">
-          <RecentPlacementsCard />
+        <div className="flex min-w-0 flex-col lg:col-span-4">
+          <RecentPlacementsCard rows={data.recent_placements} />
         </div>
-        <div className="lg:col-span-3 flex flex-col">
-          <AiInsightsCard />
+        <div className="flex min-w-0 flex-col lg:col-span-3">
+          <AiInsightsCard insights={data.ai_insights} />
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@ class Course(Base):
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     programme_id = Column(UUID(as_uuid=True), ForeignKey("programmes.id", ondelete="SET NULL"), nullable=True)
-    # Origin of the record (native|moodle|youtube|...) with a natural key for sync.
+    # Origin of the record (native|youtube|...) with a natural key for sync.
     source = Column(String(30), nullable=False, server_default="native")
     external_id = Column(String(255), nullable=True)
     external_url = Column(String(1000), nullable=True)

@@ -68,8 +68,8 @@ export default function SettingsPage() {
         description="Manage system configuration."
       />
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div role="tablist" aria-label="Settings sections" className="flex flex-wrap gap-6 border-b border-slate-200">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div role="tablist" aria-label="Settings sections" className="flex flex-wrap gap-6 border-b border-border">
           {SETTINGS_TABS.map((t) => (
             <button
               key={t.key}
@@ -78,7 +78,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => setTab(t.key)}
               className={`-mb-px border-b-2 px-1 pb-3 text-sm font-semibold transition-colors ${
-                tab === t.key ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-800"
+                tab === t.key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               {t.label}
@@ -89,7 +89,7 @@ export default function SettingsPage() {
         {error && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {usingDemo && <DemoBanner message="Showing default values because the live settings could not be loaded. Saves will report an error until the API responds." />}
-            <span className="text-xs text-slate-500">Live settings unavailable: {error}</span>
+            <span className="text-xs text-muted-foreground">Live settings unavailable: {error}</span>
             <button
               type="button"
               onClick={() => setReloadKey((k) => k + 1)}
@@ -103,9 +103,9 @@ export default function SettingsPage() {
         <div className="mt-6 max-w-3xl">
           {loading || !settings ? (
             <div className="space-y-4" aria-busy="true" aria-label="Loading settings">
-              <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
-              <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
-              <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
+              <div className="h-10 animate-pulse rounded-lg bg-muted" />
+              <div className="h-10 animate-pulse rounded-lg bg-muted" />
+              <div className="h-10 animate-pulse rounded-lg bg-muted" />
             </div>
           ) : (
             <>

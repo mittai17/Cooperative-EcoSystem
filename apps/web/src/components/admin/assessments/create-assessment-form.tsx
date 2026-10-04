@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import Link from "next/link";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createAssessment, type AssessmentInput, type Programme } from "@/lib/admin/admin-api";
 import { SHOW_ANSWERS_OPTIONS } from "@/components/admin/assessments/assessment-data";
 import { fetchAllProgrammes } from "@/components/admin/programmes/admin-helpers";
-
-const inputClass =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-primary";
+import {
+  FormActions,
+  FormCard,
+  FormField,
+  inputClass,
+} from "@/components/admin/programmes/admin-ui";
 
 interface FormState {
   title: string;
@@ -108,17 +110,21 @@ export function CreateAssessmentForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <FormCard
+      title="Assessment details"
+      description="Set the questions, timing and pass mark for a program assessment."
+      onSubmit={onSubmit}
+    >
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <Field label="Assessment Title" error={errors.title} className="md:col-span-2">
+        <FormField label="Assessment Title" required error={errors.title} className="md:col-span-2">
           <input
             className={inputClass}
             value={form.title}
             onChange={(e) => update("title", e.target.value)}
             placeholder="e.g. Dairy Management Quiz"
           />
-        </Field>
-        <Field label="Program" error={errors.programme_id ?? programmesError ?? undefined}>
+        </FormField>
+        <FormField label="Program" required error={errors.programme_id ?? programmesError ?? undefined}>
           <select
             className={inputClass}
             value={form.programme_id}
@@ -132,56 +138,56 @@ export function CreateAssessmentForm() {
               </option>
             ))}
           </select>
-        </Field>
-        <Field label="Skill (optional)">
+        </FormField>
+        <FormField label="Skill (optional)">
           <input
             className={inputClass}
             value={form.skill_name}
             onChange={(e) => update("skill_name", e.target.value)}
             placeholder="e.g. Milk Quality Testing"
           />
-        </Field>
-        <Field label="Total Questions" error={errors.total_questions}>
+        </FormField>
+        <FormField label="Total Questions" required error={errors.total_questions}>
           <input
             className={inputClass}
             inputMode="numeric"
             value={form.total_questions}
             onChange={(e) => update("total_questions", e.target.value)}
           />
-        </Field>
-        <Field label="Duration (minutes)" error={errors.duration_minutes}>
+        </FormField>
+        <FormField label="Duration (minutes)" required error={errors.duration_minutes}>
           <input
             className={inputClass}
             inputMode="numeric"
             value={form.duration_minutes}
             onChange={(e) => update("duration_minutes", e.target.value)}
           />
-        </Field>
-        <Field label="Passing Score (%)" error={errors.passing_score}>
+        </FormField>
+        <FormField label="Passing Score (%)" required error={errors.passing_score}>
           <input
             className={inputClass}
             inputMode="numeric"
             value={form.passing_score}
             onChange={(e) => update("passing_score", e.target.value)}
           />
-        </Field>
-        <Field label="Due Date (optional)">
+        </FormField>
+        <FormField label="Due Date (optional)">
           <input
             type="date"
             className={inputClass}
             value={form.due_date}
             onChange={(e) => update("due_date", e.target.value)}
           />
-        </Field>
-        <Field label="Max Attempts" error={errors.max_attempts}>
+        </FormField>
+        <FormField label="Max Attempts" required error={errors.max_attempts}>
           <input
             className={inputClass}
             inputMode="numeric"
             value={form.max_attempts}
             onChange={(e) => update("max_attempts", e.target.value)}
           />
-        </Field>
-        <Field label="Show Answers">
+        </FormField>
+        <FormField label="Show Answers">
           <select
             className={inputClass}
             value={form.show_answers}
@@ -193,50 +199,16 @@ export function CreateAssessmentForm() {
               </option>
             ))}
           </select>
-        </Field>
+        </FormField>
       </div>
 
-      {serverError && (
-        <p role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {serverError}
-        </p>
-      )}
-
-      <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-5">
-        <Link
-          href="/admin/assessments"
-          className="inline-flex h-10 items-center rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          Cancel
-        </Link>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover disabled:opacity-60"
-        >
-          {submitting ? "Creating..." : "Create Assessment"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function Field({
-  label,
-  error,
-  className = "",
-  children,
-}: {
-  label: string;
-  error?: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
-      {children}
-      {error && <span className="text-xs text-red-600">{error}</span>}
-    </div>
+      <FormActions
+        cancelHref="/admin/assessments"
+        submitting={submitting}
+        submitLabel="Create Assessment"
+        submittingLabel="Creating..."
+        serverError={serverError}
+      />
+    </FormCard>
   );
 }

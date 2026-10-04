@@ -57,3 +57,5 @@ from app.api.v1 import admin_portal  # noqa: E402
 api_router.include_router(admin_portal.router, prefix="/admin", tags=["Admin"])
 from app.api.v1 import trainee_ai_interview  # noqa: E402
 api_router.include_router(trainee_ai_interview.router, prefix="/trainee/ai-interview", tags=["Trainee"])
+from app.api.v1 import diksha_content  # noqa: E402
+api_router.include_router(diksha_content.router, prefix="/content/diksha", tags=["Content"])

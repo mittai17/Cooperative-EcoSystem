@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-import { DemoBanner } from "@/components/admin/shared/demo-banner";
+import { FormCard, FormField, FormFooter, ListNotice } from "@/components/admin/trainers/people-ui";
 import { errorMessage } from "@/components/admin/trainers/people-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -26,7 +25,7 @@ type InstitutionOption = { id: string; name: string };
 // Shown only when the institution list cannot be loaded.
 const DEMO_INSTITUTIONS: InstitutionOption[] = [
   { id: "demo-inst-1", name: "VAMNICOM" },
-  { id: "demo-inst-2", name: "Anand Dairy Training Centre" },
+  { id: "demo-inst-2", name: "Amul Dairy Training Centre" },
   { id: "demo-inst-3", name: "NCCU Training Institute" },
   { id: "demo-inst-4", name: "Sahakar Bharati College" },
 ];
@@ -137,31 +136,19 @@ export function EnrollTraineeForm() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="max-w-3xl space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm"
-    >
+    <form onSubmit={handleSubmit} noValidate className="max-w-4xl space-y-5">
       {institutionsError !== null ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <AlertTriangle className="size-4" />
-          <span>Institutions could not be loaded. Showing sample institutions.</span>
-          <DemoBanner />
-          <Button type="button" variant="outline" size="sm" onClick={retryInstitutions}>
-            Retry
-          </Button>
-        </div>
+        <ListNotice
+          message={`Institutions could not be loaded. ${institutionsError} Showing sample institutions.`}
+          onRetry={retryInstitutions}
+        />
       ) : null}
 
       {programmeOptions.usingDemo ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <AlertTriangle className="size-4" />
-          <span>Training programs could not be loaded. Showing sample programs.</span>
-          <DemoBanner />
-          <Button type="button" variant="outline" size="sm" onClick={programmeOptions.retry}>
-            Retry
-          </Button>
-        </div>
+        <ListNotice
+          message={`${programmeOptions.error ?? "Training programs could not be loaded."} Showing sample programs.`}
+          onRetry={programmeOptions.retry}
+        />
       ) : null}
 
       {serverError ? (
@@ -170,87 +157,90 @@ export function EnrollTraineeForm() {
         </div>
       ) : null}
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <Field id="trainee-name" label="Full Name" error={errors.name}>
-          <Input id="trainee-name" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="e.g. Arjun Kumar" aria-invalid={!!errors.name} />
-        </Field>
-        <Field id="trainee-email" label="Email" error={errors.email}>
-          <Input id="trainee-email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="name@example.org" aria-invalid={!!errors.email} />
-        </Field>
-        <Field id="trainee-phone" label="Phone" error={errors.phone}>
-          <Input id="trainee-phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+91 98765 43210" aria-invalid={!!errors.phone} />
-        </Field>
-        <Field id="trainee-program" label="Program" error={errors.programId}>
-          <Select
-            value={form.programId || null}
-            onValueChange={(value) => update("programId", value ? String(value) : "")}
-            disabled={programmeOptions.loading}
-          >
-            <SelectTrigger id="trainee-program" className="w-full" aria-invalid={!!errors.programId}>
-              <SelectValue placeholder={programmeOptions.loading ? "Loading programs..." : "Select program"} />
-            </SelectTrigger>
-            <SelectContent>
-              {programmeOptions.programmes.map((program) => (
-                <SelectItem key={program.id} value={program.id}>
-                  {program.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field id="trainee-institution" label="Institution" error={errors.institutionId}>
-          <Select
-            value={form.institutionId || null}
-            onValueChange={(value) => update("institutionId", value ? String(value) : "")}
-            disabled={institutionsLoading}
-          >
-            <SelectTrigger id="trainee-institution" className="w-full" aria-invalid={!!errors.institutionId}>
-              <SelectValue placeholder={institutionsLoading ? "Loading institutions..." : "Select institution"} />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((institution) => (
-                <SelectItem key={institution.id} value={institution.id}>
-                  {institution.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
+      <FormCard title="Enrollment details" description="Enroll a new trainee into a program at an institution.">
+        <div className="grid gap-5 md:grid-cols-2">
+          <FormField id="trainee-name" label="Full Name" required error={errors.name}>
+            <Input
+              id="trainee-name"
+              required
+              value={form.name}
+              onChange={(e) => update("name", e.target.value)}
+              placeholder="e.g. Arjun Kumar"
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? "trainee-name-error" : undefined}
+            />
+          </FormField>
+          <FormField id="trainee-email" label="Email" required error={errors.email}>
+            <Input
+              id="trainee-email"
+              type="email"
+              required
+              value={form.email}
+              onChange={(e) => update("email", e.target.value)}
+              placeholder="name@example.org"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "trainee-email-error" : undefined}
+            />
+          </FormField>
+          <FormField id="trainee-phone" label="Phone" error={errors.phone}>
+            <Input
+              id="trainee-phone"
+              type="tel"
+              value={form.phone}
+              onChange={(e) => update("phone", e.target.value)}
+              placeholder="+91 98765 43210"
+              aria-invalid={!!errors.phone}
+              aria-describedby={errors.phone ? "trainee-phone-error" : undefined}
+            />
+          </FormField>
+          <FormField id="trainee-program" label="Program" required error={errors.programId}>
+            <Select
+              value={form.programId || null}
+              onValueChange={(value) => update("programId", value ? String(value) : "")}
+              disabled={programmeOptions.loading}
+            >
+              <SelectTrigger id="trainee-program" className="w-full" aria-invalid={!!errors.programId}>
+                <SelectValue placeholder={programmeOptions.loading ? "Loading programs..." : "Select program"} />
+              </SelectTrigger>
+              <SelectContent>
+                {programmeOptions.programmes.map((program) => (
+                  <SelectItem key={program.id} value={program.id}>
+                    {program.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+          <FormField id="trainee-institution" label="Institution" required error={errors.institutionId}>
+            <Select
+              value={form.institutionId || null}
+              onValueChange={(value) => update("institutionId", value ? String(value) : "")}
+              disabled={institutionsLoading}
+            >
+              <SelectTrigger id="trainee-institution" className="w-full" aria-invalid={!!errors.institutionId}>
+                <SelectValue placeholder={institutionsLoading ? "Loading institutions..." : "Select institution"} />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((institution) => (
+                  <SelectItem key={institution.id} value={institution.id}>
+                    {institution.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        </div>
 
-      <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
-        <Button variant="outline" type="button" render={<Link href="/admin/trainees" />}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-          Enroll Trainee
-        </Button>
-      </div>
+        <FormFooter>
+          <Button variant="outline" type="button" render={<Link href="/admin/trainees" />}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+            Enroll Trainee
+          </Button>
+        </FormFooter>
+      </FormCard>
     </form>
-  );
-}
-
-function Field({
-  id,
-  label,
-  error,
-  children,
-}: {
-  id: string;
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-      {error ? (
-        <p id={`${id}-error`} className="text-xs text-destructive">
-          {error}
-        </p>
-      ) : null}
-    </div>
   );
 }

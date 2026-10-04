@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { AlertTriangle, ChevronRight, Pencil, Building2, ExternalLink } from "lucide-react";
+import { AlertTriangle, Pencil, Building2, ExternalLink } from "lucide-react";
 
 import { DemoBanner } from "@/components/admin/shared/demo-banner";
 import { StatusPill } from "@/components/admin/shared/status-pill";
@@ -29,18 +29,6 @@ const TAB_TARGETS: Record<Exclude<Tab, "Overview" | "Settings">, { href: string;
 function initialTab(raw: string | null): Tab {
   const match = TABS.find((t) => t.toLowerCase() === (raw ?? "").toLowerCase());
   return match ?? "Overview";
-}
-
-function Breadcrumb({ name }: { name: string }) {
-  return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">
-      <Link href="/admin/dashboard" className="hover:text-foreground">Admin</Link>
-      <ChevronRight className="size-3.5" aria-hidden />
-      <Link href="/admin/institutions" className="hover:text-foreground">Institutions</Link>
-      <ChevronRight className="size-3.5" aria-hidden />
-      <span className="truncate font-medium text-foreground">{name}</span>
-    </nav>
-  );
 }
 
 export function InstitutionDetailView({ id }: { id: string }) {
@@ -98,8 +86,6 @@ export function InstitutionDetailView({ id }: { id: string }) {
   return (
     <div className="flex flex-col gap-6">
       {status === "demo" ? <DemoBanner message="Live record unavailable. Showing a fictional sample institution." /> : null}
-
-      <Breadcrumb name={institution.name} />
 
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">

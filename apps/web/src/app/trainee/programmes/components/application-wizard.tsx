@@ -14,16 +14,31 @@ import type { Programme } from "@/types/programme";
 import type { Application, DocumentRecord } from "@/types/application";
 import { useApplications, useApplicationDrafts, generateApplicationId } from "@/lib/store/programme-store";
 import { checkEligibility, DEMO_TRAINEE_PROFILE } from "@/lib/services/eligibility-service";
+import { useT } from "@/i18n";
 
 // ─── Step config ──────────────────────────────────────────────────────────────
 const STEPS = [
-  { id: 1, label: "Profile", short: "Profile" },
-  { id: 2, label: "Eligibility", short: "Eligibility" },
-  { id: 3, label: "Preferences", short: "Preferences" },
-  { id: 4, label: "Documents", short: "Documents" },
-  { id: 5, label: "Review", short: "Review" },
-  { id: 6, label: "Confirm", short: "Confirm" },
+  { id: 1, shortKey: "trainee.wizard.stepProfile" },
+  { id: 2, shortKey: "trainee.wizard.stepEligibility" },
+  { id: 3, shortKey: "trainee.wizard.stepPreferences" },
+  { id: 4, shortKey: "trainee.wizard.stepDocuments" },
+  { id: 5, shortKey: "trainee.wizard.stepReview" },
+  { id: 6, shortKey: "trainee.wizard.stepConfirm" },
 ];
+
+/** Stored values stay English; these maps only translate what is displayed. */
+const GENDER_KEYS: Record<string, string> = {
+  Male: "trainee.wizard.genderMale", Female: "trainee.wizard.genderFemale", Other: "trainee.wizard.genderOther",
+};
+const EDUCATION_KEYS: Record<string, string> = {
+  "10th Pass": "trainee.wizard.eduTenth", "12th Pass": "trainee.wizard.eduTwelfth",
+  Graduate: "trainee.wizard.eduGraduate", "Post-Graduate": "trainee.wizard.eduPostGraduate",
+};
+const BATCH_KEYS: Record<string, string> = {
+  "Batch A — Morning (9 AM – 1 PM)": "trainee.wizard.batchMorning",
+  "Batch B — Afternoon (2 PM – 6 PM)": "trainee.wizard.batchAfternoon",
+  "Batch C — Evening (6 PM – 9 PM)": "trainee.wizard.batchEvening",
+};
 
 interface Props {
   programme: Programme;
@@ -32,6 +47,9 @@ interface Props {
 }
 
 export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
+  const t = useT();
+  const choiceLabel = (keys: Record<string, string>, value: string) =>
+    Object.hasOwn(keys, value) ? t(keys[value]) : value;
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -149,7 +167,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between gap-3 border-b border-border px-6 py-4">
           <div>
-            <h2 className="font-heading text-base font-bold text-foreground">Programme Application</h2>
+            <h2 className="font-heading text-base font-bold text-foreground">{t("trainee.wizard.title")}</h2>
             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{programme.title} — {programme.institution}</p>
           </div>
           <button
@@ -177,7 +195,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                     )}
                   >
                     {s.id < step ? <CheckCircle2 className="size-3" /> : <span className="size-4 text-center">{s.id}</span>}
-                    <span className="hidden sm:inline">{s.short}</span>
+                    <span className="hidden sm:inline">{t(s.shortKey)}</span>
                   </button>
                   {i < STEPS.length - 1 && <ChevronRight className="size-3 text-muted-foreground shrink-0" />}
                 </div>
@@ -192,15 +210,15 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
           {step === 1 && (
             <div className="space-y-5 max-w-2xl mx-auto">
               <div>
-                <h3 className="font-heading text-base font-bold">Personal Details</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">Verify your personal information for this application.</p>
+                <h3 className="font-heading text-base font-bold">{t("trainee.wizard.personalTitle")}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("trainee.wizard.personalDesc")}</p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {[
-                  { key: "fullName", label: "Full Name" },
-                  { key: "dateOfBirth", label: "Date of Birth", type: "date" },
-                  { key: "phone", label: "Phone Number" },
-                  { key: "occupation", label: "Occupation" },
+                  { key: "fullName", label: t("trainee.wizard.fullName") },
+                  { key: "dateOfBirth", label: t("trainee.wizard.dateOfBirth"), type: "date" },
+                  { key: "phone", label: t("trainee.wizard.phone") },
+                  { key: "occupation", label: t("trainee.wizard.occupation") },
                 ].map((f) => (
                   <div key={f.key}>
                     <Label className="text-xs mb-1.5 block">{f.label} *</Label>
@@ -212,33 +230,33 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                   </div>
                 ))}
                 <div>
-                  <Label className="text-xs mb-1.5 block">Gender *</Label>
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.gender")} *</Label>
                   <RadioGroup value={personalInfo.gender} onValueChange={(v) => setPersonalInfo((prev) => ({ ...prev, gender: v }))}>
                     <div className="flex gap-4">
                       {["Male", "Female", "Other"].map((g) => (
                         <div key={g} className="flex items-center gap-1.5">
                           <RadioGroupItem value={g} id={`gender-${g}`} />
-                          <Label htmlFor={`gender-${g}`} className="text-xs cursor-pointer">{g}</Label>
+                          <Label htmlFor={`gender-${g}`} className="text-xs cursor-pointer">{choiceLabel(GENDER_KEYS, g)}</Label>
                         </div>
                       ))}
                     </div>
                   </RadioGroup>
                 </div>
                 <div>
-                  <Label className="text-xs mb-1.5 block">Education *</Label>
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.education")} *</Label>
                   <RadioGroup value={personalInfo.education} onValueChange={(v) => setPersonalInfo((prev) => ({ ...prev, education: v }))}>
                     <div className="flex flex-wrap gap-3">
                       {["10th Pass", "12th Pass", "Graduate", "Post-Graduate"].map((e) => (
                         <div key={e} className="flex items-center gap-1.5">
                           <RadioGroupItem value={e} id={`edu-${e}`} />
-                          <Label htmlFor={`edu-${e}`} className="text-xs cursor-pointer">{e}</Label>
+                          <Label htmlFor={`edu-${e}`} className="text-xs cursor-pointer">{choiceLabel(EDUCATION_KEYS, e)}</Label>
                         </div>
                       ))}
                     </div>
                   </RadioGroup>
                 </div>
                 <div className="sm:col-span-2">
-                  <Label className="text-xs mb-1.5 block">Address *</Label>
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.address")} *</Label>
                   <Textarea
                     value={personalInfo.address}
                     onChange={(e) => setPersonalInfo((prev) => ({ ...prev, address: e.target.value }))}
@@ -246,20 +264,20 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs mb-1.5 block">State *</Label>
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.state")} *</Label>
                   <Input value={personalInfo.state} onChange={(e) => setPersonalInfo((prev) => ({ ...prev, state: e.target.value }))} />
                 </div>
                 <div>
-                  <Label className="text-xs mb-1.5 block">District *</Label>
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.district")} *</Label>
                   <Input value={personalInfo.district} onChange={(e) => setPersonalInfo((prev) => ({ ...prev, district: e.target.value }))} />
                 </div>
                 <div>
-                  <Label className="text-xs mb-1.5 block">Cooperative Membership *</Label>
-                  <Input value={personalInfo.cooperativeMembership} onChange={(e) => setPersonalInfo((prev) => ({ ...prev, cooperativeMembership: e.target.value }))} placeholder="Name of your cooperative society" />
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.cooperativeMembership")} *</Label>
+                  <Input value={personalInfo.cooperativeMembership} onChange={(e) => setPersonalInfo((prev) => ({ ...prev, cooperativeMembership: e.target.value }))} placeholder={t("trainee.wizard.cooperativePlaceholder")} />
                 </div>
                 <div>
-                  <Label className="text-xs mb-1.5 block">Years of Experience</Label>
-                  <Input value={personalInfo.experience} onChange={(e) => setPersonalInfo((prev) => ({ ...prev, experience: e.target.value }))} placeholder="e.g. 4 years" />
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.yearsExperience")}</Label>
+                  <Input value={personalInfo.experience} onChange={(e) => setPersonalInfo((prev) => ({ ...prev, experience: e.target.value }))} placeholder={t("trainee.wizard.experiencePlaceholder")} />
                 </div>
               </div>
             </div>
@@ -269,8 +287,8 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
           {step === 2 && (
             <div className="space-y-5 max-w-2xl mx-auto">
               <div>
-                <h3 className="font-heading text-base font-bold">Eligibility Check</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">We have verified your eligibility based on your profile.</p>
+                <h3 className="font-heading text-base font-bold">{t("trainee.wizard.eligibilityTitle")}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("trainee.wizard.eligibilityDesc")}</p>
               </div>
               <div className={cn(
                 "flex items-start gap-3 rounded-xl border p-4",
@@ -283,7 +301,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                 )}
                 <div>
                   <p className={cn("font-bold text-sm", eligibility.overall === "eligible" ? "text-green-700" : "text-red-700")}>
-                    {eligibility.overall === "eligible" ? "You are eligible to apply!" : "Eligibility check failed"}
+                    {eligibility.overall === "eligible" ? t("trainee.wizard.eligibleYes") : t("trainee.wizard.eligibleNo")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">{eligibility.summary}</p>
                 </div>
@@ -301,9 +319,9 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                       {!d.met && d.reason && <p className="text-xs text-red-600 mt-0.5">{d.reason}</p>}
                     </div>
                     {d.met ? (
-                      <Badge className="ml-auto shrink-0 bg-green-100 text-green-700 text-xs">Met</Badge>
+                      <Badge className="ml-auto shrink-0 bg-green-100 text-green-700 text-xs">{t("trainee.wizard.met")}</Badge>
                     ) : (
-                      <Badge className="ml-auto shrink-0 bg-red-100 text-red-700 text-xs">Not Met</Badge>
+                      <Badge className="ml-auto shrink-0 bg-red-100 text-red-700 text-xs">{t("trainee.wizard.notMet")}</Badge>
                     )}
                   </div>
                 ))}
@@ -315,12 +333,12 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
           {step === 3 && (
             <div className="space-y-5 max-w-2xl mx-auto">
               <div>
-                <h3 className="font-heading text-base font-bold">Programme Preferences</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">Specify your preferences for this programme.</p>
+                <h3 className="font-heading text-base font-bold">{t("trainee.wizard.prefTitle")}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("trainee.wizard.prefDesc")}</p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <Label className="text-xs mb-1.5 block">Preferred Language *</Label>
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.preferredLanguage")} *</Label>
                   <RadioGroup value={preferences.preferredLanguage} onValueChange={(v) => setPreferences((prev) => ({ ...prev, preferredLanguage: v }))}>
                     <div className="flex flex-wrap gap-3">
                       {programme.language.map((l) => (
@@ -333,13 +351,13 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                   </RadioGroup>
                 </div>
                 <div>
-                  <Label className="text-xs mb-1.5 block">Preferred Batch *</Label>
+                  <Label className="text-xs mb-1.5 block">{t("trainee.wizard.preferredBatch")} *</Label>
                   <RadioGroup value={preferences.preferredBatch} onValueChange={(v) => setPreferences((prev) => ({ ...prev, preferredBatch: v }))}>
                     <div className="flex flex-col gap-2">
-                      {["Batch A — Morning (9 AM – 1 PM)", "Batch B — Afternoon (2 PM – 6 PM)", "Batch C — Evening (6 PM – 9 PM)"].map((b) => (
+                      {Object.keys(BATCH_KEYS).map((b) => (
                         <div key={b} className="flex items-center gap-1.5">
                           <RadioGroupItem value={b} id={`batch-${b}`} />
-                          <Label htmlFor={`batch-${b}`} className="text-xs cursor-pointer">{b}</Label>
+                          <Label htmlFor={`batch-${b}`} className="text-xs cursor-pointer">{choiceLabel(BATCH_KEYS, b)}</Label>
                         </div>
                       ))}
                     </div>
@@ -348,11 +366,11 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
               </div>
               {programme.hostelAvailable && (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Facilities Required</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("trainee.wizard.facilitiesRequired")}</p>
                   {[
-                    { key: "hostelRequired", label: "Hostel Accommodation", enabled: programme.hostelAvailable },
-                    { key: "mealRequired", label: "Meal Facility", enabled: programme.mealAvailable },
-                    { key: "transportRequired", label: "Transport Facility", enabled: programme.transportAvailable },
+                    { key: "hostelRequired", label: t("trainee.wizard.hostelAccommodation"), enabled: programme.hostelAvailable },
+                    { key: "mealRequired", label: t("trainee.wizard.mealFacility"), enabled: programme.mealAvailable },
+                    { key: "transportRequired", label: t("trainee.wizard.transportFacility"), enabled: programme.transportAvailable },
                   ].filter((f) => f.enabled).map((f) => (
                     <div key={f.key} className="flex items-center gap-2.5">
                       <Checkbox
@@ -366,11 +384,11 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                 </div>
               )}
               <div>
-                <Label className="text-xs mb-1.5 block">Special Needs / Accessibility Requirements</Label>
+                <Label className="text-xs mb-1.5 block">{t("trainee.wizard.specialNeeds")}</Label>
                 <Textarea
                   value={preferences.specialNeeds}
                   onChange={(e) => setPreferences((prev) => ({ ...prev, specialNeeds: e.target.value }))}
-                  placeholder="Any specific accessibility requirements or special needs (optional)"
+                  placeholder={t("trainee.wizard.specialNeedsPlaceholder")}
                   rows={3}
                 />
               </div>
@@ -381,8 +399,8 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
           {step === 4 && (
             <div className="space-y-4 max-w-2xl mx-auto">
               <div>
-                <h3 className="font-heading text-base font-bold">Document Upload</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">Upload all required documents. Accepted formats: PDF, JPG, PNG (max 5 MB).</p>
+                <h3 className="font-heading text-base font-bold">{t("trainee.wizard.docTitle")}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("trainee.wizard.docDesc")}</p>
               </div>
               <div className="space-y-3">
                 {documents.map((doc, i) => (
@@ -417,22 +435,22 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                           <>
                             <Badge className="bg-green-100 text-green-700 text-xs">
                               <CheckCircle2 className="size-2.5 mr-0.5" />
-                              {doc.status === "verified" ? "Verified" : "Uploaded"}
+                              {doc.status === "verified" ? t("trainee.wizard.verified") : t("trainee.wizard.uploaded")}
                             </Badge>
                             <button
                               onClick={() => handleRemove(i)}
                               className="size-7 flex items-center justify-center rounded text-muted-foreground hover:text-destructive transition-colors"
-                              title="Remove file"
+                              title={t("trainee.wizard.removeFile")}
                             >
                               <Trash2 className="size-3.5" />
                             </button>
                           </>
                         )}
                         {doc.status === "invalid" && (
-                          <Badge className="bg-red-100 text-red-700 text-xs">Invalid</Badge>
+                          <Badge className="bg-red-100 text-red-700 text-xs">{t("trainee.wizard.invalid")}</Badge>
                         )}
                         {doc.status === "pending" && (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">Pending</Badge>
+                          <Badge variant="outline" className="text-xs text-muted-foreground">{t("trainee.wizard.pending")}</Badge>
                         )}
                       </div>
                     </div>
@@ -440,7 +458,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                     {(doc.status === "pending" || doc.status === "invalid") && (
                       <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-border px-3 py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors">
                         <Upload className="size-4 shrink-0" />
-                        <span>Click to upload {doc.label}</span>
+                        <span>{t("trainee.wizard.clickUpload").replace("{label}", doc.label)}</span>
                         <input
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png"
@@ -456,7 +474,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                     {(doc.status === "uploaded" || doc.status === "verified") && (
                       <label className="mt-2 flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
                         <Upload className="size-3" />
-                        <span>Replace file</span>
+                        <span>{t("trainee.wizard.replaceFile")}</span>
                         <input
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png"
@@ -478,44 +496,44 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
           {step === 5 && (
             <div className="space-y-4 max-w-2xl mx-auto">
               <div>
-                <h3 className="font-heading text-base font-bold">Review Your Application</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">Please review all details before submitting.</p>
+                <h3 className="font-heading text-base font-bold">{t("trainee.wizard.reviewTitle")}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("trainee.wizard.reviewDesc")}</p>
               </div>
 
               {/* Summary sections */}
               {[
                 {
-                  title: "Programme", step: 1, items: [
-                    ["Programme", programme.title],
-                    ["Institution", programme.institution],
-                    ["Mode", programme.mode],
-                    ["Start Date", new Date(programme.startDate).toLocaleDateString("en-IN")],
-                    ["Fee", programme.isFree ? "Free" : `₹${programme.fee.toLocaleString("en-IN")}`],
+                  title: t("trainee.wizard.sectionProgramme"), step: 1, items: [
+                    [t("trainee.wizard.sectionProgramme"), programme.title],
+                    [t("trainee.wizard.institution"), programme.institution],
+                    [t("trainee.wizard.mode"), programme.mode],
+                    [t("trainee.wizard.startDate"), new Date(programme.startDate).toLocaleDateString("en-IN")],
+                    [t("trainee.wizard.fee"), programme.isFree ? t("trainee.wizard.free") : `₹${programme.fee.toLocaleString("en-IN")}`],
                   ]
                 },
                 {
-                  title: "Personal Details", step: 1, items: [
-                    ["Name", personalInfo.fullName],
-                    ["Date of Birth", personalInfo.dateOfBirth],
-                    ["Gender", personalInfo.gender],
-                    ["Phone", personalInfo.phone],
-                    ["State", personalInfo.state],
-                    ["Cooperative", personalInfo.cooperativeMembership],
-                    ["Education", personalInfo.education],
-                    ["Experience", personalInfo.experience],
+                  title: t("trainee.wizard.sectionPersonal"), step: 1, items: [
+                    [t("trainee.wizard.name"), personalInfo.fullName],
+                    [t("trainee.wizard.dob"), personalInfo.dateOfBirth],
+                    [t("trainee.wizard.genderLabel"), choiceLabel(GENDER_KEYS, personalInfo.gender)],
+                    [t("trainee.wizard.phoneLabel"), personalInfo.phone],
+                    [t("trainee.wizard.stateLabel"), personalInfo.state],
+                    [t("trainee.wizard.cooperativeLabel"), personalInfo.cooperativeMembership],
+                    [t("trainee.wizard.educationLabel"), choiceLabel(EDUCATION_KEYS, personalInfo.education)],
+                    [t("trainee.wizard.experienceLabel"), personalInfo.experience],
                   ]
                 },
                 {
-                  title: "Preferences", step: 3, items: [
-                    ["Language", preferences.preferredLanguage],
-                    ["Batch", preferences.preferredBatch],
-                    ["Mode", preferences.modePreference],
-                    ["Hostel", preferences.hostelRequired ? "Required" : "Not required"],
-                    ["Meals", preferences.mealRequired ? "Required" : "Not required"],
+                  title: t("trainee.wizard.sectionPreferences"), step: 3, items: [
+                    [t("trainee.wizard.language"), preferences.preferredLanguage],
+                    [t("trainee.wizard.batch"), choiceLabel(BATCH_KEYS, preferences.preferredBatch)],
+                    [t("trainee.wizard.mode"), preferences.modePreference],
+                    [t("trainee.wizard.hostel"), preferences.hostelRequired ? t("trainee.wizard.required") : t("trainee.wizard.notRequired")],
+                    [t("trainee.wizard.meals"), preferences.mealRequired ? t("trainee.wizard.required") : t("trainee.wizard.notRequired")],
                   ]
                 },
                 {
-                  title: "Documents", step: 4, items: documents.map((d) => [d.label, d.status === "uploaded" || d.status === "verified" ? "✓ Uploaded" : "⚠ Pending"])
+                  title: t("trainee.wizard.sectionDocuments"), step: 4, items: documents.map((d) => [d.label, d.status === "uploaded" || d.status === "verified" ? t("trainee.wizard.docUploadedItem") : t("trainee.wizard.docPendingItem")])
                 },
               ].map((section) => (
                 <div key={section.title} className="rounded-xl border border-border bg-card overflow-hidden">
@@ -525,14 +543,14 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                       onClick={() => setStep(section.step)}
                       className="text-xs text-primary hover:underline"
                     >
-                      Edit
+                      {t("trainee.wizard.edit")}
                     </button>
                   </div>
                   <div className="p-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {section.items.map(([label, value]) => (
                       <div key={label}>
                         <p className="text-xs text-muted-foreground">{label}</p>
-                        <p className={cn("text-sm font-medium", String(value).includes("Pending") && "text-amber-600")}>{value}</p>
+                        <p className={cn("text-sm font-medium", value === t("trainee.wizard.docPendingItem") && "text-amber-600")}>{value}</p>
                       </div>
                     ))}
                   </div>
@@ -540,8 +558,8 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
               ))}
 
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
-                <p className="font-medium mb-0.5">Before you submit</p>
-                <p>By submitting this application, you confirm that all information provided is accurate. False information may result in disqualification.</p>
+                <p className="font-medium mb-0.5">{t("trainee.wizard.beforeSubmitTitle")}</p>
+                <p>{t("trainee.wizard.beforeSubmitBody")}</p>
               </div>
             </div>
           )}
@@ -553,16 +571,16 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                 <CheckCircle2 className="size-10 text-green-500" />
               </div>
               <div>
-                <h3 className="font-heading text-xl font-bold text-foreground">Application Submitted!</h3>
-                <p className="text-muted-foreground mt-2 text-sm">Your application has been successfully submitted and is now pending trainer review.</p>
+                <h3 className="font-heading text-xl font-bold text-foreground">{t("trainee.wizard.submittedTitle")}</h3>
+                <p className="text-muted-foreground mt-2 text-sm">{t("trainee.wizard.submittedBody")}</p>
               </div>
               <div className="w-full rounded-xl border border-border bg-muted/30 p-4 text-left space-y-2">
                 {[
-                  ["Application ID", appId],
-                  ["Programme", programme.title],
-                  ["Institution", programme.institution],
-                  ["Submitted", new Date().toLocaleDateString("en-IN")],
-                  ["Next Step", "Pending Trainer Review"],
+                  [t("trainee.wizard.applicationId"), appId],
+                  [t("trainee.wizard.sectionProgramme"), programme.title],
+                  [t("trainee.wizard.institution"), programme.institution],
+                  [t("trainee.wizard.submittedLabel"), new Date().toLocaleDateString("en-IN")],
+                  [t("trainee.wizard.nextStep"), t("trainee.wizard.pendingTrainerReview")],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{label}</span>
@@ -571,9 +589,9 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                 ))}
               </div>
               <Button onClick={onSuccess} className="w-full">
-                Track Application <ChevronRight className="size-4 ml-1" />
+                {t("trainee.wizard.trackApplication")} <ChevronRight className="size-4 ml-1" />
               </Button>
-              <button onClick={onClose} className="text-xs text-muted-foreground hover:underline">Close</button>
+              <button onClick={onClose} className="text-xs text-muted-foreground hover:underline">{t("trainee.wizard.close")}</button>
             </div>
           )}
         </div>
@@ -584,7 +602,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
             <div className="flex items-center gap-2">
               {step > 1 && (
                 <Button variant="outline" size="sm" onClick={() => setStep((s) => s - 1)}>
-                  <ChevronLeft className="size-4 mr-1" /> Back
+                  <ChevronLeft className="size-4 mr-1" /> {t("trainee.wizard.back")}
                 </Button>
               )}
               <Button
@@ -594,17 +612,17 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                 className="text-muted-foreground"
               >
                 {saving ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <Save className="size-3.5 mr-1" />}
-                Save Draft
+                {t("trainee.wizard.saveDraft")}
               </Button>
             </div>
 
             <div className="text-xs text-muted-foreground hidden sm:block">
-              Step {step} of {STEPS.length - 1}
+              {t("trainee.wizard.stepOf").replace("{step}", String(step)).replace("{total}", String(STEPS.length - 1))}
             </div>
 
             {step < 5 && (
               <Button onClick={() => setStep((s) => s + 1)}>
-                Continue <ChevronRight className="size-4 ml-1" />
+                {t("trainee.wizard.continue")} <ChevronRight className="size-4 ml-1" />
               </Button>
             )}
             {step === 5 && (
@@ -613,7 +631,7 @@ export function ApplicationWizard({ programme, onClose, onSuccess }: Props) {
                 disabled={eligibility.overall === "not_eligible"}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                Submit Application <CheckCircle2 className="size-4 ml-1" />
+                {t("trainee.wizard.submitApplication")} <CheckCircle2 className="size-4 ml-1" />
               </Button>
             )}
           </div>

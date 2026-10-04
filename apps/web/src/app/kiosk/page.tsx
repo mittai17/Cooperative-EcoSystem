@@ -154,7 +154,7 @@ export default function KioskLandingPage() {
 
           {/* Trainee */}
           <Link
-            href="/attendance"
+            href="/kiosk/attendance"
             className="group relative flex flex-col items-center gap-5 overflow-hidden rounded-2xl border border-red-800/40 bg-red-950/50 px-8 py-10 shadow-xl ring-1 ring-red-900/30 transition-all duration-200 hover:border-red-600/60 hover:bg-red-900/40 hover:shadow-red-900/30 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 active:scale-[0.98] sm:py-14"
           >
             <span

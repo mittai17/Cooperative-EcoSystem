@@ -16,11 +16,15 @@ import {
 import { Card } from "@/components/ui/card";
 import { jobs } from "@/lib/mock-data/jobs";
 import { getJobMatch } from "@/lib/job-match";
+import { useT } from "@/i18n";
 import type { JobType } from "@/lib/types";
 
-const sectors = ["All sectors", ...Array.from(new Set(jobs.map((j) => j.sector)))];
-const types: (JobType | "All types")[] = [
-  "All types",
+/** Sentinel values for "no filter". Labels are translated at render time. */
+const ALL_SECTORS = "__all__";
+const ALL_TYPES = "__all__";
+const sectors = [ALL_SECTORS, ...Array.from(new Set(jobs.map((j) => j.sector)))];
+const types: (JobType | typeof ALL_TYPES)[] = [
+  ALL_TYPES,
   "Full-time",
   "Part-time",
   "Contract",
@@ -29,8 +33,9 @@ const types: (JobType | "All types")[] = [
 
 export default function JobsPage() {
   const [query, setQuery] = useState("");
-  const [sector, setSector] = useState("All sectors");
-  const [type, setType] = useState<JobType | "All types">("All types");
+  const [sector, setSector] = useState(ALL_SECTORS);
+  const [type, setType] = useState<JobType | typeof ALL_TYPES>(ALL_TYPES);
+  const t = useT();
 
   const filtered = useMemo(() => {
     return jobs.filter((j) => {
@@ -39,8 +44,8 @@ export default function JobsPage() {
         j.title.toLowerCase().includes(query.toLowerCase()) ||
         j.employer.toLowerCase().includes(query.toLowerCase()) ||
         j.skillsRequired.some((s) => s.toLowerCase().includes(query.toLowerCase()));
-      const matchesSector = sector === "All sectors" || j.sector === sector;
-      const matchesType = type === "All types" || j.type === type;
+      const matchesSector = sector === ALL_SECTORS || j.sector === sector;
+      const matchesType = type === ALL_TYPES || j.type === type;
       return matchesQuery && matchesSector && matchesType;
     });
   }, [query, sector, type]);
@@ -48,12 +53,9 @@ export default function JobsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-bold text-foreground">Jobs from cooperative employers</h1>
-        <p className="max-w-2xl text-muted-foreground">
-          Openings posted directly by dairy unions, credit societies, FPOs, and other cooperative
-          employers, ranked against your verified Skill Passport once you&apos;re signed in.
-        </p>
-        <span className="demo-data-tag w-fit">Sample job listings for demo purposes</span>
+        <h1 className="font-heading text-3xl font-bold text-foreground">{t("public.jobCatalog.title")}</h1>
+        <p className="max-w-2xl text-muted-foreground">{t("public.jobCatalog.body")}</p>
+        <span className="demo-data-tag w-fit">{t("public.jobCatalog.demoTag")}</span>
       </div>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -62,30 +64,30 @@ export default function JobsPage() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search jobs, employers, or skills…"
+            placeholder={t("public.jobCatalog.searchPlaceholder")}
             className="pl-9"
           />
         </div>
-        <Select value={sector} onValueChange={(value) => setSector(value ?? "All sectors")}>
+        <Select value={sector} onValueChange={(value) => setSector(value ?? ALL_SECTORS)}>
           <SelectTrigger className="w-full sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {sectors.map((s) => (
               <SelectItem key={s} value={s}>
-                {s}
+                {s === ALL_SECTORS ? t("public.jobCatalog.allSectors") : s}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Select value={type} onValueChange={(v) => setType(v as JobType | "All types")}>
+        <Select value={type} onValueChange={(v) => setType(v as JobType | typeof ALL_TYPES)}>
           <SelectTrigger className="w-full sm:w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {types.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t}
+            {types.map((ty) => (
+              <SelectItem key={ty} value={ty}>
+                {ty === ALL_TYPES ? t("public.jobCatalog.allTypes") : t(`public.jobCatalog.jobTypes.${ty}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -93,7 +95,7 @@ export default function JobsPage() {
       </div>
 
       <p className="mt-4 text-sm text-muted-foreground">
-        {filtered.length} opening{filtered.length === 1 ? "" : "s"} found
+        {t(filtered.length === 1 ? "public.jobCatalog.resultsOne" : "public.jobCatalog.resultsMany").replace("{count}", String(filtered.length))}
       </p>
 
       <div className="mt-4 flex flex-col gap-4">
@@ -105,9 +107,9 @@ export default function JobsPage() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-heading text-lg font-semibold text-foreground">{job.title}</h2>
-                    <Badge variant="secondary">{job.type}</Badge>
-                    {job.postedDaysAgo <= 2 && <Badge className="bg-success text-success-foreground">New</Badge>}
-                    <Badge className="bg-success/10 text-success">{match.percent}% Match</Badge>
+                    <Badge variant="secondary">{t(`public.jobCatalog.jobTypes.${job.type}`)}</Badge>
+                    {job.postedDaysAgo <= 2 && <Badge className="bg-success text-success-foreground">{t("public.jobCatalog.new")}</Badge>}
+                    <Badge className="bg-success/10 text-success">{t("public.jobCatalog.match").replace("{percent}", String(match.percent))}</Badge>
                   </div>
                   <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                     <Briefcase className="size-3.5" /> {job.employer}
@@ -119,8 +121,12 @@ export default function JobsPage() {
                     <span className="flex items-center gap-1.5">
                       <Wallet className="size-3.5" /> {job.salaryRange}
                     </span>
-                    <span>Posted {job.postedDaysAgo === 0 ? "today" : `${job.postedDaysAgo} day${job.postedDaysAgo > 1 ? "s" : ""} ago`}</span>
-                    <span>{job.openings} opening{job.openings > 1 ? "s" : ""}</span>
+                    <span>
+                      {job.postedDaysAgo === 0
+                        ? t("public.jobCatalog.postedToday")
+                        : t(job.postedDaysAgo === 1 ? "public.jobCatalog.postedOne" : "public.jobCatalog.postedMany").replace("{count}", String(job.postedDaysAgo))}
+                    </span>
+                    <span>{t(job.openings === 1 ? "public.jobCatalog.openingOne" : "public.jobCatalog.openingMany").replace("{count}", String(job.openings))}</span>
                   </div>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{job.description}</p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -132,8 +138,8 @@ export default function JobsPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-row gap-2 sm:w-40 sm:flex-col">
-                  <Button render={<Link href={`/jobs/${job.id}`} />} className="flex-1 sm:flex-initial" nativeButton={false}>View Details</Button>
-                  <Button render={<Link href="/sign-up" />} variant="outline" className="flex-1 sm:flex-initial" nativeButton={false}>Apply</Button>
+                  <Button render={<Link href={`/jobs/${job.id}`} />} className="flex-1 sm:flex-initial" nativeButton={false}>{t("public.jobCatalog.viewDetails")}</Button>
+                  <Button render={<Link href="/sign-up" />} variant="outline" className="flex-1 sm:flex-initial" nativeButton={false}>{t("public.jobCatalog.apply")}</Button>
                 </div>
               </div>
             </Card>

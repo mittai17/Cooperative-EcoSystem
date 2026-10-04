@@ -23,6 +23,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useApplications } from "@/lib/store/programme-store";
 import { MOCK_PROGRAMMES } from "@/lib/mock-data/programmes-data";
+import { useT } from "@/i18n";
 
 // --- Mock Data ---
 const SKILL_PROGRESS = [
@@ -39,10 +40,10 @@ const SCHEDULE = [
 ];
 
 const ACTIVITY = [
-  { title: "Application submitted", desc: "Dairy Cooperative Operations", time: "2 hours ago", color: "bg-orange-500 text-white", icon: FileText },
-  { title: "Certificate earned", desc: "Basic Digital Literacy", time: "1 day ago", color: "bg-green-500 text-white", icon: Award },
-  { title: "Completed assessment", desc: "Cooperative Principles", time: "3 days ago", color: "bg-teal-500 text-white", icon: BookOpen },
-  { title: "Enrolled in course", desc: "Cooperative Management Fundamentals", time: "5 days ago", color: "bg-purple-500 text-white", icon: Briefcase },
+  { titleKey: "trainee.dashboard.actApplication", desc: "Dairy Cooperative Operations", timeKey: "trainee.dashboard.timeHoursAgo", count: 2, color: "bg-orange-500 text-white", icon: FileText },
+  { titleKey: "trainee.dashboard.actCertificate", desc: "Basic Digital Literacy", timeKey: "trainee.dashboard.timeDayAgo", count: 1, color: "bg-green-500 text-white", icon: Award },
+  { titleKey: "trainee.dashboard.actAssessment", desc: "Cooperative Principles", timeKey: "trainee.dashboard.timeDaysAgo", count: 3, color: "bg-teal-500 text-white", icon: BookOpen },
+  { titleKey: "trainee.dashboard.actEnrolled", desc: "Cooperative Management Fundamentals", timeKey: "trainee.dashboard.timeDaysAgo", count: 5, color: "bg-purple-500 text-white", icon: Briefcase },
 ];
 
 const JOBS = [
@@ -53,29 +54,51 @@ const JOBS = [
 // --- Subcomponents ---
 
 function DonutChart({ percentage }: { percentage: number }) {
-  const radius = 38;
+  const t = useT();
+  const radius = 44;
+  const strokeWidth = 9;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className="relative flex items-center justify-center">
-      <svg className="w-32 h-32 transform -rotate-90">
-        <circle cx="64" cy="64" r={radius} stroke="currentColor" strokeWidth="12" fill="transparent" className="text-muted/30" />
-        <circle
-          cx="64" cy="64" r={radius} stroke="currentColor" strokeWidth="12" fill="transparent"
-          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
-          className="text-primary transition-all duration-1000 ease-in-out"
-        />
-      </svg>
-      <div className="absolute flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold font-heading">{percentage}%</span>
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Overall Progress</span>
+    <div className="flex flex-col items-center justify-center shrink-0">
+      <div className="relative flex items-center justify-center size-32">
+        <svg className="size-32 -rotate-90" viewBox="0 0 110 110">
+          <circle
+            cx="55"
+            cy="55"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            fill="transparent"
+            className="text-slate-100 dark:text-muted/40"
+          />
+          <circle
+            cx="55"
+            cy="55"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            fill="transparent"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            className="text-primary transition-all duration-1000 ease-in-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl font-extrabold font-heading text-foreground tracking-tight">{percentage}%</span>
+        </div>
       </div>
+      <span className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center">
+        {t("trainee.dashboard.overallProgress")}
+      </span>
     </div>
   );
 }
 
 export default function TraineeDashboardRedesign() {
+  const t = useT();
   const { getByTrainee } = useApplications();
   const myApps = getByTrainee("trainee-ravindra");
   
@@ -93,17 +116,17 @@ export default function TraineeDashboardRedesign() {
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const startDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay(); // 0 = Sunday
   
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthNames = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => t(`trainee.common.monthNames.m${m}`));
   
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
 
   const KPIS = [
-    { icon: BookOpen, value: MOCK_PROGRAMMES.length.toString(), title: "Available Programmes", desc: "Across 7 institutions", color: "text-red-500", bg: "bg-red-50", href: "/trainee/programmes" },
-    { icon: FileText, value: myApps.length.toString(), title: "My Applications", desc: `${approvedApps} approved • ${pendingApps} pending`, color: "text-purple-500", bg: "bg-purple-50", href: "/trainee/applications" },
-    { icon: TrendingUp, value: "3", title: "Active Courses", desc: "Continue learning", color: "text-pink-500", bg: "bg-pink-50", href: "/trainee/my-learning" },
-    { icon: Award, value: "2", title: "Certificates", desc: "View your achievements", color: "text-orange-500", bg: "bg-orange-50", href: "/trainee/certificates" },
-    { icon: Briefcase, value: "6", title: "Job Opportunities", desc: "Based on your skills", color: "text-violet-500", bg: "bg-violet-50", href: "/jobs" },
+    { icon: BookOpen, value: MOCK_PROGRAMMES.length.toString(), title: t("trainee.dashboard.kpiProgrammes"), desc: t("trainee.dashboard.kpiProgrammesDesc"), color: "text-red-500", bg: "bg-red-50", href: "/trainee/programmes" },
+    { icon: FileText, value: myApps.length.toString(), title: t("trainee.dashboard.kpiApplications"), desc: t("trainee.dashboard.kpiApplicationsDesc").replace("{approved}", String(approvedApps)).replace("{pending}", String(pendingApps)), color: "text-purple-500", bg: "bg-purple-50", href: "/trainee/applications" },
+    { icon: TrendingUp, value: "3", title: t("trainee.dashboard.kpiCourses"), desc: t("trainee.dashboard.kpiCoursesDesc"), color: "text-pink-500", bg: "bg-pink-50", href: "/trainee/my-learning" },
+    { icon: Award, value: "2", title: t("trainee.dashboard.kpiCertificates"), desc: t("trainee.dashboard.kpiCertificatesDesc"), color: "text-orange-500", bg: "bg-orange-50", href: "/trainee/certificates" },
+    { icon: Briefcase, value: "6", title: t("trainee.dashboard.kpiJobs"), desc: t("trainee.dashboard.kpiJobsDesc"), color: "text-violet-500", bg: "bg-violet-50", href: "/jobs" },
   ];
 
   const RECOMMENDED = MOCK_PROGRAMMES.slice(0, 3).map((p, i) => ({
@@ -113,7 +136,7 @@ export default function TraineeDashboardRedesign() {
     start: new Date(p.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
     tags: p.skills.slice(0, 3),
     img: ["from-orange-400 to-rose-500", "from-violet-500 to-blue-500", "from-emerald-400 to-teal-600"][i],
-    badge: i === 0 ? { text: "Popular", icon: TrendingUp, color: "bg-amber-100 text-amber-700" } : i === 1 ? { text: "Trending", icon: TrendingUp, color: "bg-orange-100 text-orange-700" } : { text: "New", icon: TrendingUp, color: "bg-green-100 text-green-700" }
+    badge: i === 0 ? { text: t("trainee.dashboard.badgePopular"), icon: TrendingUp, color: "bg-amber-100 text-amber-700" } : i === 1 ? { text: t("trainee.dashboard.badgeTrending"), icon: TrendingUp, color: "bg-orange-100 text-orange-700" } : { text: t("trainee.dashboard.badgeNew"), icon: TrendingUp, color: "bg-green-100 text-green-700" }
   }));
 
   return (
@@ -127,18 +150,18 @@ export default function TraineeDashboardRedesign() {
         
         <div className="relative z-10 max-w-xl">
           <h1 className="text-3xl md:text-4xl font-extrabold font-heading text-foreground mb-3 tracking-tight">
-            Good afternoon, Ravindra! <span className="inline-block animate-wave">👋</span>
+            {t("trainee.dashboard.greeting").replace("{name}", "Ravindra")} <span className="inline-block animate-wave">👋</span>
           </h1>
           <p className="text-muted-foreground text-sm md:text-base font-medium max-w-md">
-            Continue learning, register for new programmes, and build your skills for a stronger cooperative future.
+            {t("trainee.dashboard.tagline")}
           </p>
         </div>
 
         <div className="relative z-10 hidden lg:flex items-center gap-4 bg-background/95 backdrop-blur-sm p-4 rounded-xl border border-border shadow-sm max-w-xs mt-4 md:mt-0 mr-8">
           <div className="text-primary text-4xl font-serif font-bold leading-none">“</div>
           <p className="text-sm font-semibold italic text-foreground leading-snug">
-            Skills empower individuals.<br />
-            <span className="text-primary underline decoration-2 underline-offset-4">Cooperation empowers communities.</span>
+            {t("trainee.dashboard.quoteA")}<br />
+            <span className="text-primary underline decoration-2 underline-offset-4">{t("trainee.dashboard.quoteB")}</span>
           </p>
         </div>
       </div>
@@ -175,9 +198,9 @@ export default function TraineeDashboardRedesign() {
         <Card className="xl:col-span-5 rounded-2xl shadow-sm border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <TrendingUp className="size-4 text-primary" /> My Learning Progress
+              <TrendingUp className="size-4 text-primary" /> {t("trainee.dashboard.myLearningProgress")}
             </CardTitle>
-            <Link href="/trainee/my-learning" className="text-xs font-bold text-primary hover:underline">View Details</Link>
+            <Link href="/trainee/my-learning" className="text-xs font-bold text-primary hover:underline">{t("trainee.dashboard.viewDetails")}</Link>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row items-center gap-8 pt-4 pb-6">
             <div className="shrink-0 pl-2">
@@ -187,12 +210,17 @@ export default function TraineeDashboardRedesign() {
               {SKILL_PROGRESS.map((skill) => (
                 <div key={skill.label}>
                   <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs font-semibold flex items-center gap-1.5">
+                    <span className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                       <span className={cn("size-2 rounded-full", skill.color)} /> {skill.label}
                     </span>
                     <span className="text-xs font-bold text-muted-foreground">{skill.progress}%</span>
                   </div>
-                  <Progress value={skill.progress} className={cn("h-1.5", "[&>div]:" + skill.color)} />
+                  <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-muted overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full transition-all duration-700", skill.color)}
+                      style={{ width: `${skill.progress}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -203,9 +231,9 @@ export default function TraineeDashboardRedesign() {
         <Card className="xl:col-span-4 rounded-2xl shadow-sm border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <CalendarIcon className="size-4 text-primary" /> Upcoming Schedule
+              <CalendarIcon className="size-4 text-primary" /> {t("trainee.dashboard.upcomingSchedule")}
             </CardTitle>
-            <Link href="/trainee/dashboard" className="text-xs font-bold text-primary hover:underline">View Calendar</Link>
+            <Link href="/trainee/dashboard" className="text-xs font-bold text-primary hover:underline">{t("trainee.dashboard.viewCalendar")}</Link>
           </CardHeader>
           <CardContent className="pt-4 space-y-5 pb-6">
             {SCHEDULE.map((item, i) => (
@@ -221,7 +249,7 @@ export default function TraineeDashboardRedesign() {
                   </div>
                 </div>
                 <Badge variant="secondary" className={cn("text-[10px] whitespace-nowrap mt-1 border-none", item.modeColor)}>
-                  {item.mode}
+                  {item.mode === "Online" ? t("trainee.dashboard.modeOnline") : t("trainee.dashboard.modeOnCampus")}
                 </Badge>
               </div>
             ))}
@@ -241,8 +269,8 @@ export default function TraineeDashboardRedesign() {
           </CardHeader>
           <CardContent className="pt-4 pb-6">
             <div className="grid grid-cols-7 text-center gap-y-3">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                <div key={d} className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{d}</div>
+              {["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map(k => (
+                <div key={k} className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t(`trainee.common.weekdays.${k}`)}</div>
               ))}
               {/* Padding */}
               {Array.from({ length: startDay }).map((_, i) => <div key={`empty-${i}`} />)}
@@ -273,9 +301,9 @@ export default function TraineeDashboardRedesign() {
         <Card className="xl:col-span-5 rounded-2xl shadow-sm border-border flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-2 shrink-0">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <TrendingUp className="size-4 text-primary" /> Recommended Programmes
+              <TrendingUp className="size-4 text-primary" /> {t("trainee.dashboard.recommended")}
             </CardTitle>
-            <Link href="/trainee/programmes" className="text-xs font-bold text-primary hover:underline">View All</Link>
+            <Link href="/trainee/programmes" className="text-xs font-bold text-primary hover:underline">{t("trainee.dashboard.viewAll")}</Link>
           </CardHeader>
           <CardContent className="pt-4 flex gap-4 overflow-x-auto pb-4 px-6 -mx-6 custom-scrollbar">
             {RECOMMENDED.map((prog, i) => (
@@ -300,19 +328,19 @@ export default function TraineeDashboardRedesign() {
                   <div className="flex flex-col gap-1.5 text-xs text-muted-foreground mb-3">
                     <div className="flex items-center gap-1.5 truncate"><span className="shrink-0"><Award className="size-3" /></span> <span className="truncate">{prog.inst}</span></div>
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1"><Clock className="size-3" /> 4 Weeks</div>
+                      <div className="flex items-center gap-1"><Clock className="size-3" /> {t("trainee.dashboard.fourWeeks")}</div>
                       <div className="flex items-center gap-1"><Monitor className="size-3" /> {prog.mode}</div>
                     </div>
                   </div>
-                  <p className="text-xs font-semibold mb-3 text-foreground">Starts {prog.start}</p>
+                  <p className="text-xs font-semibold mb-3 text-foreground">{t("trainee.dashboard.startsOn").replace("{date}", prog.start)}</p>
                   <div className="flex flex-wrap gap-1 mb-4">
-                    {prog.tags.map(t => (
-                      <Badge key={t} variant="secondary" className="text-[9px] font-medium px-1.5 py-0 bg-muted/50 border-border">{t}</Badge>
+                    {prog.tags.map(tag => (
+                      <Badge key={tag} variant="secondary" className="text-[9px] font-medium px-1.5 py-0 bg-muted/50 border-border">{tag}</Badge>
                     ))}
                   </div>
                   <div className="mt-auto flex gap-2">
-                    <Button render={<Link href="/trainee/programmes" />} variant="outline" size="sm" className="flex-1 w-full h-8 text-xs text-primary border-primary/20 hover:bg-primary/5">View Details</Button>
-                    <Button render={<Link href="/trainee/programmes" />} size="sm" className="flex-1 w-full h-8 text-xs">Apply Now</Button>
+                    <Button render={<Link href="/trainee/programmes" />} variant="outline" size="sm" className="flex-1 w-full h-8 text-xs text-primary border-primary/20 hover:bg-primary/5">{t("trainee.dashboard.viewDetails")}</Button>
+                    <Button render={<Link href="/trainee/programmes" />} size="sm" className="flex-1 w-full h-8 text-xs">{t("trainee.dashboard.applyNow")}</Button>
                   </div>
                 </div>
               </div>
@@ -324,9 +352,9 @@ export default function TraineeDashboardRedesign() {
         <Card className="xl:col-span-4 rounded-2xl shadow-sm border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <ActivityIcon className="size-4 text-primary" /> My Recent Activity
+              <ActivityIcon className="size-4 text-primary" /> {t("trainee.dashboard.recentActivity")}
             </CardTitle>
-            <Link href="/trainee/profile" className="text-xs font-bold text-primary hover:underline">View All</Link>
+            <Link href="/trainee/profile" className="text-xs font-bold text-primary hover:underline">{t("trainee.dashboard.viewAll")}</Link>
           </CardHeader>
           <CardContent className="pt-4 pb-6">
             <div className="space-y-5">
@@ -340,10 +368,10 @@ export default function TraineeDashboardRedesign() {
                     </div>
                     <div className="flex justify-between items-start pl-2 pt-0.5">
                       <div>
-                        <p className="text-sm font-bold text-foreground">{act.title}</p>
+                        <p className="text-sm font-bold text-foreground">{t(act.titleKey)}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{act.desc}</p>
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-medium shrink-0 pt-0.5">{act.time}</span>
+                      <span className="text-[10px] text-muted-foreground font-medium shrink-0 pt-0.5">{t(act.timeKey).replace("{count}", String(act.count))}</span>
                     </div>
                   </div>
                 );
@@ -356,9 +384,9 @@ export default function TraineeDashboardRedesign() {
         <Card className="xl:col-span-3 rounded-2xl shadow-sm border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Briefcase className="size-4 text-primary" /> Career Opportunities
+              <Briefcase className="size-4 text-primary" /> {t("trainee.dashboard.careerOpportunities")}
             </CardTitle>
-            <Link href="/trainee/jobs" className="text-xs font-bold text-primary hover:underline">View All</Link>
+            <Link href="/trainee/jobs" className="text-xs font-bold text-primary hover:underline">{t("trainee.dashboard.viewAll")}</Link>
           </CardHeader>
           <CardContent className="pt-4 space-y-3 pb-6">
             {JOBS.map((job, i) => (
@@ -374,7 +402,7 @@ export default function TraineeDashboardRedesign() {
                   </div>
                 </div>
                 <Button render={<Link href="/jobs" />} variant="outline" size="sm" className="w-full h-7 text-xs text-primary border-primary hover:bg-primary hover:text-white transition-colors">
-                  Apply Now
+                  {t("trainee.dashboard.applyNow")}
                 </Button>
               </div>
             ))}

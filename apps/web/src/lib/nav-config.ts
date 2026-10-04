@@ -214,7 +214,7 @@ export const roleNav: Record<UserRole, RoleMeta> = {
     homeHref: "/kiosk",
     navItems: [
       { label: "Kiosk Station", href: "/kiosk", icon: LayoutDashboard },
-      { label: "Attendance Scan", href: "/attendance", icon: MapPin },
+      { label: "Attendance Scan", href: "/kiosk/attendance", icon: MapPin },
       { label: "Trainer QR", href: "/trainer/attendance", icon: ClipboardCheck },
       { label: "Station Status", href: "/kiosk/status", icon: Settings },
     ],

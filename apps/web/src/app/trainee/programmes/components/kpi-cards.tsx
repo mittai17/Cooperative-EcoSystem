@@ -2,6 +2,7 @@
 
 import { GraduationCap, ClipboardList, Clock, CheckCircle2, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface KPICardsProps {
   available: number;
@@ -22,51 +23,52 @@ export function KPICards({
   onSectionChange,
   activeSection,
 }: KPICardsProps) {
+  const t = useT();
   const cards = [
     {
-      label: "Available Programmes",
+      label: t("trainee.programmes.kpiAvailable"),
       value: available,
       icon: GraduationCap,
       tint: "bg-blue-50 text-blue-600",
       border: "border-blue-100",
       section: "programmes" as const,
-      sub: "Across NCCT institutions",
+      sub: t("trainee.programmes.kpiAvailableSub"),
     },
     {
-      label: "My Applications",
+      label: t("trainee.programmes.kpiMyApps"),
       value: myApplications,
       icon: ClipboardList,
       tint: "bg-violet-50 text-violet-600",
       border: "border-violet-100",
       section: "applications" as const,
-      sub: "Total submitted",
+      sub: t("trainee.programmes.kpiMyAppsSub"),
     },
     {
-      label: "Pending Approval",
+      label: t("trainee.programmes.kpiPending"),
       value: pendingApproval,
       icon: Clock,
       tint: "bg-amber-50 text-amber-600",
       border: "border-amber-100",
       section: "applications" as const,
-      sub: "Under trainer review",
+      sub: t("trainee.programmes.kpiPendingSub"),
     },
     {
-      label: "Approved",
+      label: t("trainee.programmes.kpiApproved"),
       value: approved,
       icon: CheckCircle2,
       tint: "bg-green-50 text-green-600",
       border: "border-green-100",
       section: "applications" as const,
-      sub: "Ready to join",
+      sub: t("trainee.programmes.kpiApprovedSub"),
     },
     {
-      label: "Upcoming Exams",
+      label: t("trainee.programmes.kpiExams"),
       value: upcomingExams,
       icon: Award,
       tint: "bg-red-50 text-primary",
       border: "border-red-100",
       section: "exams" as const,
-      sub: "Registered & scheduled",
+      sub: t("trainee.programmes.kpiExamsSub"),
     },
   ];
 

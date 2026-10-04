@@ -16,6 +16,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface RoleRequirement {
   skill: string;
@@ -102,13 +103,22 @@ const careerRoles: Record<string, CareerRole> = {
   },
 };
 
+const LEVEL_KEYS: Record<string, string> = {
+  Foundational: "trainee.skillGap.levelFoundational",
+  Intermediate: "trainee.skillGap.levelIntermediate",
+  Proficient: "trainee.skillGap.levelProficient",
+  Advanced: "trainee.skillGap.levelAdvanced",
+};
+
 const statusConfig = {
-  met: { label: "Met", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50 border-green-200", badgeClass: "bg-green-100 text-green-700" },
-  gap: { label: "Partial Gap", icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50 border-amber-200", badgeClass: "bg-amber-100 text-amber-700" },
-  missing: { label: "Missing", icon: XCircle, color: "text-red-600", bg: "bg-red-50 border-red-200", badgeClass: "bg-red-100 text-red-700" },
+  met: { labelKey: "trainee.skillGap.statusMet", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50 border-green-200", badgeClass: "bg-green-100 text-green-700" },
+  gap: { labelKey: "trainee.skillGap.statusGap", icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50 border-amber-200", badgeClass: "bg-amber-100 text-amber-700" },
+  missing: { labelKey: "trainee.skillGap.statusMissing", icon: XCircle, color: "text-red-600", bg: "bg-red-50 border-red-200", badgeClass: "bg-red-100 text-red-700" },
 };
 
 export default function SkillGapPage() {
+  const t = useT();
+  const levelLabel = (value: string) => (LEVEL_KEYS[value] ? t(LEVEL_KEYS[value]) : value);
   const [selectedRole, setSelectedRole] = useState("Cooperative Development Officer");
   const role = careerRoles[selectedRole];
   const metCount = role.requirements.filter((r) => r.status === "met").length;
@@ -118,10 +128,10 @@ export default function SkillGapPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="AI Skill Gap Analysis"
-        description="Compare your verified skills against your target role and get personalised learning recommendations."
+        title={t("trainee.skillGap.title")}
+        description={t("trainee.skillGap.description")}
         action={
-          <Link className="contents" href="/career-ai"><Button variant="outline"   nativeButton={false}>Open Career AI</Button></Link>
+          <Link className="contents" href="/trainee/career-ai"><Button variant="outline"   nativeButton={false}>{t("trainee.skillGap.openCareerAi")}</Button></Link>
         }
       />
 
@@ -131,7 +141,7 @@ export default function SkillGapPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-1 flex-col gap-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Target Career Role
+                {t("trainee.skillGap.targetRole")}
               </label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary md:w-80"
@@ -147,7 +157,7 @@ export default function SkillGapPage() {
 
             <div className="flex flex-col items-start gap-2 md:items-end">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Overall Match
+                {t("trainee.skillGap.overallMatch")}
               </p>
               <div className="flex items-center gap-3">
                 <div className="h-3 w-48 overflow-hidden rounded-full bg-muted">
@@ -162,9 +172,9 @@ export default function SkillGapPage() {
                 <span className="text-2xl font-bold text-foreground">{role.overallMatch}%</span>
               </div>
               <div className="flex gap-3 text-xs text-muted-foreground">
-                <span className="text-green-600 font-medium">{metCount} met</span>
-                <span className="text-amber-600 font-medium">{gapCount} gap</span>
-                <span className="text-red-600 font-medium">{missingCount} missing</span>
+                <span className="text-green-600 font-medium">{metCount} {t("trainee.skillGap.countMet")}</span>
+                <span className="text-amber-600 font-medium">{gapCount} {t("trainee.skillGap.countGap")}</span>
+                <span className="text-red-600 font-medium">{missingCount} {t("trainee.skillGap.countMissing")}</span>
               </div>
             </div>
           </div>
@@ -177,7 +187,7 @@ export default function SkillGapPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading text-base">
               <Target className="size-4.5 text-primary" />
-              Skill-by-Skill Comparison
+              {t("trainee.skillGap.skillComparison")}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -194,19 +204,19 @@ export default function SkillGapPage() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">{req.skill}</p>
                       <p className="text-xs text-muted-foreground">
-                        Required: <span className="font-medium">{req.requiredLevel}</span>
+                        {t("trainee.skillGap.required")} <span className="font-medium">{levelLabel(req.requiredLevel)}</span>
                         {req.currentLevel && (
-                          <> · Yours: <span className="font-medium">{req.currentLevel}</span></>
+                          <> · {t("trainee.skillGap.yours")} <span className="font-medium">{levelLabel(req.currentLevel)}</span></>
                         )}
                         {!req.currentLevel && (
-                          <> · <span className="text-red-600 font-medium">Not in Skill Passport</span></>
+                          <> · <span className="text-red-600 font-medium">{t("trainee.skillGap.notInPassport")}</span></>
                         )}
                       </p>
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", config.badgeClass)}>
-                      {config.label}
+                      {t(config.labelKey)}
                     </span>
                     <Progress value={req.matchScore} className="h-1.5 w-16" />
                   </div>
@@ -222,7 +232,7 @@ export default function SkillGapPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-heading text-base">
                 <Sparkles className="size-4.5 text-primary" />
-                AI Recommendations
+                {t("trainee.skillGap.recommendations")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
@@ -232,12 +242,12 @@ export default function SkillGapPage() {
                     <div>
                       <p className="text-sm font-medium text-foreground">{course.title}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        Fills gap: <span className="font-medium text-amber-600">{course.fillsGap}</span>
+                        {t("trainee.skillGap.fillsGap")} <span className="font-medium text-amber-600">{course.fillsGap}</span>
                       </p>
                     </div>
                     <Badge variant="secondary" className="shrink-0 text-xs">{course.duration}</Badge>
                   </div>
-                  <Button render={<Link href="/courses" />} size="sm" variant="outline" className="w-fit text-xs" nativeButton={false}>Enrol Now <ArrowRight className="ml-1 size-3" /></Button>
+                  <Button render={<Link href="/courses" />} size="sm" variant="outline" className="w-fit text-xs" nativeButton={false}>{t("trainee.skillGap.enrolNow")} <ArrowRight className="ml-1 size-3" /></Button>
                 </div>
               ))}
             </CardContent>
@@ -247,14 +257,14 @@ export default function SkillGapPage() {
             <CardContent className="flex flex-col gap-2 p-4">
               <div className="flex items-center gap-2">
                 <TrendingUp className="size-4 text-primary" />
-                <p className="text-sm font-semibold text-foreground">Quick Summary</p>
+                <p className="text-sm font-semibold text-foreground">{t("trainee.skillGap.quickSummary")}</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Complete <strong>{missingCount + gapCount} course{missingCount + gapCount !== 1 ? "s" : ""}</strong> to
-                close your skill gaps. Estimated time to full readiness:{" "}
-                <strong>{role.recommendedCourses.reduce((sum, c) => sum + parseInt(c.duration), 0)} weeks</strong>.
+                {t("trainee.skillGap.summaryLead")} <strong>{missingCount + gapCount} {missingCount + gapCount !== 1 ? t("trainee.skillGap.coursePlural") : t("trainee.skillGap.courseSingular")}</strong>{" "}
+                {t("trainee.skillGap.summaryMiddle")}{" "}
+                <strong>{role.recommendedCourses.reduce((sum, c) => sum + parseInt(c.duration), 0)} {t("trainee.skillGap.weeks")}</strong>.
               </p>
-              <Button render={<Link href="/career-ai" />} className="mt-1 w-full" size="sm" nativeButton={false}>Get Full Career Plan</Button>
+              <Button render={<Link href="/trainee/career-ai" />} className="mt-1 w-full" size="sm" nativeButton={false}>{t("trainee.skillGap.getCareerPlan")}</Button>
             </CardContent>
           </Card>
         </div>

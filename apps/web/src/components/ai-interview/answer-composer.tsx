@@ -4,6 +4,7 @@ import { AudioLines, Mic, MicOff, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "cn";
+import { useT } from "@/i18n";
 
 interface AnswerComposerProps {
   draft: string;
@@ -34,6 +35,7 @@ export function AnswerComposer({
   speechError,
   onToggleListening,
 }: AnswerComposerProps) {
+  const t = useT();
   const canSend = !disabled && !submitting && draft.trim().length > 0;
 
   return (
@@ -44,7 +46,7 @@ export function AnswerComposer({
           role="status"
         >
           <AudioLines className="size-5 animate-pulse text-primary" aria-hidden />
-          <span>Listening...</span>
+          <span>{t("trainee.aiInterview.listening")}</span>
           {interim && <span className="max-w-xs truncate text-muted-foreground">{interim}</span>}
         </div>
       )}
@@ -63,9 +65,9 @@ export function AnswerComposer({
           }}
           disabled={disabled || submitting}
           placeholder={
-            disabled ? "The interview has ended." : "Type your answer, or use the microphone."
+            disabled ? t("trainee.aiInterview.placeholderEnded") : t("trainee.aiInterview.placeholderType")
           }
-          aria-label="Your answer"
+          aria-label={t("trainee.aiInterview.answerLabel")}
           rows={2}
           className="min-h-10 resize-none bg-background"
         />
@@ -77,7 +79,7 @@ export function AnswerComposer({
             onClick={onToggleListening}
             disabled={disabled || submitting}
             aria-pressed={listening}
-            aria-label={listening ? "Stop listening" : "Answer with your voice"}
+            aria-label={listening ? t("trainee.aiInterview.stopListening") : t("trainee.aiInterview.speakAnswer")}
             className={cn(listening && "border-primary text-primary")}
           >
             {listening ? <MicOff aria-hidden /> : <Mic aria-hidden />}
@@ -85,13 +87,13 @@ export function AnswerComposer({
         )}
         <Button type="button" onClick={onSubmit} disabled={!canSend}>
           <Send aria-hidden />
-          {submitting ? "Sending..." : "Send answer"}
+          {submitting ? t("trainee.aiInterview.sending") : t("trainee.aiInterview.sendAnswer")}
         </Button>
       </div>
 
       {!speechSupported && (
         <p className="text-xs text-muted-foreground">
-          Voice answers need a browser with speech recognition (Chrome or Edge). Typing works everywhere.
+          {t("trainee.aiInterview.voiceUnsupported")}
         </p>
       )}
     </div>

@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { hostelService } from "@/lib/hostel/hostel-service";
+import { useT } from "@/i18n";
 
 const ICON_MAP: Record<string, any> = {
   Wifi,
@@ -37,6 +38,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export default function TraineeFacilitiesPage() {
+  const t = useT();
   const facilities = hostelService.getFacilities();
   const notices = hostelService.getNotices();
 
@@ -46,19 +48,19 @@ export default function TraineeFacilitiesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 font-medium">
-            <span>Home</span>
+            <span>{t("trainee.common.home")}</span>
             <ChevronRight className="size-3" />
             <Link href="/trainee/hostel" className="hover:text-primary">
-              Hostel Management
+              {t("trainee.hostel.management")}
             </Link>
             <ChevronRight className="size-3" />
-            <span className="text-foreground font-semibold">Hostel Facilities</span>
+            <span className="text-foreground font-semibold">{t("trainee.hostelFacilities.breadcrumb")}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-heading">
-            Hostel Facilities
+            {t("trainee.hostelFacilities.title")}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            View the facilities available in your hostel.
+            {t("trainee.hostelFacilities.description")}
           </p>
         </div>
 
@@ -68,7 +70,7 @@ export default function TraineeFacilitiesPage() {
           variant="outline"
           className="text-xs font-semibold self-start sm:self-auto"
         >
-          <ShieldAlert className="size-3.5 mr-1 text-primary" /> Hostel Rules
+          <ShieldAlert className="size-3.5 mr-1 text-primary" /> {t("trainee.hostelRules.breadcrumb")}
         </Button>
       </div>
 
@@ -84,7 +86,7 @@ export default function TraineeFacilitiesPage() {
             </h3>
             <p className="text-xs text-muted-foreground">Pune, Maharashtra</p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-              <span>Warden: Mr. S. Deshmukh</span>
+              <span>{t("trainee.hostel.warden").replace("{name}", "Mr. S. Deshmukh")}</span>
               <span>&bull;</span>
               <span className="flex items-center gap-1 text-primary font-medium">
                 <Phone className="size-3" /> +91 98765 43210
@@ -97,7 +99,7 @@ export default function TraineeFacilitiesPage() {
       {/* AVAILABLE FACILITIES (MATCHING IMAGE 4 PANEL 4) */}
       <div className="space-y-3">
         <h3 className="font-bold text-sm text-foreground font-heading flex items-center gap-2">
-          <Sparkles className="size-4 text-primary" /> Available Facilities
+          <Sparkles className="size-4 text-primary" /> {t("trainee.hostelFacilities.availableHeading")}
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -122,7 +124,7 @@ export default function TraineeFacilitiesPage() {
                         : "bg-amber-50 text-amber-700 border-amber-200 text-[9px] px-1.5 py-0"
                     }
                   >
-                    {fac.status}
+                    {fac.status === "Available" ? t("trainee.common.available") : fac.status}
                   </Badge>
                 </div>
 
@@ -140,10 +142,10 @@ export default function TraineeFacilitiesPage() {
       <div className="rounded-2xl border bg-card p-5 shadow-2xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b">
           <h3 className="font-bold text-sm text-foreground flex items-center gap-2 font-heading">
-            <Bell className="size-4 text-primary" /> Important Notices
+            <Bell className="size-4 text-primary" /> {t("trainee.hostelFacilities.importantNotices")}
           </h3>
           <Link href="/trainee/hostel/notices" className="text-xs text-primary font-semibold hover:underline">
-            View All
+            {t("trainee.common.viewAll")}
           </Link>
         </div>
 

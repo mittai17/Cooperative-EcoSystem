@@ -28,6 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { enqueueAttendanceRecord, useOfflineSync } from "@/lib/offline/sync-manager";
+import { useT } from "@/i18n";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -101,9 +102,10 @@ function formatDate(iso: string): string {
 }
 
 function MethodBadge({ method }: { method: string }) {
+  const t = useT();
   if (method === "face") return (
     <span className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-1.5 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
-      <Fingerprint className="size-2.5" /> Face
+      <Fingerprint className="size-2.5" /> {t("trainee.attendance.face")}
     </span>
   );
   if (method === "qr") return (
@@ -120,6 +122,7 @@ function FaceRecognitionScanner({ onSuccess, onError }: {
   onSuccess: (session: string) => void;
   onError: (msg: string) => void;
 }) {
+  const t = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [faceState, setFaceState] = useState<FaceState>("idle");
   const [progress, setProgress] = useState(0);
@@ -163,9 +166,9 @@ function FaceRecognitionScanner({ onSuccess, onError }: {
       }, 2000);
     } catch {
       setFaceState("failed");
-      onError("Camera access denied. Please allow camera permission and try again.");
+      onError(t("trainee.attendance.cameraDeniedHint"));
     }
-  }, [onSuccess, onError, stopStream]);
+  }, [onSuccess, onError, stopStream, t]);
 
   useEffect(() => () => {
     stopStream();
@@ -187,7 +190,7 @@ function FaceRecognitionScanner({ onSuccess, onError }: {
         {faceState === "idle" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/60">
             <Fingerprint className="size-14 opacity-30" />
-            <p className="text-sm font-medium">Camera not started</p>
+            <p className="text-sm font-medium">{t("trainee.attendance.cameraNotStarted")}</p>
           </div>
         )}
 
@@ -208,7 +211,7 @@ function FaceRecognitionScanner({ onSuccess, onError }: {
             {/* HUD text */}
             <div className="absolute bottom-6 left-0 right-0 text-center">
               <p className="text-green-400 text-xs font-mono font-semibold tracking-widest animate-pulse">
-                {faceState === "detecting" ? "DETECTING FACE…" : "VERIFYING IDENTITY…"}
+                {faceState === "detecting" ? t("trainee.attendance.detecting") : t("trainee.attendance.verifying")}
               </p>
             </div>
           </div>
@@ -218,7 +221,7 @@ function FaceRecognitionScanner({ onSuccess, onError }: {
         {faceState === "verified" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-emerald-950/80 gap-2">
             <CheckCircle2 className="size-14 text-emerald-400" />
-            <p className="text-emerald-300 font-semibold text-sm">Face Verified</p>
+            <p className="text-emerald-300 font-semibold text-sm">{t("trainee.attendance.faceVerified")}</p>
           </div>
         )}
 
@@ -226,7 +229,7 @@ function FaceRecognitionScanner({ onSuccess, onError }: {
         {faceState === "failed" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-950/80 gap-2">
             <XCircle className="size-12 text-red-400" />
-            <p className="text-red-300 font-semibold text-sm px-4 text-center">Camera access denied</p>
+            <p className="text-red-300 font-semibold text-sm px-4 text-center">{t("trainee.attendance.cameraDenied")}</p>
           </div>
         )}
 
@@ -242,11 +245,11 @@ function FaceRecognitionScanner({ onSuccess, onError }: {
       {faceState === "idle" || faceState === "failed" ? (
         <Button onClick={startCamera} className="w-full max-w-sm gap-2">
           <Camera className="size-4" />
-          {faceState === "failed" ? "Retry Camera" : "Start Face Scan"}
+          {faceState === "failed" ? t("trainee.attendance.retryCamera") : t("trainee.attendance.startFaceScan")}
         </Button>
       ) : faceState === "detecting" || faceState === "verifying" ? (
         <Button onClick={stopStream} variant="outline" className="w-full max-w-sm gap-2">
-          <XCircle className="size-4" /> Cancel
+          <XCircle className="size-4" /> {t("trainee.common.cancel")}
         </Button>
       ) : null}
     </div>
@@ -259,18 +262,19 @@ function QRScanner({ onSuccess, onError }: {
   onSuccess: (session: string) => void;
   onError: (msg: string) => void;
 }) {
+  const t = useT();
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = () => {
-    if (!token.trim()) { onError("Please enter a session token."); return; }
+    if (!token.trim()) { onError(t("trainee.attendance.enterToken")); return; }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       if (token.trim().toUpperCase().startsWith("CS-")) {
         onSuccess("PACS Digital Accounting — Session 8");
       } else {
-        onError("Invalid or expired QR token. Ask your trainer to refresh the code.");
+        onError(t("trainee.attendance.invalidToken"));
       }
     }, 1200);
   };
@@ -280,24 +284,24 @@ function QRScanner({ onSuccess, onError }: {
       <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/30 bg-muted/40 p-8">
         <ScanLine className="size-12 text-primary/50" />
         <p className="text-sm text-muted-foreground font-medium text-center">
-          Scan the QR code displayed on your trainer's screen, or enter the token manually below.
+          {t("trainee.attendance.qrHint")}
         </p>
       </div>
       <div className="flex gap-2">
         <input
           className="flex h-10 w-full rounded-lg border border-border bg-background px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="e.g. CS-CMF4-0182"
+          placeholder={t("trainee.attendance.tokenPlaceholder")}
           value={token}
           onChange={(e) => setToken(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
         />
         <Button onClick={handleSubmit} disabled={loading} className="shrink-0 gap-2">
           {loading ? <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <QrCode className="size-4" />}
-          {loading ? "Verifying…" : "Submit"}
+          {loading ? t("trainee.attendance.verifyingBtn") : t("trainee.common.submit")}
         </Button>
       </div>
       <p className="text-xs text-muted-foreground text-center">
-        Tip: Tokens start with <code className="font-mono">CS-</code> and are valid for 60 seconds.
+        {t("trainee.attendance.tipBefore")} <code className="font-mono">CS-</code> {t("trainee.attendance.tipAfter")}
       </p>
     </div>
   );
@@ -307,6 +311,15 @@ function QRScanner({ onSuccess, onError }: {
 
 export default function TraineeAttendancePage() {
   const { isOnline } = useOfflineSync();
+  const t = useT();
+  const statusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "present": return t("trainee.attendance.statusPresent");
+      case "absent": return t("trainee.attendance.statusAbsent");
+      case "late": return t("trainee.attendance.statusLate");
+      default: return status;
+    }
+  };
   const [mode, setMode] = useState<ScanMode>("qr");
   const [scanState, setScanState] = useState<ScanState>({ kind: "idle" });
   const [summary] = useState<AttendanceSummary>(DEMO_SUMMARY);
@@ -336,15 +349,15 @@ export default function TraineeAttendancePage() {
       `}</style>
 
       <PageHeader
-        title="My Attendance"
-        description="Mark your attendance via QR code or face recognition. All records sync automatically."
+        title={t("trainee.attendance.title")}
+        description={t("trainee.attendance.description")}
       />
 
       {/* Offline banner */}
       {!isOnline && (
         <div className="rounded-xl border border-amber-400/40 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 flex items-center gap-3 text-amber-800 dark:text-amber-300 text-sm">
           <ShieldAlert className="size-5 shrink-0" />
-          <span><strong>Offline mode:</strong> Your attendance is saved locally and will sync automatically when connected.</span>
+          <span><strong>{t("trainee.attendance.offlineLabel")}</strong> {t("trainee.attendance.offlineText")}</span>
         </div>
       )}
 
@@ -353,13 +366,13 @@ export default function TraineeAttendancePage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-1 py-4">
             <p className="text-2xl font-bold text-foreground">{summary.present}</p>
-            <p className="text-xs text-muted-foreground">Sessions Present</p>
+            <p className="text-xs text-muted-foreground">{t("trainee.attendance.sessionsPresent")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center gap-1 py-4">
             <p className="text-2xl font-bold text-foreground">{summary.total_sessions}</p>
-            <p className="text-xs text-muted-foreground">Total Sessions</p>
+            <p className="text-xs text-muted-foreground">{t("trainee.attendance.totalSessions")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -367,7 +380,7 @@ export default function TraineeAttendancePage() {
             <p className={cn("text-2xl font-bold", attendancePct >= 75 ? "text-emerald-600" : "text-red-600")}>
               {attendancePct}%
             </p>
-            <p className="text-xs text-muted-foreground">Overall Rate</p>
+            <p className="text-xs text-muted-foreground">{t("trainee.attendance.overallRate")}</p>
           </CardContent>
         </Card>
       </div>
@@ -378,7 +391,7 @@ export default function TraineeAttendancePage() {
         <CardHeader>
           <CardTitle className="font-heading text-base flex items-center gap-2">
             <ZapIcon className="size-4 text-primary" />
-            Mark Attendance
+            {t("trainee.attendance.markHeading")}
           </CardTitle>
           {/* Mode switcher */}
           <div className="flex gap-2 mt-2">
@@ -389,7 +402,7 @@ export default function TraineeAttendancePage() {
                 mode === "qr" ? "bg-primary text-primary-foreground shadow" : "bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
-              <QrCode className="size-3.5" /> QR Code
+              <QrCode className="size-3.5" /> {t("trainee.attendance.modeQr")}
             </button>
             <button
               onClick={() => { setMode("face"); reset(); }}
@@ -398,7 +411,7 @@ export default function TraineeAttendancePage() {
                 mode === "face" ? "bg-primary text-primary-foreground shadow" : "bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
-              <Fingerprint className="size-3.5" /> Face Recognition
+              <Fingerprint className="size-3.5" /> {t("trainee.attendance.modeFace")}
             </button>
           </div>
         </CardHeader>
@@ -410,13 +423,13 @@ export default function TraineeAttendancePage() {
                 <CheckCircle2 className="size-8 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="font-semibold text-foreground">Attendance Marked!</p>
+                <p className="font-semibold text-foreground">{t("trainee.attendance.attendanceMarked")}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">{scanState.session}</p>
                 <Badge className="mt-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                  ✓ Marked at {scanState.markedAt} via {mode === "face" ? "Face Recognition" : "QR Scan"}
+                  {t("trainee.attendance.markedAt").replace("{time}", scanState.markedAt).replace("{method}", mode === "face" ? t("trainee.attendance.modeFace") : t("trainee.attendance.qrScan"))}
                 </Badge>
               </div>
-              <Button variant="outline" size="sm" onClick={reset}>Mark Another Session</Button>
+              <Button variant="outline" size="sm" onClick={reset}>{t("trainee.attendance.markAnother")}</Button>
             </div>
           )}
 
@@ -426,7 +439,7 @@ export default function TraineeAttendancePage() {
               <XCircle className="size-5 text-destructive shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="font-medium text-destructive text-sm">{scanState.message}</p>
-                <Button variant="outline" size="sm" className="mt-3" onClick={reset}>Try Again</Button>
+                <Button variant="outline" size="sm" className="mt-3" onClick={reset}>{t("trainee.common.tryAgain")}</Button>
               </div>
             </div>
           )}
@@ -447,7 +460,7 @@ export default function TraineeAttendancePage() {
         <CardHeader>
           <CardTitle className="font-heading text-base flex items-center gap-2">
             <CalendarDays className="size-4 text-muted-foreground" />
-            Attendance History
+            {t("trainee.attendance.history")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -462,7 +475,7 @@ export default function TraineeAttendancePage() {
                   </p>
                 </div>
                 <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize shrink-0", statusStyles(rec.status))}>
-                  <StatusIcon status={rec.status} /> {rec.status}
+                  <StatusIcon status={rec.status} /> {statusLabel(rec.status)}
                 </span>
               </div>
             ))}

@@ -4,8 +4,10 @@ import Link from "next/link";
 import { ChevronRight, Bell, Pin, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { hostelService } from "@/lib/hostel/hostel-service";
+import { useT } from "@/i18n";
 
 export default function TraineeNoticesPage() {
+  const t = useT();
   const notices = hostelService.getNotices();
 
   return (
@@ -13,19 +15,19 @@ export default function TraineeNoticesPage() {
       {/* HEADER */}
       <div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 font-medium">
-          <span>Home</span>
+          <span>{t("trainee.common.home")}</span>
           <ChevronRight className="size-3" />
           <Link href="/trainee/hostel" className="hover:text-primary">
-            Hostel Management
+            {t("trainee.hostel.management")}
           </Link>
           <ChevronRight className="size-3" />
-          <span className="text-foreground font-semibold">Hostel Notices</span>
+          <span className="text-foreground font-semibold">{t("trainee.hostelNotices.breadcrumb")}</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-heading">
-          Hostel Notices & Circulars
+          {t("trainee.hostelNotices.title")}
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-          Campus communications, dining schedules, and residential circulars for residents.
+          {t("trainee.hostelNotices.description")}
         </p>
       </div>
 
@@ -46,7 +48,7 @@ export default function TraineeNoticesPage() {
                   </Badge>
                   {n.isPinned && (
                     <span className="flex items-center gap-1 text-[10px] font-bold text-primary">
-                      <Pin className="size-3" /> Pinned
+                      <Pin className="size-3" /> {t("trainee.hostelNotices.pinned")}
                     </span>
                   )}
                 </div>
@@ -60,12 +62,12 @@ export default function TraineeNoticesPage() {
             </div>
 
             <div className="pt-4 border-t mt-4 flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Audience: {n.audience}</span>
+              <span className="text-muted-foreground">{t("trainee.hostelNotices.audience")}: {n.audience}</span>
               <Badge
                 variant="outline"
                 className={n.priority === "High" ? "bg-red-50 text-red-700" : "bg-muted text-muted-foreground"}
               >
-                {n.priority} Priority
+                {t("trainee.hostelNotices.priority").replace("{level}", n.priority)}
               </Badge>
             </div>
           </div>

@@ -3,8 +3,10 @@
 import { CalendarDays, Clock, MapPin, ExternalLink, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUpcomingEvents } from "@/lib/store/programme-store";
+import { useT } from "@/i18n";
 
 export function UpcomingSchedulePanel() {
+  const t = useT();
   const { events } = useUpcomingEvents();
 
   return (
@@ -12,14 +14,14 @@ export function UpcomingSchedulePanel() {
       <CardHeader className="p-4 pb-0">
         <CardTitle className="font-heading text-sm font-bold flex items-center gap-2">
           <CalendarDays className="size-4 text-primary" />
-          Upcoming Schedule
+          {t("trainee.programmes.upcomingSchedule")}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         {events.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6 text-center text-muted-foreground">
             <Calendar className="size-8 opacity-20" />
-            <p className="text-xs">No upcoming events scheduled.</p>
+            <p className="text-xs">{t("trainee.programmes.noUpcoming")}</p>
           </div>
         ) : (
           <div className="space-y-4">

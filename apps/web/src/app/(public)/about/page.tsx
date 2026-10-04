@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -19,45 +21,26 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useT } from "@/i18n";
 
 // ── Partners (dummy logos via initials) ───────────────────────────────────────
 
 const PARTNERS = [
-  { abbr: "NCCT", name: "National Council for Cooperative Training" },
-  { abbr: "VAMNICOM", name: "Vaikunth Mehta National Institute" },
-  { abbr: "NDRI", name: "National Dairy Research Institute" },
-  { abbr: "IFFCO", name: "Indian Farmers Fertiliser Cooperative" },
-  { abbr: "NAFED", name: "National Agricultural Cooperative Marketing Federation" },
-  { abbr: "MoC", name: "Ministry of Cooperation, GoI" },
+  { abbr: "NCCT", key: "ncct" },
+  { abbr: "VAMNICOM", key: "vamnicom" },
+  { abbr: "NDRI", key: "ndri" },
+  { abbr: "IFFCO", key: "iffco" },
+  { abbr: "NAFED", key: "nafed" },
+  { abbr: "MoC", key: "moc" },
 ];
 
 // ── How it works steps ────────────────────────────────────────────────────────
 
-const HOW_IT_WORKS: { step: number; title: string; desc: string; icon: LucideIcon }[] = [
-  {
-    step: 1,
-    title: "Register & Enrol",
-    desc: "Trainees register via cooperative institutions. NCCT approves and VAMNICOM coordinates programme allocation.",
-    icon: GraduationCap,
-  },
-  {
-    step: 2,
-    title: "Train & Attend",
-    desc: "QR-based kiosk attendance, live timetables, and trainer grading — all captured in real-time.",
-    icon: QrCode,
-  },
-  {
-    step: 3,
-    title: "AI Skill Passport",
-    desc: "Every completed module, assessment, and employer feedback is distilled into a tamper-proof digital Skill Passport.",
-    icon: BadgeCheck,
-  },
-  {
-    step: 4,
-    title: "Match & Place",
-    desc: "AI career advisor matches verified skills to live job postings from cooperative employers. Placement loop closes.",
-    icon: Briefcase,
-  },
+const HOW_IT_WORKS: { step: number; key: string; icon: LucideIcon }[] = [
+  { step: 1, key: "enrol", icon: GraduationCap },
+  { step: 2, key: "train", icon: QrCode },
+  { step: 3, key: "passport", icon: BadgeCheck },
+  { step: 4, key: "place", icon: Briefcase },
 ];
 
 // ── Tech stack pills ──────────────────────────────────────────────────────────
@@ -74,13 +57,7 @@ const TECH_STACK = [
 
 // ── Stat tiles ────────────────────────────────────────────────────────────────
 
-const PROBLEM_POINTS = [
-  "No unified digital record of cooperative training outcomes",
-  "Manual, paper-based attendance and certification",
-  "Gap between skills trained and skills demanded by employers",
-  "Employers cannot verify claimed cooperative competencies",
-  "NCCT has no real-time visibility into national training throughput",
-];
+const PROBLEM_POINTS = [0, 1, 2, 3, 4];
 
 // ── Components ────────────────────────────────────────────────────────────────
 
@@ -93,6 +70,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function AboutPage() {
+  const t = useT();
+  const [heroBefore, heroAfter] = t("public.aboutPage.hero.title").split("{name}");
+  const [passportBefore, passportAfter] = t("public.aboutPage.mission.passportBody").split("{passport}");
   return (
     <>
       {/* ── Hero ── */}
@@ -103,19 +83,17 @@ export default function AboutPage() {
             className="mb-6 gap-1.5 border-success/25 bg-success/10 text-success"
           >
             <Sprout className="size-3" />
-            SIH 2026 · PS 26087
+            {t("public.aboutPage.hero.badge")}
           </Badge>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-            About <span className="text-primary">CoopSetu</span> AI
+            {heroBefore}<span className="text-primary">CoopSetu</span>{heroAfter}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            A national AI platform that connects cooperative training to verifiable skills and real
-            employment — built for the Ministry of Cooperation and National Council for Cooperative
-            Training (NCCT).
+            {t("public.aboutPage.hero.body")}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link className="contents" href="/sign-up"><Button   nativeButton={false}>Join as a Trainee</Button></Link>
-            <Link className="contents" href="/programmes"><Button variant="outline"   nativeButton={false}>Browse Programmes</Button></Link>
+            <Link className="contents" href="/sign-up"><Button   nativeButton={false}>{t("public.aboutPage.hero.joinTrainee")}</Button></Link>
+            <Link className="contents" href="/trainee/programmes"><Button variant="outline"   nativeButton={false}>{t("public.aboutPage.hero.browseProgrammes")}</Button></Link>
           </div>
         </div>
       </section>
@@ -125,36 +103,30 @@ export default function AboutPage() {
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-10 md:grid-cols-2 md:items-center">
             <div>
-              <SectionLabel>Our Mission</SectionLabel>
+              <SectionLabel>{t("public.aboutPage.mission.label")}</SectionLabel>
               <h2 className="mt-3 text-2xl font-bold text-foreground sm:text-3xl">
-                Close the loop between training and livelihood
+                {t("public.aboutPage.mission.title")}
               </h2>
-              <p className="mt-4 text-muted-foreground">
-                India&apos;s cooperative sector trains thousands every year, yet outcomes remain
-                invisible — fragmented across institutions with no digital thread connecting a
-                trainee&apos;s learning journey to employment. CoopSetu AI changes that.
-              </p>
+              <p className="mt-4 text-muted-foreground">{t("public.aboutPage.mission.body")}</p>
               <p className="mt-3 text-muted-foreground">
-                We give every trainee a living, AI-powered <strong>Skill Passport</strong> that
-                employers can trust, every institution a real-time dashboard, and NCCT a national
-                analytics view of skill supply and demand.
+                {passportBefore}<strong>{t("public.aboutPage.mission.passport")}</strong>{passportAfter}
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                { icon: BadgeCheck, label: "Verified Skill Passports", color: "icon-tile-red" },
-                { icon: Brain, label: "AI Career Advisor", color: "icon-tile-red" },
-                { icon: LineChart, label: "National Analytics", color: "icon-tile-red" },
-                { icon: QrCode, label: "QR Kiosk Attendance", color: "icon-tile-red" },
-              ].map(({ icon: Icon, label, color }) => (
+                { icon: BadgeCheck, labelKey: "public.aboutPage.mission.tiles.passports", color: "icon-tile-red" },
+                { icon: Brain, labelKey: "public.aboutPage.mission.tiles.advisor", color: "icon-tile-red" },
+                { icon: LineChart, labelKey: "public.aboutPage.mission.tiles.analytics", color: "icon-tile-red" },
+                { icon: QrCode, labelKey: "public.aboutPage.mission.tiles.kiosk", color: "icon-tile-red" },
+              ].map(({ icon: Icon, labelKey, color }) => (
                 <div
-                  key={label}
+                  key={labelKey}
                   className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"
                 >
                   <span className={`icon-tile ${color}`}>
                     <Icon className="size-4" />
                   </span>
-                  <p className="text-sm font-medium text-foreground">{label}</p>
+                  <p className="text-sm font-medium text-foreground">{t(labelKey)}</p>
                 </div>
               ))}
             </div>
@@ -165,26 +137,20 @@ export default function AboutPage() {
       {/* ── Problem Statement ── */}
       <section className="border-b border-border bg-secondary/30">
         <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-          <SectionLabel>Problem Statement · SIH 2026 PS 26087</SectionLabel>
+          <SectionLabel>{t("public.aboutPage.problem.label")}</SectionLabel>
           <h2 className="mt-3 text-2xl font-bold text-foreground">
-            What we&apos;re solving
+            {t("public.aboutPage.problem.title")}
           </h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            The Smart India Hackathon 2026 Problem Statement 26087, issued by the Ministry of
-            Cooperation, identifies critical gaps in the cooperative training ecosystem:
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground">{t("public.aboutPage.problem.intro")}</p>
           <ul className="mt-5 space-y-3">
             {PROBLEM_POINTS.map((point) => (
               <li key={point} className="flex gap-3 text-sm text-foreground">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-destructive" />
-                {point}
+                {t(`public.aboutPage.problem.points.${point}`)}
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-sm font-medium text-success">
-            CoopSetu AI directly addresses every one of these gaps with a single integrated
-            platform.
-          </p>
+          <p className="mt-6 text-sm font-medium text-success">{t("public.aboutPage.problem.closing")}</p>
         </div>
       </section>
 
@@ -192,13 +158,13 @@ export default function AboutPage() {
       <section className="border-b border-border">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
-            <SectionLabel>How It Works</SectionLabel>
+            <SectionLabel>{t("public.aboutPage.howItWorks.label")}</SectionLabel>
             <h2 className="mt-3 text-2xl font-bold text-foreground">
-              From enrolment to placement in four steps
+              {t("public.aboutPage.howItWorks.title")}
             </h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {HOW_IT_WORKS.map(({ step, title, desc, icon: Icon }) => (
+            {HOW_IT_WORKS.map(({ step, key, icon: Icon }) => (
               <div
                 key={step}
                 className="relative flex flex-col rounded-xl border border-border bg-card p-5"
@@ -209,8 +175,8 @@ export default function AboutPage() {
                 <span className="absolute top-4 right-4 text-3xl font-black text-muted/30 select-none">
                   {step}
                 </span>
-                <p className="text-sm font-bold text-foreground">{title}</p>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                <p className="text-sm font-bold text-foreground">{t(`public.aboutPage.howItWorks.steps.${key}.title`)}</p>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{t(`public.aboutPage.howItWorks.steps.${key}.description`)}</p>
               </div>
             ))}
           </div>
@@ -222,14 +188,11 @@ export default function AboutPage() {
         <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-10 md:grid-cols-2 md:items-center">
             <div>
-              <SectionLabel>Technology</SectionLabel>
+              <SectionLabel>{t("public.aboutPage.technology.label")}</SectionLabel>
               <h2 className="mt-3 text-2xl font-bold text-foreground">
-                Built on modern, production-grade foundations
+                {t("public.aboutPage.technology.title")}
               </h2>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Our monorepo uses a curated stack that enables rapid iteration while remaining
-                scalable to a national deployment serving millions of trainees.
-              </p>
+              <p className="mt-3 text-sm text-muted-foreground">{t("public.aboutPage.technology.body")}</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {TECH_STACK.map((t) => (
                   <Badge key={t} variant="secondary">
@@ -240,16 +203,16 @@ export default function AboutPage() {
             </div>
             <div className="space-y-3">
               {[
-                { icon: Zap, label: "Edge-first architecture", desc: "Sub-100 ms responses via Next.js edge runtime" },
-                { icon: Shield, label: "Tamper-proof certificates", desc: "Blockchain-anchored QR verification" },
-                { icon: Smartphone, label: "Offline-first kiosk", desc: "Raspberry Pi QR attendance syncs when reconnected" },
-                { icon: Layers, label: "Multi-role platform", desc: "Trainee, Institution, Trainer, Employer, NCCT Admin" },
-              ].map(({ icon: Icon, label, desc }) => (
-                <div key={label} className="flex gap-3 rounded-lg border border-border bg-card p-3">
+                { icon: Zap, key: "edge" },
+                { icon: Shield, key: "certificates" },
+                { icon: Smartphone, key: "kiosk" },
+                { icon: Layers, key: "multiRole" },
+              ].map(({ icon: Icon, key }) => (
+                <div key={key} className="flex gap-3 rounded-lg border border-border bg-card p-3">
                   <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{label}</p>
-                    <p className="text-xs text-muted-foreground">{desc}</p>
+                    <p className="text-sm font-semibold text-foreground">{t(`public.aboutPage.technology.features.${key}.label`)}</p>
+                    <p className="text-xs text-muted-foreground">{t(`public.aboutPage.technology.features.${key}.description`)}</p>
                   </div>
                 </div>
               ))}
@@ -262,17 +225,17 @@ export default function AboutPage() {
       <section className="border-b border-border">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="mb-8 text-center">
-            <SectionLabel>Partners &amp; Institutions</SectionLabel>
+            <SectionLabel>{t("public.aboutPage.partners.label")}</SectionLabel>
             <h2 className="mt-2 text-xl font-bold text-foreground">
-              Ecosystem partners powering CoopSetu
+              {t("public.aboutPage.partners.title")}
             </h2>
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {PARTNERS.map(({ abbr, name }) => (
+            {PARTNERS.map(({ abbr, key }) => (
               <div
                 key={abbr}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center"
-                title={name}
+                title={t(`public.aboutPage.partners.names.${key}`)}
               >
                 <span className="flex size-12 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
                   {abbr.slice(0, 4)}
@@ -282,7 +245,7 @@ export default function AboutPage() {
             ))}
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Dummy partner logos — real partner integrations planned for v2 launch.
+            {t("public.aboutPage.partners.note")}
           </p>
         </div>
       </section>
@@ -291,25 +254,20 @@ export default function AboutPage() {
       <section className="bg-success/5">
         <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6">
           <h2 className="text-2xl font-extrabold text-foreground">
-            Ready to transform cooperative training?
+            {t("public.aboutPage.cta.title")}
           </h2>
-          <p className="mt-3 text-muted-foreground">
-            Join 24,800+ trainees, 112 institutions, and 7,380 placed alumni already on the
-            platform.
-          </p>
+          <p className="mt-3 text-muted-foreground">{t("public.aboutPage.cta.body")}</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link className="contents" href="/sign-up"><Button size="lg"   nativeButton={false}>Get started free <ArrowRight className="ml-1 size-4" /></Button></Link>
-            <Link className="contents" href="/verify-certificate/CST-2026-DAI-00842"><Button size="lg" variant="outline"   nativeButton={false}>Verify a certificate</Button></Link>
+            <Link className="contents" href="/sign-up"><Button size="lg"   nativeButton={false}>{t("public.aboutPage.cta.getStarted")} <ArrowRight className="ml-1 size-4" /></Button></Link>
+            <Link className="contents" href="/verify-certificate/CST-2026-DAI-00842"><Button size="lg" variant="outline"   nativeButton={false}>{t("public.aboutPage.cta.verify")}</Button></Link>
           </div>
           <Separator className="my-8" />
           <div className="flex flex-col items-center gap-1">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Building2 className="size-3.5" />
-              Ministry of Cooperation &middot; National Council for Cooperative Training
+              {t("public.aboutPage.cta.ministry")}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Smart India Hackathon 2026 · Problem Statement 26087
-            </p>
+            <p className="text-xs text-muted-foreground">{t("public.aboutPage.cta.sih")}</p>
           </div>
         </div>
       </section>

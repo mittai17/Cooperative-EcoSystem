@@ -9,8 +9,7 @@ import {
   EVALUATION_SCORE_MAX,
   type InterviewEvaluation,
 } from "@/lib/ai-interview/common";
-
-export const EMPLOYER_SUMMARY_HEADING = "AI-GENERATED SUMMARY — not a hiring decision";
+import { useT } from "@/i18n";
 
 interface EvaluationPanelProps {
   evaluation: InterviewEvaluation | null;
@@ -21,7 +20,16 @@ interface EvaluationPanelProps {
   heading?: string;
 }
 
+/** Dimension labels keyed by the API dimension key; unknown keys fall back to the API label. */
+const DIMENSION_KEYS: Record<string, string> = {
+  communication: "trainee.aiInterview.dimCommunication",
+  domain_knowledge: "trainee.aiInterview.dimDomainKnowledge",
+  problem_solving: "trainee.aiInterview.dimProblemSolving",
+  cooperative_sector_knowledge: "trainee.aiInterview.dimCoopSector",
+};
+
 function ScoreRow({ label, score }: { label: string; score: number | null | undefined }) {
+  const t = useT();
   const hasScore = typeof score === "number";
   return (
     <div className="flex items-center justify-between gap-3 border-b border-border/60 py-2 last:border-b-0">
@@ -32,7 +40,7 @@ function ScoreRow({ label, score }: { label: string; score: number | null | unde
           <span className="font-normal text-muted-foreground"> / {EVALUATION_SCORE_MAX}</span>
         </span>
       ) : (
-        <span className="text-sm italic text-muted-foreground">Not scored</span>
+        <span className="text-sm italic text-muted-foreground">{t("trainee.aiInterview.notScored")}</span>
       )}
     </div>
   );
@@ -61,14 +69,15 @@ export function EvaluationPanel({
   evaluating,
   error,
   onRetry,
-  heading = EMPLOYER_SUMMARY_HEADING,
+  heading,
 }: EvaluationPanelProps) {
+  const t = useT();
   if (evaluating) {
     return (
       <Card>
         <CardContent className="flex items-center gap-3 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" aria-hidden />
-          Generating your summary...
+          {t("trainee.aiInterview.generating")}
         </CardContent>
       </Card>
     );
@@ -84,7 +93,7 @@ export function EvaluationPanel({
           </p>
           <div>
             <Button type="button" variant="outline" size="sm" onClick={onRetry}>
-              Try again
+              {t("trainee.common.retry")}
             </Button>
           </div>
         </CardContent>
@@ -102,29 +111,29 @@ export function EvaluationPanel({
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle className="text-sm font-semibold uppercase tracking-wide text-primary">
-            {heading}
+            {heading ?? t("trainee.aiInterview.employerHeading")}
           </CardTitle>
-          {source === "fallback" && <Badge variant="secondary">Fallback</Badge>}
+          {source === "fallback" && <Badge variant="secondary">{t("trainee.aiInterview.fallbackBadge")}</Badge>}
         </div>
       </CardHeader>
       <CardContent className="grid gap-6 md:grid-cols-2">
         <div>
-          <h3 className="mb-1 text-sm font-semibold text-slate-900">Scores</h3>
+          <h3 className="mb-1 text-sm font-semibold text-slate-900">{t("trainee.aiInterview.scores")}</h3>
           {EVALUATION_DIMENSIONS.map((dimension) => (
             <ScoreRow
               key={dimension.key}
-              label={dimension.label}
+              label={DIMENSION_KEYS[dimension.key] ? t(DIMENSION_KEYS[dimension.key]) : dimension.label}
               score={result.scores[dimension.key]}
             />
           ))}
         </div>
         <div className="flex flex-col gap-5">
-          <BulletList title="Strengths" items={result.strengths} empty="None noted." />
-          <BulletList title="Gaps" items={result.gaps} empty="None noted." />
+          <BulletList title={t("trainee.aiInterview.strengths")} items={result.strengths} empty={t("trainee.aiInterview.noneNoted")} />
+          <BulletList title={t("trainee.aiInterview.gaps")} items={result.gaps} empty={t("trainee.aiInterview.noneNoted")} />
           <BulletList
-            title="Follow-up topics"
+            title={t("trainee.aiInterview.followUp")}
             items={result.follow_up_topics}
-            empty="None suggested."
+            empty={t("trainee.aiInterview.noneSuggested")}
           />
           {note && <p className="text-xs text-muted-foreground">{note}</p>}
         </div>

@@ -2,6 +2,7 @@
 
 import { Bot, User } from "lucide-react";
 import { cn } from "cn";
+import { useT } from "@/i18n";
 
 /** Display role: "ai" is the interviewer, "candidate" is the person being interviewed. */
 export type TranscriptRole = "ai" | "candidate";
@@ -22,6 +23,7 @@ interface TranscriptProps {
 }
 
 export function Transcript({ messages, emptyMessage }: TranscriptProps) {
+  const t = useT();
   if (messages.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
@@ -35,7 +37,7 @@ export function Transcript({ messages, emptyMessage }: TranscriptProps) {
       className="flex flex-1 flex-col gap-3 overflow-y-auto p-4"
       role="log"
       aria-live="polite"
-      aria-label="Interview transcript"
+      aria-label={t("trainee.aiInterview.transcriptTitle")}
     >
       {messages.map((message) => {
         const isAi = message.role === "ai";
@@ -47,7 +49,7 @@ export function Transcript({ messages, emptyMessage }: TranscriptProps) {
             {isAi && (
               <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Bot className="size-4" aria-hidden />
-                <span className="sr-only">AI interviewer</span>
+                <span className="sr-only">{t("trainee.aiInterview.aiInterviewer")}</span>
               </span>
             )}
             <div
@@ -64,7 +66,7 @@ export function Transcript({ messages, emptyMessage }: TranscriptProps) {
             {!isAi && (
               <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <User className="size-4" aria-hidden />
-                <span className="sr-only">You</span>
+                <span className="sr-only">{t("trainee.aiInterview.you")}</span>
               </span>
             )}
           </div>

@@ -27,8 +27,15 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { hostelService } from "@/lib/hostel/hostel-service";
+import { useT } from "@/i18n";
 
 export default function TraineeHostelRequestPage() {
+  const t = useT();
+  const roomLabels: Record<string, string> = {
+    "Double Sharing": t("trainee.hostelRequest.roomDouble"),
+    "4 Sharing": t("trainee.hostelRequest.roomFour"),
+    "6 Sharing": t("trainee.hostelRequest.roomSix"),
+  };
   const [step, setStep] = useState(1);
   const [programme, setProgramme] = useState("PACS Digital Accounting");
   const [batch, setBatch] = useState("PDA-02");
@@ -60,19 +67,19 @@ export default function TraineeHostelRequestPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 font-medium">
-            <span>Home</span>
+            <span>{t("trainee.common.home")}</span>
             <ChevronRight className="size-3" />
             <Link href="/trainee/hostel" className="hover:text-primary">
-              Hostel Management
+              {t("trainee.hostel.management")}
             </Link>
             <ChevronRight className="size-3" />
-            <span className="text-foreground font-semibold">Hostel Request</span>
+            <span className="text-foreground font-semibold">{t("trainee.hostelRequest.breadcrumb")}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-heading">
-            Hostel Request
+            {t("trainee.hostelRequest.breadcrumb")}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Submit a hostel accommodation request for your training programme.
+            {t("trainee.hostelRequest.description")}
           </p>
         </div>
 
@@ -84,7 +91,7 @@ export default function TraineeHostelRequestPage() {
           }}
           className="bg-primary hover:bg-primary/90 text-white font-semibold text-xs shadow-2xs self-start sm:self-auto"
         >
-          + New Request
+          {t("trainee.hostelRequest.newRequest")}
         </Button>
       </div>
 
@@ -94,10 +101,10 @@ export default function TraineeHostelRequestPage() {
             <CheckCircle2 className="size-10" />
           </div>
           <h2 className="text-xl font-bold text-emerald-950 font-heading">
-            Hostel Application Submitted Successfully!
+            {t("trainee.hostelRequest.submittedTitle")}
           </h2>
           <p className="text-xs text-emerald-800 leading-relaxed">
-            Your request (ID: <span className="font-mono font-bold">HR-1042</span>) has been forwarded to the Institution Administration desk. You will receive an alert once room allocation is approved.
+            {t("trainee.hostelRequest.submittedBefore")} <span className="font-mono font-bold">HR-1042</span>{t("trainee.hostelRequest.submittedAfter")}
           </p>
           <div className="pt-2">
             <Button
@@ -105,7 +112,7 @@ export default function TraineeHostelRequestPage() {
               size="sm"
               className="bg-primary hover:bg-primary/90 text-white font-semibold"
             >
-              Return to My Hostel Overview &rarr;
+              {t("trainee.hostelRequest.returnHostel")}
             </Button>
           </div>
         </div>
@@ -114,12 +121,12 @@ export default function TraineeHostelRequestPage() {
           {/* STEPPING PROGRESS BAR (MATCHING IMAGE 4 PANEL 2) */}
           <div className="flex items-center justify-between border-b pb-4 overflow-x-auto text-xs font-semibold">
             {[
-              { s: 1, label: "Training Info" },
-              { s: 2, label: "Accommodation Dates" },
-              { s: 3, label: "Hostel Preference" },
-              { s: 4, label: "Room Preference" },
-              { s: 5, label: "Special Requirements" },
-              { s: 6, label: "Review & Submit" },
+              { s: 1, label: t("trainee.hostelRequest.stepTraining") },
+              { s: 2, label: t("trainee.hostelRequest.stepDates") },
+              { s: 3, label: t("trainee.hostelRequest.stepHostel") },
+              { s: 4, label: t("trainee.hostelRequest.stepRoom") },
+              { s: 5, label: t("trainee.hostelRequest.stepSpecial") },
+              { s: 6, label: t("trainee.hostelRequest.stepReview") },
             ].map(({ s, label }) => (
               <div
                 key={s}
@@ -150,14 +157,14 @@ export default function TraineeHostelRequestPage() {
               {step === 1 && (
                 <div className="space-y-4">
                   <h3 className="font-bold text-base text-foreground font-heading">
-                    1. Training Information
+                    1. {t("trainee.hostelRequest.title1")}
                   </h3>
                   <div className="space-y-3 text-xs">
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Programme</Label>
+                      <Label className="text-xs">{t("trainee.allocation.programme")}</Label>
                       <Select value={programme} onValueChange={(v) => v && setProgramme(v)}>
                         <SelectTrigger className="h-9 text-xs">
-                          <SelectValue placeholder="Programme" />
+                          <SelectValue placeholder={t("trainee.allocation.programme")} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="PACS Digital Accounting">PACS Digital Accounting</SelectItem>
@@ -168,10 +175,10 @@ export default function TraineeHostelRequestPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Batch</Label>
+                      <Label className="text-xs">{t("trainee.allocation.batch")}</Label>
                       <Select value={batch} onValueChange={(v) => v && setBatch(v)}>
                         <SelectTrigger className="h-9 text-xs">
-                          <SelectValue placeholder="Batch" />
+                          <SelectValue placeholder={t("trainee.allocation.batch")} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="PDA-02">PDA-02</SelectItem>
@@ -183,7 +190,7 @@ export default function TraineeHostelRequestPage() {
 
                     <div className="grid grid-cols-2 gap-3 pt-1">
                       <div className="space-y-1.5">
-                        <Label className="text-xs">Training Start Date</Label>
+                        <Label className="text-xs">{t("trainee.hostelRequest.trainingStartDate")}</Label>
                         <Input
                           type="date"
                           value={startDate}
@@ -192,7 +199,7 @@ export default function TraineeHostelRequestPage() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs">Training End Date</Label>
+                        <Label className="text-xs">{t("trainee.hostelRequest.trainingEndDate")}</Label>
                         <Input
                           type="date"
                           value={endDate}
@@ -208,18 +215,18 @@ export default function TraineeHostelRequestPage() {
               {step === 2 && (
                 <div className="space-y-4">
                   <h3 className="font-bold text-base text-foreground font-heading">
-                    2. Accommodation Dates
+                    2. {t("trainee.hostelRequest.title2")}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Confirm required check-in and checkout buffer days (Early arrival allowed 1 day before start).
+                    {t("trainee.hostelRequest.datesHint")}
                   </p>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Requested Check-in Date</Label>
+                      <Label className="text-xs">{t("trainee.hostelRequest.requestedCheckIn")}</Label>
                       <Input type="date" defaultValue="2026-10-12" className="h-9 text-xs" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Requested Check-out Date</Label>
+                      <Label className="text-xs">{t("trainee.hostelRequest.requestedCheckOut")}</Label>
                       <Input type="date" defaultValue="2026-10-25" className="h-9 text-xs" />
                     </div>
                   </div>
@@ -229,13 +236,13 @@ export default function TraineeHostelRequestPage() {
               {step === 3 && (
                 <div className="space-y-4">
                   <h3 className="font-bold text-base text-foreground font-heading">
-                    3. Hostel Preference
+                    3. {t("trainee.hostelRequest.title3")}
                   </h3>
                   <div className="space-y-2 text-xs">
                     {[
-                      { name: "VAMNICOM Main Hostel", desc: "Adjacent to academic wing, Wi-Fi enabled, attached mess" },
-                      { name: "Training Residential Hostel", desc: "Modern study suites with quiet reading areas" },
-                      { name: "Guest & Faculty Hostel", desc: "Executive rooms reserved for senior delegates" },
+                      { name: "VAMNICOM Main Hostel", desc: t("trainee.hostelRequest.hostelMainDesc") },
+                      { name: "Training Residential Hostel", desc: t("trainee.hostelRequest.hostelTrainingDesc") },
+                      { name: "Guest & Faculty Hostel", desc: t("trainee.hostelRequest.hostelGuestDesc") },
                     ].map((h) => (
                       <div
                         key={h.name}
@@ -255,7 +262,7 @@ export default function TraineeHostelRequestPage() {
               {step === 4 && (
                 <div className="space-y-4">
                   <h3 className="font-bold text-base text-foreground font-heading">
-                    4. Room Preference
+                    4. {t("trainee.hostelRequest.title4")}
                   </h3>
                   <div className="grid grid-cols-3 gap-3 text-xs">
                     {["Double Sharing", "4 Sharing", "6 Sharing"].map((type) => (
@@ -266,7 +273,7 @@ export default function TraineeHostelRequestPage() {
                           roomPref === type ? "bg-rose-50 border-primary ring-2 ring-primary/20 font-bold text-primary" : "bg-card"
                         }`}
                       >
-                        {type}
+                        {roomLabels[type]}
                       </div>
                     ))}
                   </div>
@@ -276,20 +283,20 @@ export default function TraineeHostelRequestPage() {
               {step === 5 && (
                 <div className="space-y-4">
                   <h3 className="font-bold text-base text-foreground font-heading">
-                    5. Special Requirements
+                    5. {t("trainee.hostelRequest.title5")}
                   </h3>
                   <div className="space-y-3 text-xs">
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Special Requests / Preferences</Label>
+                      <Label className="text-xs">{t("trainee.hostelRequest.specialHint")}</Label>
                       <Input
                         value={specialReq}
                         onChange={(e) => setSpecialReq(e.target.value)}
-                        placeholder="e.g. Ground or 2nd floor, near study hall"
+                        placeholder={t("trainee.hostelRequest.specialPlaceholder")}
                         className="h-9 text-xs"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Reason for Accommodation</Label>
+                      <Label className="text-xs">{t("trainee.hostelRequest.reasonLabel")}</Label>
                       <Textarea
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
@@ -303,27 +310,27 @@ export default function TraineeHostelRequestPage() {
               {step === 6 && (
                 <div className="space-y-4">
                   <h3 className="font-bold text-base text-foreground font-heading">
-                    6. Review & Submit Application
+                    6. {t("trainee.hostelRequest.title6")}
                   </h3>
                   <div className="p-4 rounded-xl border bg-muted/20 text-xs space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Programme:</span>
+                      <span className="text-muted-foreground">{t("trainee.hostelRequest.reviewProgramme")}:</span>
                       <span className="font-semibold text-foreground">{programme} ({batch})</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Requested Stay:</span>
-                      <span className="font-semibold text-foreground">{startDate} to {endDate}</span>
+                      <span className="text-muted-foreground">{t("trainee.hostelRequest.requestedStay")}:</span>
+                      <span className="font-semibold text-foreground">{t("trainee.hostelRequest.stayRange").replace("{start}", startDate).replace("{end}", endDate)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Hostel:</span>
+                      <span className="text-muted-foreground">{t("trainee.hostelRequest.hostel")}:</span>
                       <span className="font-semibold text-foreground">{hostelPref}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Room Type:</span>
+                      <span className="text-muted-foreground">{t("trainee.hostel.roomType")}:</span>
                       <span className="font-semibold text-foreground">{roomPref}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Special Requirement:</span>
+                      <span className="text-muted-foreground">{t("trainee.allocation.specialRequirement")}:</span>
                       <span className="font-semibold text-foreground">{specialReq}</span>
                     </div>
                   </div>
@@ -334,7 +341,7 @@ export default function TraineeHostelRequestPage() {
               <div className="flex items-center justify-between pt-4 border-t">
                 {step > 1 ? (
                   <Button variant="outline" size="sm" onClick={() => setStep(step - 1)}>
-                    Back
+                    {t("trainee.common.back")}
                   </Button>
                 ) : (
                   <div />
@@ -345,7 +352,7 @@ export default function TraineeHostelRequestPage() {
                     onClick={() => setStep(step + 1)}
                     className="bg-primary hover:bg-primary/90 text-white font-bold"
                   >
-                    Next &rarr;
+                    {t("trainee.common.next")}
                   </Button>
                 ) : (
                   <Button
@@ -353,7 +360,7 @@ export default function TraineeHostelRequestPage() {
                     onClick={handleSubmit}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                   >
-                    Submit Request
+                    {t("trainee.hostelRequest.submit")}
                   </Button>
                 )}
               </div>
@@ -364,35 +371,35 @@ export default function TraineeHostelRequestPage() {
               <div className="h-36 rounded-xl overflow-hidden border">
                 <img
                   src="/vamnicom-campus.jpg"
-                  alt="VAMNICOM Residential Hostel"
+                  alt={t("trainee.hostelRequest.imageAlt")}
                   className="w-full h-full object-cover"
                 />
               </div>
 
               <div>
                 <h4 className="font-bold text-sm text-foreground font-heading">
-                  Why Hostel Accommodation?
+                  {t("trainee.hostelRequest.whyTitle")}
                 </h4>
                 <div className="space-y-2.5 pt-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-                    <span>Safe and secure stay with 24x7 biometric perimeter</span>
+                    <span>{t("trainee.hostelRequest.why1")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Building2 className="size-4 text-primary shrink-0" />
-                    <span>Direct proximity to training halls and labs (200m)</span>
+                    <span>{t("trainee.hostelRequest.why2")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Utensils className="size-4 text-amber-600 shrink-0" />
-                    <span>Hygienic vegetarian dining mess & common facilities</span>
+                    <span>{t("trainee.hostelRequest.why3")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <BookOpen className="size-4 text-blue-600 shrink-0" />
-                    <span>Silent study lounges and high-speed Wi-Fi access</span>
+                    <span>{t("trainee.hostelRequest.why4")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="size-4 text-purple-600 shrink-0" />
-                    <span>Peer networking with cooperative leaders statewide</span>
+                    <span>{t("trainee.hostelRequest.why5")}</span>
                   </div>
                 </div>
               </div>

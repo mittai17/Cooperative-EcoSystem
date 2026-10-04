@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Building2, Calendar, FileText, CheckCircle2, Trash2, X, Plus } from "lucide-react";
+import { useT } from "@/i18n";
 
 interface ApplicationItem {
   id: string | number;
@@ -27,6 +28,7 @@ const DEFAULT_APPLICATIONS: ApplicationItem[] = [
 ];
 
 export default function ApplicationsPage() {
+  const t = useT();
   const [list, setList] = useState<ApplicationItem[]>(DEFAULT_APPLICATIONS);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -57,20 +59,20 @@ export default function ApplicationsPage() {
       }
     } catch {}
 
-    setNotice(`Application for "${app?.title}" has been withdrawn.`);
+    setNotice(t("trainee.applications.withdrawn").replace("{title}", app?.title ?? ""));
     setTimeout(() => setNotice(null), 4000);
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Interview":
-        return <Badge className="bg-primary/20 text-primary hover:bg-primary/30">Interviewing</Badge>;
+        return <Badge className="bg-primary/20 text-primary hover:bg-primary/30">{t("trainee.common.interviewing")}</Badge>;
       case "Shortlisted":
-        return <Badge className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30">Shortlisted</Badge>;
+        return <Badge className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30">{t("trainee.common.shortlisted")}</Badge>;
       case "Applied":
-        return <Badge variant="secondary">Applied</Badge>;
+        return <Badge variant="secondary">{t("trainee.common.applied")}</Badge>;
       case "Rejected":
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge variant="destructive">{t("trainee.common.rejected")}</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -84,10 +86,10 @@ export default function ApplicationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Job Applications"
-        description="Track your applications, Skill Passport submissions, and upcoming interviews."
+        title={t("trainee.applications.title")}
+        description={t("trainee.applications.description")}
         action={
-          <Link className="contents" href="/jobs"><Button   nativeButton={false}><Plus className="mr-1.5 size-4" /> Explore Jobs</Button></Link>
+          <Link className="contents" href="/jobs"><Button   nativeButton={false}><Plus className="mr-1.5 size-4" /> {t("trainee.applications.exploreJobs")}</Button></Link>
         }
       />
 
@@ -106,25 +108,25 @@ export default function ApplicationsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex flex-col justify-center">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Applied</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.applications.totalApplied")}</span>
             <span className="text-3xl font-bold mt-1 text-foreground">{totalApplied}</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex flex-col justify-center">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Shortlisted</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.common.shortlisted")}</span>
             <span className="text-3xl font-bold mt-1 text-emerald-600">{shortlisted}</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex flex-col justify-center">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Interviews</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.applications.interviews")}</span>
             <span className="text-3xl font-bold mt-1 text-primary">{interviews}</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex flex-col justify-center">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Offers</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.applications.offers")}</span>
             <span className="text-3xl font-bold mt-1 text-foreground">{offers}</span>
           </CardContent>
         </Card>
@@ -132,17 +134,17 @@ export default function ApplicationsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-heading text-base">Application History</CardTitle>
+          <CardTitle className="font-heading text-base">{t("trainee.applications.history")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="w-full overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
                 <tr>
-                  <th className="px-4 py-3 rounded-tl-lg">Job Details</th>
-                  <th className="px-4 py-3">Applied Date</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right rounded-tr-lg">Action</th>
+                  <th className="px-4 py-3 rounded-tl-lg">{t("trainee.applications.colJob")}</th>
+                  <th className="px-4 py-3">{t("trainee.applications.colDate")}</th>
+                  <th className="px-4 py-3">{t("trainee.common.status")}</th>
+                  <th className="px-4 py-3 text-right rounded-tr-lg">{t("trainee.common.action")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -171,13 +173,13 @@ export default function ApplicationsPage() {
                           variant="outline"
                           size="sm"
                           
-                         nativeButton={false}><FileText className="size-3.5 mr-1" /> View</Button></Link>
+                         nativeButton={false}><FileText className="size-3.5 mr-1" /> {t("trainee.common.view")}</Button></Link>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleWithdraw(app.id)}
                           className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title="Withdraw Application"
+                          title={t("trainee.applications.withdraw")}
                         >
                           <Trash2 className="size-3.5" />
                         </Button>

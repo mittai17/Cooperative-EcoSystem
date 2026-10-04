@@ -1,10 +1,14 @@
+"use client";
+
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { DemoLoginCard } from "@/components/auth/demo-login-card";
+import { useT } from "@/i18n";
 
 export default function SignInPage() {
+  const t = useT();
   return (
     <div className="min-h-screen bg-muted/20 py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
       {/* Top Header */}
@@ -16,7 +20,7 @@ export default function SignInPage() {
           href="/"
           className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="size-4" /> Back to Home
+          <ArrowLeft className="size-4" /> {t("auth.signIn.backHome")}
         </Link>
       </div>
 
@@ -32,7 +36,7 @@ export default function SignInPage() {
 
       {/* Bottom Footer Note */}
       <div className="mx-auto w-full max-w-6xl pt-8 text-center text-xs text-muted-foreground">
-        CoopSetu AI &middot; National Cooperative Skilling &amp; Placement Platform &middot; SIH 2026
+        {t("auth.signIn.footer")}
       </div>
     </div>
   );

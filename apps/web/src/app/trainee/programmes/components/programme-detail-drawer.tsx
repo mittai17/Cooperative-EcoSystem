@@ -10,6 +10,16 @@ import type { Programme } from "@/types/programme";
 import { checkEligibility, DEMO_TRAINEE_PROFILE } from "@/lib/services/eligibility-service";
 import { useApplications } from "@/lib/store/programme-store";
 import { mockTrainers, mockInstitutions } from "@/lib/mock-data/programmes-data";
+import { useT } from "@/i18n";
+import { optionLabel } from "../option-labels";
+
+const TAB_KEYS: Record<"overview" | "curriculum" | "eligibility" | "institution" | "faq", string> = {
+  overview: "trainee.programmeDetail.tabOverview",
+  curriculum: "trainee.programmeDetail.tabCurriculum",
+  eligibility: "trainee.programmeDetail.tabEligibility",
+  institution: "trainee.programmeDetail.tabInstitution",
+  faq: "trainee.programmeDetail.tabFaq",
+};
 
 interface ProgrammeDetailDrawerProps {
   programme: Programme;
@@ -18,6 +28,7 @@ interface ProgrammeDetailDrawerProps {
 }
 
 export function ProgrammeDetailDrawer({ programme, onClose, onApply }: ProgrammeDetailDrawerProps) {
+  const t = useT();
   const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "eligibility" | "institution" | "faq">("overview");
   const { getByTrainee } = useApplications();
   const myApps = getByTrainee("trainee-ravindra");
@@ -44,9 +55,9 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
         <div className="flex items-start justify-between gap-3 border-b border-border p-5">
           <div className="min-w-0">
             <div className="flex flex-wrap gap-1.5 mb-1.5">
-              <Badge variant="secondary" className="text-xs">{programme.level}</Badge>
-              <Badge variant="secondary" className="text-xs">{programme.mode}</Badge>
-              {programme.isFree && <Badge className="bg-green-500 text-white text-xs">FREE</Badge>}
+              <Badge variant="secondary" className="text-xs">{optionLabel(t, programme.level)}</Badge>
+              <Badge variant="secondary" className="text-xs">{optionLabel(t, programme.mode)}</Badge>
+              {programme.isFree && <Badge className="bg-green-500 text-white text-xs">{t("trainee.programmes.freeBadge")}</Badge>}
             </div>
             <h2 className="font-heading text-lg font-bold text-foreground leading-snug">{programme.title}</h2>
             <p className="text-sm text-muted-foreground mt-0.5">{programme.institution}</p>
@@ -73,7 +84,7 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
                 )}
               >
-                {tab}
+                {t(TAB_KEYS[tab])}
               </button>
             ))}
           </div>
@@ -87,10 +98,10 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
               {/* Key details grid */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                  { label: "Duration", value: `${programme.duration} ${programme.durationUnit}`, icon: Clock },
-                  { label: "Start Date", value: new Date(programme.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }), icon: Calendar },
-                  { label: "Seats Left", value: programme.availableSeats === 0 ? "Full" : `${programme.availableSeats} / ${programme.totalSeats}`, icon: Users },
-                  { label: "Certificate", value: programme.certificateType, icon: Award },
+                  { label: t("trainee.programmeDetail.duration"), value: `${programme.duration} ${programme.durationUnit}`, icon: Clock },
+                  { label: t("trainee.programmeDetail.startDate"), value: new Date(programme.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }), icon: Calendar },
+                  { label: t("trainee.programmeDetail.seatsLeft"), value: programme.availableSeats === 0 ? t("trainee.programmeDetail.full") : `${programme.availableSeats} / ${programme.totalSeats}`, icon: Users },
+                  { label: t("trainee.programmeDetail.certificate"), value: programme.certificateType, icon: Award },
                 ].map((d) => {
                   const Icon = d.icon;
                   return (
@@ -108,7 +119,7 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
 
               {/* Skills */}
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Skills You&apos;ll Build</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("trainee.programmeDetail.skillsBuild")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {programme.skills.map((s) => (
                     <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>
@@ -118,7 +129,7 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
 
               {/* Learning outcomes */}
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Learning Outcomes</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("trainee.programmeDetail.learningOutcomes")}</p>
                 <ul className="space-y-1.5">
                   {programme.learningOutcomes.map((o, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
@@ -132,17 +143,17 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
               {/* Trainers */}
               {trainers.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Programme Trainers</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("trainee.programmeDetail.trainers")}</p>
                   <div className="space-y-2.5">
-                    {trainers.map((t) => t && (
-                      <div key={t.id} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
+                    {trainers.map((trainer) => trainer && (
+                      <div key={trainer.id} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
                         <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                          {t.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                          {trainer.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                          <p className="text-xs text-muted-foreground">{t.title}</p>
-                          <p className="text-xs text-muted-foreground">{t.experience} experience • ★ {t.rating}</p>
+                          <p className="text-sm font-semibold text-foreground">{trainer.name}</p>
+                          <p className="text-xs text-muted-foreground">{trainer.title}</p>
+                          <p className="text-xs text-muted-foreground">{trainer.experience} {t("trainee.programmeDetail.experience")} • ★ {trainer.rating}</p>
                         </div>
                       </div>
                     ))}
@@ -152,12 +163,12 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
 
               {/* Facilities */}
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Facilities</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("trainee.programmeDetail.facilities")}</p>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { label: "Hostel", available: programme.hostelAvailable },
-                    { label: "Meals", available: programme.mealAvailable },
-                    { label: "Transport", available: programme.transportAvailable },
+                    { label: t("trainee.programmeDetail.hostel"), available: programme.hostelAvailable },
+                    { label: t("trainee.programmeDetail.meals"), available: programme.mealAvailable },
+                    { label: t("trainee.programmeDetail.transport"), available: programme.transportAvailable },
                   ].map((f) => (
                     <div key={f.label} className={cn(
                       "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium",
@@ -172,7 +183,7 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
 
               {/* Required docs */}
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Documents Required</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("trainee.programmeDetail.documentsRequired")}</p>
                 <div className="space-y-1">
                   {programme.documentsRequired.map((d) => (
                     <div key={d} className="flex items-center gap-2 text-sm">
@@ -191,14 +202,14 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
               {programme.curriculum.map((mod) => (
                 <div key={mod.week} className="rounded-xl border border-border bg-card overflow-hidden">
                   <div className="flex items-center justify-between bg-muted/40 px-4 py-2.5">
-                    <span className="text-sm font-semibold">Week {mod.week}: {mod.title}</span>
-                    <span className="text-xs text-muted-foreground">{mod.hours} hours</span>
+                    <span className="text-sm font-semibold">{t("trainee.programmeDetail.week").replace("{n}", String(mod.week))} {mod.title}</span>
+                    <span className="text-xs text-muted-foreground">{mod.hours} {t("trainee.programmeDetail.hours")}</span>
                   </div>
                   <ul className="p-4 space-y-1.5">
-                    {mod.topics.map((t) => (
-                      <li key={t} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {mod.topics.map((topic) => (
+                      <li key={topic} className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                        {t}
+                        {topic}
                       </li>
                     ))}
                   </ul>
@@ -221,7 +232,7 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
                 )}
                 <div>
                   <p className={cn("font-semibold text-sm", eligibility.overall === "eligible" ? "text-green-700" : "text-red-700")}>
-                    {eligibility.overall === "eligible" ? "Eligible to Apply" : "Not Eligible"}
+                    {eligibility.overall === "eligible" ? t("trainee.programmeDetail.eligibleToApply") : t("trainee.programmeDetail.notEligible")}
                   </p>
                   <p className="text-xs mt-0.5 text-muted-foreground">{eligibility.summary}</p>
                 </div>
@@ -250,9 +261,9 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
               </div>
 
               <div className="rounded-xl border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-                <p className="font-medium text-foreground mb-1">Your Profile (Demo — Ravindra Suresh Patil)</p>
-                <p>Education: {DEMO_TRAINEE_PROFILE.education} • Age: {DEMO_TRAINEE_PROFILE.age} • Experience: {DEMO_TRAINEE_PROFILE.experience} years</p>
-                <p>Cooperative: {DEMO_TRAINEE_PROFILE.cooperativeMembership}</p>
+                <p className="font-medium text-foreground mb-1">{t("trainee.programmeDetail.profileTitle").replace("{name}", "Ravindra Suresh Patil")}</p>
+                <p>{t("trainee.programmeDetail.education")} {DEMO_TRAINEE_PROFILE.education} • {t("trainee.programmeDetail.age")} {DEMO_TRAINEE_PROFILE.age} • {t("trainee.programmeDetail.experienceLabel")} {DEMO_TRAINEE_PROFILE.experience} {t("trainee.programmeDetail.years")}</p>
+                <p>{t("trainee.programmeDetail.cooperative")} {DEMO_TRAINEE_PROFILE.cooperativeMembership}</p>
               </div>
             </div>
           )}
@@ -271,13 +282,13 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><p className="text-xs text-muted-foreground">State</p><p className="font-medium">{institution.state}</p></div>
-                  <div><p className="text-xs text-muted-foreground">District</p><p className="font-medium">{institution.district}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Accreditation</p><p className="font-medium">{institution.accreditation}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Website</p><p className="font-medium text-primary">{institution.website}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{t("trainee.programmeDetail.state")}</p><p className="font-medium">{institution.state}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{t("trainee.programmeDetail.district")}</p><p className="font-medium">{institution.district}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{t("trainee.programmeDetail.accreditation")}</p><p className="font-medium">{institution.accreditation}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{t("trainee.programmeDetail.website")}</p><p className="font-medium text-primary">{institution.website}</p></div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-border text-sm">
-                  <p className="text-xs text-muted-foreground mb-1">Address</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("trainee.programmeDetail.address")}</p>
                   <p>{institution.address}</p>
                 </div>
               </div>
@@ -288,11 +299,11 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
           {activeTab === "faq" && (
             <div className="space-y-3">
               {[
-                { q: "Can I apply if I have not completed a previous cooperative training?", a: "Yes, this programme is open to eligible cooperative members regardless of prior training, as long as you meet the eligibility criteria." },
-                { q: "Is accommodation provided?", a: programme.hostelAvailable ? "Yes, hostel accommodation is available for outstation participants. Please indicate your requirement in the application." : "Hostel accommodation is not available for this programme. You will need to arrange your own stay." },
-                { q: "What happens if I cannot attend after being selected?", a: "If you are unable to attend, please inform the institution at least 7 days before the programme starts. Failure to attend without notice may affect future applications." },
-                { q: "Will I receive a certificate?", a: `Yes, you will receive ${programme.certificateType === "No Certificate" ? "a completion acknowledgement" : `an NCCT-recognised ${programme.certificateType.toLowerCase()}`} upon successful completion.` },
-                { q: "Can I withdraw my application?", a: "Yes, you can withdraw your application before the batch allocation stage. After batch allocation, withdrawal requires institutional approval." },
+                { q: t("trainee.programmeDetail.faqQ1"), a: t("trainee.programmeDetail.faqA1") },
+                { q: t("trainee.programmeDetail.faqQ2"), a: programme.hostelAvailable ? t("trainee.programmeDetail.faqA2Yes") : t("trainee.programmeDetail.faqA2No") },
+                { q: t("trainee.programmeDetail.faqQ3"), a: t("trainee.programmeDetail.faqA3") },
+                { q: t("trainee.programmeDetail.faqQ4"), a: t("trainee.programmeDetail.faqA4").replace("{certificate}", programme.certificateType === "No Certificate" ? t("trainee.programmeDetail.faqCertAck") : t("trainee.programmeDetail.faqCertNcct").replace("{type}", programme.certificateType.toLowerCase())) },
+                { q: t("trainee.programmeDetail.faqQ5"), a: t("trainee.programmeDetail.faqA5") },
               ].map((faq, i) => (
                 <div key={i} className="rounded-xl border border-border bg-card p-4">
                   <p className="font-semibold text-sm text-foreground mb-1.5">{faq.q}</p>
@@ -307,25 +318,25 @@ export function ProgrammeDetailDrawer({ programme, onClose, onApply }: Programme
         <div className="border-t border-border p-4 flex items-center gap-3">
           <div className="flex-1 min-w-0">
             {programme.isFree ? (
-              <p className="text-sm font-semibold text-green-600">Free Programme</p>
+              <p className="text-sm font-semibold text-green-600">{t("trainee.programmes.freeProgramme")}</p>
             ) : (
               <p className="text-sm font-semibold text-foreground">₹{programme.fee.toLocaleString("en-IN")}</p>
             )}
             <p className="text-xs text-muted-foreground">
-              Deadline: {new Date(programme.registrationDeadline).toLocaleDateString("en-IN", { day: "numeric", month: "long" })}
+              {t("trainee.programmeDetail.deadline")}: {new Date(programme.registrationDeadline).toLocaleDateString("en-IN", { day: "numeric", month: "long" })}
             </p>
           </div>
           {existing ? (
             <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={onClose}>
-              <CheckCircle2 className="size-4 mr-1.5" /> Application Submitted
+              <CheckCircle2 className="size-4 mr-1.5" /> {t("trainee.programmeDetail.applicationSubmitted")}
             </Button>
           ) : isFull || isPastDeadline ? (
-            <Button disabled>Registration Closed</Button>
+            <Button disabled>{t("trainee.programmes.registrationClosed")}</Button>
           ) : eligibility.overall === "not_eligible" ? (
-            <Button disabled variant="outline">Not Eligible to Apply</Button>
+            <Button disabled variant="outline">{t("trainee.programmeDetail.notEligibleToApply")}</Button>
           ) : (
             <Button onClick={() => onApply(programme)}>
-              Apply Now <ChevronRight className="size-4 ml-1" />
+              {t("trainee.programmes.applyNow")} <ChevronRight className="size-4 ml-1" />
             </Button>
           )}
         </div>

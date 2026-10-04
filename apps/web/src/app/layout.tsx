@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { PWAProvider } from "@/components/offline/pwa-provider";
+import { I18nProvider } from "@/i18n";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -57,11 +58,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <meta name="theme-color" content="#E30B1C" />
         </head>
         <body className="min-h-full flex flex-col bg-background text-foreground">
-          <ThemeProvider>
-            <TooltipProvider delay={150}>
-              <PWAProvider>{children}</PWAProvider>
-            </TooltipProvider>
-          </ThemeProvider>
+          <I18nProvider>
+            <ThemeProvider>
+              <TooltipProvider delay={150}>
+                <PWAProvider>{children}</PWAProvider>
+              </TooltipProvider>
+            </ThemeProvider>
+          </I18nProvider>
         </body>
       </html>
     </>

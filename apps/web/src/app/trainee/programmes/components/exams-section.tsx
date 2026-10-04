@@ -9,8 +9,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MOCK_EXAMS } from "@/lib/mock-data/programmes-data";
 import { useExamRegistrations } from "@/lib/store/programme-store";
 import type { Programme } from "@/types/programme";
+import { useT } from "@/i18n";
 
 export function ExamsSection({ onApply }: { onApply: (p: Programme) => void }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const { getByTrainee } = useExamRegistrations();
   const myExams = getByTrainee("trainee-ravindra");
@@ -26,15 +28,15 @@ export function ExamsSection({ onApply }: { onApply: (p: Programme) => void }) {
       {/* Header & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-heading text-base font-bold">Certification Exams</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Register for national certification exams.</p>
+          <h2 className="font-heading text-base font-bold">{t("trainee.programmes.examsTitle")}</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("trainee.programmes.examsDesc")}</p>
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search exams..."
+            placeholder={t("trainee.programmes.searchExams")}
             className="h-9 pl-9 pr-9"
           />
           {query && (
@@ -88,7 +90,7 @@ export function ExamsSection({ onApply }: { onApply: (p: Programme) => void }) {
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Users className="size-3.5" />
-                    {exam.availableSlots - exam.filledSlots} slots left
+                    {exam.availableSlots - exam.filledSlots} {t("trainee.programmes.slotsLeft")}
                   </div>
                 </div>
 
@@ -100,17 +102,17 @@ export function ExamsSection({ onApply }: { onApply: (p: Programme) => void }) {
 
                 <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
                   <span className="font-bold text-sm">
-                    {exam.isFree ? <span className="text-green-600">Free</span> : `₹${exam.fee}`}
+                    {exam.isFree ? <span className="text-green-600">{t("trainee.programmes.free")}</span> : `₹${exam.fee}`}
                   </span>
                   {registration ? (
                     <Button size="sm" variant="outline" className="text-green-600 border-green-200 bg-green-50">
-                      Registered
+                      {t("trainee.programmes.registered")}
                     </Button>
                   ) : isFull ? (
-                    <Button size="sm" disabled>Slots Full</Button>
+                    <Button size="sm" disabled>{t("trainee.programmes.slotsFull")}</Button>
                   ) : (
-                    <Button size="sm" onClick={() => alert("Exam registration wizard not implemented in this demo.")}>
-                      Register Now
+                    <Button size="sm" onClick={() => alert(t("trainee.programmes.examAlert"))}>
+                      {t("trainee.programmes.registerNow")}
                     </Button>
                   )}
                 </div>

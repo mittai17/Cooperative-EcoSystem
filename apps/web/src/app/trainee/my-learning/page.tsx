@@ -40,21 +40,31 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/i18n";
 
-function formatSavedAt(iso: string): string {
+type Translate = (key: string, fallback?: string) => string;
+
+function formatSavedAt(iso: string, t: Translate): string {
   try {
     const diffMs = Date.now() - new Date(iso).getTime();
     const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return "just now";
-    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffMin < 1) return t("trainee.myLearning.justNow");
+    if (diffMin < 60) return t("trainee.myLearning.minutesAgo").replace("{n}", String(diffMin));
     const diffHour = Math.floor(diffMin / 60);
-    if (diffHour < 24) return `${diffHour}h ago`;
+    if (diffHour < 24) return t("trainee.myLearning.hoursAgo").replace("{n}", String(diffHour));
     const diffDay = Math.floor(diffHour / 24);
-    return `${diffDay}d ago`;
+    return t("trainee.myLearning.daysAgo").replace("{n}", String(diffDay));
   } catch {
-    return "recently";
+    return t("trainee.myLearning.recently");
   }
 }
+
+const FILTER_KEYS: Record<string, string> = {
+  "In Progress": "trainee.myLearning.filterInProgress",
+  "Offline Ready": "trainee.myLearning.filterOfflineReady",
+  "Completed": "trainee.myLearning.filterCompleted",
+  "All": "trainee.myLearning.filterAll",
+};
 
 // Map initial trainee enrollments to full course catalog
 const enrolledCatalog = [
@@ -66,6 +76,7 @@ const enrolledCatalog = [
 ];
 
 export default function MyLearningPage() {
+  const t = useT();
   const [filter, setFilter] = useState("In Progress");
   const [enrolledList, setEnrolledList] = useState<{ courseId: string; initialProgress: number }[]>(() => {
     if (typeof window !== "undefined") {
@@ -157,7 +168,7 @@ export default function MyLearningPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("coopsetu_enrolled_courses", JSON.stringify(updated));
     }
-    showNotice(`Enrolled in "${course?.title || "New Course"}" successfully!`);
+    showNotice(t("trainee.myLearning.enrolledNotice").replace("{title}", course?.title || t("trainee.myLearning.newCourse")));
     setEnrolModalOpen(false);
   };
 
@@ -169,7 +180,7 @@ export default function MyLearningPage() {
       localStorage.setItem("coopsetu_enrolled_courses", JSON.stringify(updated));
     }
     await handleRemoveOffline(courseId);
-    showNotice(`Removed "${course?.title || "Course"}" from My Learning.`);
+    showNotice(t("trainee.myLearning.removedNotice").replace("{title}", course?.title || t("trainee.myLearning.courseTitleFallback")));
   };
 
   const handleDownload = async (courseId: string) => {
@@ -205,11 +216,11 @@ export default function MyLearningPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="My Learning & Offline Hub"
-        description="Download individual courses for offline access. Only downloaded courses remain accessible without a connection; progress syncs automatically once you're back online."
+        title={t("trainee.myLearning.title")}
+        description={t("trainee.myLearning.description")}
         action={
           <Button onClick={() => setEnrolModalOpen(true)} className="gap-1.5 shadow-sm">
-            <Plus className="size-4" /> Enrol New Course
+            <Plus className="size-4" /> {t("trainee.myLearning.enrolNew")}
           </Button>
         }
       />
@@ -232,10 +243,9 @@ export default function MyLearningPage() {
       {!isOnline && (
         <Alert className="border-amber-500/30 bg-amber-50 dark:bg-amber-500/10">
           <WifiOff className="text-amber-700 dark:text-amber-400" />
-          <AlertTitle>You&rsquo;re offline</AlertTitle>
+          <AlertTitle>{t("trainee.myLearning.offlineTitle")}</AlertTitle>
           <AlertDescription>
-            Only the {storageStats.coursesCount} course{storageStats.coursesCount === 1 ? "" : "s"} you&rsquo;ve
-            downloaded below are available right now. Everything else will resume once you reconnect.
+            {(storageStats.coursesCount === 1 ? t("trainee.myLearning.offlineBodyOne") : t("trainee.myLearning.offlineBodyMany")).replace("{count}", String(storageStats.coursesCount))}
           </AlertDescription>
         </Alert>
       )}
@@ -246,8 +256,8 @@ export default function MyLearningPage() {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Learning Streak</p>
-              <p className="text-2xl font-bold text-foreground">14 Days</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.myLearning.streak")}</p>
+              <p className="text-2xl font-bold text-foreground">14 {t("trainee.myLearning.days")}</p>
             </div>
             <div className="flex size-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 text-lg">
               🔥
@@ -259,8 +269,8 @@ export default function MyLearningPage() {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Hours Studied</p>
-              <p className="text-2xl font-bold text-foreground">42 Hours</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.myLearning.hoursStudied")}</p>
+              <p className="text-2xl font-bold text-foreground">42 {t("trainee.myLearning.hours")}</p>
             </div>
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Clock className="size-5" />
@@ -273,17 +283,17 @@ export default function MyLearningPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Offline Cache</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.myLearning.offlineCache")}</p>
                 <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
                   IndexedDB
                 </Badge>
               </div>
               <p className="text-2xl font-bold text-foreground">
                 {storageStats.coursesCount}{" "}
-                <span className="text-xs font-normal text-muted-foreground">courses</span>
+                <span className="text-xs font-normal text-muted-foreground">{t("trainee.myLearning.courses")}</span>
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {formatSize(storageStats.estimatedSizeBytes)} used • {storageStats.lessonsCount} lessons
+                {t("trainee.myLearning.usedLessons").replace("{size}", formatSize(storageStats.estimatedSizeBytes)).replace("{count}", String(storageStats.lessonsCount))}
               </p>
             </div>
             <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
@@ -300,20 +310,20 @@ export default function MyLearningPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Sync Queue</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("trainee.myLearning.syncQueue")}</p>
                 <Badge
                   variant={isOnline ? "outline" : "secondary"}
                   className={cn("text-[10px] h-4 px-1.5", !isOnline && "bg-amber-500/20 text-amber-700 dark:text-amber-300")}
                 >
-                  {isOnline ? "Online" : "Offline"}
+                  {isOnline ? t("trainee.myLearning.online") : t("trainee.myLearning.offline")}
                 </Badge>
               </div>
               <p className="text-2xl font-bold text-foreground">
                 {pendingCount}{" "}
-                <span className="text-xs font-normal text-muted-foreground">pending</span>
+                <span className="text-xs font-normal text-muted-foreground">{t("trainee.myLearning.pending")}</span>
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {lastSyncedAt ? `Synced ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "Not synced yet"}
+                {lastSyncedAt ? t("trainee.myLearning.synced").replace("{time}", new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : t("trainee.myLearning.notSynced")}
               </p>
             </div>
             <div className="flex flex-col items-center gap-1">
@@ -325,7 +335,7 @@ export default function MyLearningPage() {
                 onClick={() => syncNow()}
               >
                 <RefreshCw className={cn("size-3.5 mr-1", isSyncing && "animate-spin")} />
-                Sync
+                {t("trainee.myLearning.sync")}
               </Button>
             </div>
           </CardContent>
@@ -344,7 +354,7 @@ export default function MyLearningPage() {
               className="text-xs sm:text-sm"
             >
               {f === "Offline Ready" && <HardDrive className="size-3.5 mr-1.5 text-emerald-500" />}
-              {f}
+              {t(FILTER_KEYS[f])}
               {f === "Offline Ready" && storageStats.coursesCount > 0 && (
                 <span className="ml-1.5 rounded-full bg-emerald-500/20 px-1.5 py-0.2 text-[10px] font-bold text-emerald-600">
                   {storageStats.coursesCount}
@@ -357,7 +367,7 @@ export default function MyLearningPage() {
         {/* Global Offline Download Suggestion */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="size-3.5 text-primary" />
-          <span>Save courses locally to study without mobile data or network disruptions.</span>
+          <span>{t("trainee.myLearning.offlineHint")}</span>
         </div>
       </div>
 
@@ -365,11 +375,11 @@ export default function MyLearningPage() {
       {filteredCourses.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16 text-center">
           <BookOpen className="size-10 text-muted-foreground mb-3 opacity-60" />
-          <h3 className="font-semibold text-foreground text-base">No courses found in &ldquo;{filter}&rdquo;</h3>
+          <h3 className="font-semibold text-foreground text-base">{t("trainee.myLearning.noCoursesIn").replace("{filter}", t(FILTER_KEYS[filter]))}</h3>
           <p className="text-sm text-muted-foreground max-w-md mt-1">
             {filter === "Offline Ready"
-              ? "You haven't downloaded any courses for offline access yet. Click 'Save Offline' on any course to access it anytime without internet."
-              : "Try switching to 'All' or 'In Progress' to view your current active curriculum."}
+              ? t("trainee.myLearning.emptyOffline")
+              : t("trainee.myLearning.emptyDefault")}
           </p>
         </div>
       ) : (
@@ -396,11 +406,11 @@ export default function MyLearningPage() {
                     </Badge>
                     {isSaved ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 border border-emerald-500/20">
-                        <CheckCircle2 className="size-3" /> Offline Ready
+                        <CheckCircle2 className="size-3" /> {t("trainee.myLearning.offlineReadyPill")}
                       </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">
-                        {c.durationHours} hrs
+                        {t("trainee.myLearning.durationHrs").replace("{n}", String(c.durationHours))}
                       </span>
                     )}
                   </div>
@@ -410,17 +420,17 @@ export default function MyLearningPage() {
                 </CardHeader>
 
                 <CardContent className="pb-4">
-                  <p className="mb-4 text-xs text-muted-foreground">Instructor: {c.instructor}</p>
+                  <p className="mb-4 text-xs text-muted-foreground">{t("trainee.myLearning.instructor")}: {c.instructor}</p>
                   {isSaved && c.cachedInfo && (
                     <p className="mb-4 -mt-2 flex items-center gap-1 text-[11px] text-emerald-600/80 font-mono">
                       <HardDrive className="size-3" />
-                      Saved {formatSavedAt(c.cachedInfo.savedAt)} &middot; {formatSize(c.cachedInfo.sizeBytes)}
+                      {t("trainee.myLearning.saved")} {formatSavedAt(c.cachedInfo.savedAt, t)} &middot; {formatSize(c.cachedInfo.sizeBytes)}
                     </p>
                   )}
 
                   {/* Progress bar */}
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Progress</span>
+                    <span className="text-muted-foreground">{t("trainee.myLearning.progress")}</span>
                     <span className="font-semibold text-foreground">{c.progress}%</span>
                   </div>
                   <Progress value={c.progress} className="h-1.5" />
@@ -448,9 +458,9 @@ export default function MyLearningPage() {
                         size="sm"
                         variant="outline"
                         disabled
-                        title="Not downloaded - unavailable while offline"
+                        title={t("trainee.myLearning.unavailableHint")}
                       >
-                        <Lock className="mr-1.5 size-3.5" /> Unavailable offline
+                        <Lock className="mr-1.5 size-3.5" /> {t("trainee.myLearning.unavailableOffline")}
                       </Button>
                     </div>
                   ) : (
@@ -460,7 +470,7 @@ export default function MyLearningPage() {
                         size="sm"
                         nativeButton={false}
                       >
-                        <PlayCircle className="mr-1.5 size-4" /> Continue
+                        <PlayCircle className="mr-1.5 size-4" /> {t("trainee.myLearning.continue")}
                       </Button></Link>
 
                       {/* Offline Save Toggle */}
@@ -468,7 +478,7 @@ export default function MyLearningPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          title="Remove offline copy from this device"
+                          title={t("trainee.myLearning.removeOfflineTitle")}
                           onClick={() => handleRemoveOffline(c.id)}
                           className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         >
@@ -480,10 +490,10 @@ export default function MyLearningPage() {
                           variant="secondary"
                           disabled={isDownloading}
                           onClick={() => handleDownload(c.id)}
-                          title="Save course and lessons for offline learning"
+                          title={t("trainee.myLearning.saveOfflineTitle")}
                         >
                           <Download className={cn("size-4 mr-1", isDownloading && "animate-bounce")} />
-                          {isDownloading ? "Saving..." : "Save Offline"}
+                          {isDownloading ? t("trainee.myLearning.saving") : t("trainee.myLearning.saveOffline")}
                         </Button>
                       )}
 
@@ -491,11 +501,11 @@ export default function MyLearningPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        title="Remove from My Learning"
+                        title={t("trainee.myLearning.dropTitle")}
                         onClick={() => handleRemoveCourse(c.id)}
                         className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-2"
                       >
-                        Drop
+                        {t("trainee.myLearning.drop")}
                       </Button>
                     </div>
                   )}
@@ -510,9 +520,9 @@ export default function MyLearningPage() {
       <Dialog open={enrolModalOpen} onOpenChange={setEnrolModalOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="font-heading text-xl">Enrol in a Cooperative Course</DialogTitle>
+            <DialogTitle className="font-heading text-xl">{t("trainee.myLearning.enrolModalTitle")}</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Choose from the accredited NCCT cooperative curriculum to add to your active learning curriculum.
+              {t("trainee.myLearning.enrolModalDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -521,7 +531,7 @@ export default function MyLearningPage() {
             <Input
               value={enrolSearch}
               onChange={(e) => setEnrolSearch(e.target.value)}
-              placeholder="Search course title, sector, skills..."
+              placeholder={t("trainee.myLearning.searchPlaceholder")}
               className="pl-9 text-sm"
             />
           </div>
@@ -544,7 +554,7 @@ export default function MyLearningPage() {
                       <Badge variant="outline" className="text-[10px]">
                         {c.category}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">{c.durationHours} hrs</span>
+                      <span className="text-xs text-muted-foreground">{t("trainee.myLearning.durationHrs").replace("{n}", String(c.durationHours))}</span>
                       <span className="text-xs text-muted-foreground">&middot; {c.level}</span>
                     </div>
                     <h4 className="font-semibold text-sm text-foreground mt-1 truncate">
@@ -567,14 +577,14 @@ export default function MyLearningPage() {
                     className="shrink-0 text-xs gap-1"
                     onClick={() => handleEnrolCourse(c.id)}
                   >
-                    <Plus className="size-3.5" /> Enrol Now
+                    <Plus className="size-3.5" /> {t("trainee.myLearning.enrolNow")}
                   </Button>
                 </div>
               ))}
 
             {availableToEnrol.length === 0 && (
               <div className="py-8 text-center text-sm text-muted-foreground">
-                🎉 You are already enrolled in all catalog courses!
+                {t("trainee.myLearning.allEnrolled")}
               </div>
             )}
           </div>

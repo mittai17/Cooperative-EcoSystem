@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Globe, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,35 +8,38 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LOCALES, useLocale, useT } from "@/i18n";
 
-const languages = [
-  { code: "EN", label: "English" },
-  { code: "HI", label: "हिन्दी (Hindi)" },
-  { code: "MR", label: "मराठी (Marathi)" },
-];
-
-/**
- * Demo-only language switcher: updates the visible code in the trigger so it
- * is not a dead control, but does not localize copy in this prototype build.
- */
+/** Lists every supported locale by its native name and switches the app language. */
 export function LanguageSelector() {
-  const [code, setCode] = useState("EN");
+  const { locale, setLocale } = useLocale();
+  const t = useT();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" aria-label="Change language">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground"
+            aria-label={t("shell.languageSwitcher", "Change language")}
+          >
             <Globe className="size-4" />
-            {code}
+            {locale.toUpperCase()}
           </Button>
         }
       />
       <DropdownMenuContent align="end" className="w-48">
-        {languages.map((lang) => (
-          <DropdownMenuItem key={lang.code} onClick={() => setCode(lang.code)}>
-            {lang.label}
-            {code === lang.code && <Check className="ml-auto size-3.5 text-primary" />}
+        {LOCALES.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            lang={lang.code}
+            data-script={lang.script}
+            onClick={() => setLocale(lang.code)}
+          >
+            {lang.nativeLabel}
+            {locale === lang.code && <Check className="ml-auto size-3.5 text-primary" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

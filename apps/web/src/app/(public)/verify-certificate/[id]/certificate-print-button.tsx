@@ -2,8 +2,10 @@
 
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n";
 
 export function CertificatePrintButton() {
+  const t = useT();
   return (
     <Button
       size="sm"
@@ -11,7 +13,7 @@ export function CertificatePrintButton() {
       onClick={() => window.print()}
     >
       <Printer className="size-4" />
-      Print / Save PDF
+      {t("public.verify.print")}
     </Button>
   );
 }

@@ -16,8 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { hostelService } from "@/lib/hostel/hostel-service";
 import { DEMO_TRAINEE_RAVINDRA } from "@/lib/hostel/mock-data";
+import { useT } from "@/i18n";
 
 export default function TraineeAllocationDetailsPage() {
+  const t = useT();
   const trainee = hostelService.getTraineeById("trn-ravindra") || DEMO_TRAINEE_RAVINDRA;
   const [requestChangeSubmitted, setRequestChangeSubmitted] = useState(false);
 
@@ -27,19 +29,19 @@ export default function TraineeAllocationDetailsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 font-medium">
-            <span>Home</span>
+            <span>{t("trainee.common.home")}</span>
             <ChevronRight className="size-3" />
             <Link href="/trainee/hostel" className="hover:text-primary">
-              Hostel Management
+              {t("trainee.hostel.management")}
             </Link>
             <ChevronRight className="size-3" />
-            <span className="text-foreground font-semibold">My Allocation</span>
+            <span className="text-foreground font-semibold">{t("trainee.allocation.breadcrumb")}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-heading">
-            Allocation Details
+            {t("trainee.allocation.title")}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            View your current room allocation, check-in information and stay details.
+            {t("trainee.allocation.description")}
           </p>
         </div>
 
@@ -48,14 +50,14 @@ export default function TraineeAllocationDetailsPage() {
           onClick={() => setRequestChangeSubmitted(true)}
           className="bg-primary hover:bg-primary/90 text-white font-semibold text-xs shadow-2xs self-start sm:self-auto"
         >
-          + Request Change
+          + {t("trainee.allocation.requestChange")}
         </Button>
       </div>
 
       {requestChangeSubmitted && (
         <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs flex items-center gap-2">
           <CheckCircle2 className="size-4 text-emerald-600" />
-          Room reallocation request has been dispatched to Institution Admin.
+          {t("trainee.allocation.submitted")}
         </div>
       )}
 
@@ -67,27 +69,27 @@ export default function TraineeAllocationDetailsPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-foreground">Current Allocation</span>
+              <span className="font-bold text-sm text-foreground">{t("trainee.allocation.current")}</span>
               <Badge className="bg-emerald-100 text-emerald-800 text-[10px] font-bold border-none">
-                Checked In
+                {t("trainee.common.checkedIn")}
               </Badge>
             </div>
             <h3 className="font-bold text-base text-foreground mt-0.5 font-heading">
               VAMNICOM Main Hostel
             </h3>
             <p className="text-xs text-muted-foreground">
-              Block A &bull; Room A-204 &bull; Bed 02
+              {t("trainee.allocation.caption")}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-8 text-xs sm:border-l sm:pl-8">
           <div>
-            <span className="text-muted-foreground block text-[11px]">Check-in</span>
+            <span className="text-muted-foreground block text-[11px]">{t("trainee.allocation.checkIn")}</span>
             <span className="font-bold text-foreground">12 Oct 2026</span>
           </div>
           <div>
-            <span className="text-muted-foreground block text-[11px]">Expected Check-out</span>
+            <span className="text-muted-foreground block text-[11px]">{t("trainee.hostel.expectedCheckout")}</span>
             <span className="font-bold text-foreground">25 Oct 2026</span>
           </div>
         </div>
@@ -97,7 +99,7 @@ export default function TraineeAllocationDetailsPage() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
         {/* My Details */}
         <div className="md:col-span-4 rounded-2xl border bg-card p-5 shadow-2xs space-y-3">
-          <h3 className="font-bold text-sm text-foreground pb-2 border-b">My Details</h3>
+          <h3 className="font-bold text-sm text-foreground pb-2 border-b">{t("trainee.allocation.myDetails")}</h3>
           <div className="flex items-center gap-3 pb-1">
             <div className="size-11 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
               RP
@@ -110,72 +112,72 @@ export default function TraineeAllocationDetailsPage() {
 
           <div className="text-xs space-y-2 pt-2 border-t">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Gender:</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.gender")}:</span>
               <span className="font-semibold text-foreground">{trainee.gender}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Programme:</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.programme")}:</span>
               <span className="font-semibold text-foreground text-right">{trainee.programme}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Batch:</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.batch")}:</span>
               <span className="font-bold text-primary">{trainee.batch}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Training Period:</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.trainingPeriod")}:</span>
               <span className="font-semibold text-foreground">12 Oct &mdash; 25 Oct 2026</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Hostel Preference:</span>
-              <span className="font-semibold text-foreground">Main Hostel</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.hostelPreference")}:</span>
+              <span className="font-semibold text-foreground">{t("trainee.allocation.mainHostel")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Room Type:</span>
-              <span className="font-semibold text-foreground">4 Sharing</span>
+              <span className="text-muted-foreground">{t("trainee.hostel.roomType")}:</span>
+              <span className="font-semibold text-foreground">{t("trainee.allocation.fourSharing")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Special Requirement:</span>
-              <span className="font-semibold text-foreground">Non-AC</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.specialRequirement")}:</span>
+              <span className="font-semibold text-foreground">{t("trainee.allocation.nonAc")}</span>
             </div>
           </div>
         </div>
 
         {/* Room Information */}
         <div className="md:col-span-4 rounded-2xl border bg-card p-5 shadow-2xs space-y-3">
-          <h3 className="font-bold text-sm text-foreground pb-2 border-b">Room Information</h3>
+          <h3 className="font-bold text-sm text-foreground pb-2 border-b">{t("trainee.allocation.roomInfo")}</h3>
           <div className="text-xs space-y-2.5">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Room Number:</span>
+              <span className="text-muted-foreground">{t("trainee.hostel.roomNumber")}:</span>
               <span className="font-mono font-bold text-foreground">A-204</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Block:</span>
+              <span className="text-muted-foreground">{t("trainee.hostel.block")}:</span>
               <span className="font-semibold text-foreground">A (Academic Block)</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Floor:</span>
-              <span className="font-semibold text-foreground">2nd Floor</span>
+              <span className="text-muted-foreground">{t("trainee.hostel.floor")}:</span>
+              <span className="font-semibold text-foreground">{t("trainee.hostel.floorValue")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Room Type:</span>
-              <span className="font-semibold text-foreground">4 Sharing (Non-AC)</span>
+              <span className="text-muted-foreground">{t("trainee.hostel.roomType")}:</span>
+              <span className="font-semibold text-foreground">{t("trainee.hostel.roomTypeValue")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Beds:</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.totalBeds")}:</span>
               <span className="font-semibold text-foreground">4</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Occupied Beds:</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.occupiedBeds")}:</span>
               <span className="font-bold text-red-600">3</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Available Beds:</span>
+              <span className="text-muted-foreground">{t("trainee.allocation.availableBeds")}:</span>
               <span className="font-bold text-emerald-600">1</span>
             </div>
             <div className="pt-2 border-t">
-              <span className="text-muted-foreground block mb-1">Facilities:</span>
+              <span className="text-muted-foreground block mb-1">{t("trainee.allocation.facilities")}:</span>
               <span className="text-[11px] font-medium text-foreground">
-                Wi-Fi, Study Table, Wardrobe, Attached Bath
+                {t("trainee.allocation.facilitiesList")}
               </span>
             </div>
           </div>
@@ -183,7 +185,7 @@ export default function TraineeAllocationDetailsPage() {
 
         {/* Roommates */}
         <div className="md:col-span-4 rounded-2xl border bg-card p-5 shadow-2xs space-y-3">
-          <h3 className="font-bold text-sm text-foreground pb-2 border-b">Roommates (3)</h3>
+          <h3 className="font-bold text-sm text-foreground pb-2 border-b">{t("trainee.hostel.roommates").replace("{count}", "3")}</h3>
           <div className="space-y-3 text-xs">
             {[
               { name: "Amit Gupta", batch: "CLG-01", initials: "AG", bed: "Bed 01" },
@@ -212,7 +214,7 @@ export default function TraineeAllocationDetailsPage() {
       {/* STAY TIMELINE (MATCHING IMAGE 4 PANEL 3) */}
       <div className="rounded-2xl border bg-card p-6 shadow-2xs space-y-4">
         <h3 className="font-bold text-sm text-foreground pb-2 border-b flex items-center gap-2">
-          <Clock className="size-4 text-primary" /> Stay Timeline
+          <Clock className="size-4 text-primary" /> {t("trainee.allocation.stayTimeline")}
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2 text-center text-xs">
@@ -220,7 +222,7 @@ export default function TraineeAllocationDetailsPage() {
             <div className="size-7 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto">
               <Check className="size-4 stroke-[3]" />
             </div>
-            <div className="font-bold text-foreground mt-2">Request Submitted</div>
+            <div className="font-bold text-foreground mt-2">{t("trainee.allocation.requestSubmitted")}</div>
             <div className="text-[11px] text-muted-foreground">08 Oct 2026</div>
           </div>
 
@@ -228,7 +230,7 @@ export default function TraineeAllocationDetailsPage() {
             <div className="size-7 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto">
               <Check className="size-4 stroke-[3]" />
             </div>
-            <div className="font-bold text-foreground mt-2">Approved</div>
+            <div className="font-bold text-foreground mt-2">{t("trainee.allocation.approved")}</div>
             <div className="text-[11px] text-muted-foreground">10 Oct 2026</div>
           </div>
 
@@ -236,7 +238,7 @@ export default function TraineeAllocationDetailsPage() {
             <div className="size-7 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto">
               <Check className="size-4 stroke-[3]" />
             </div>
-            <div className="font-bold text-foreground mt-2">Room Allocated</div>
+            <div className="font-bold text-foreground mt-2">{t("trainee.allocation.roomAllocated")}</div>
             <div className="text-[11px] text-muted-foreground">11 Oct 2026</div>
           </div>
 
@@ -244,7 +246,7 @@ export default function TraineeAllocationDetailsPage() {
             <div className="size-7 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto">
               <Check className="size-4 stroke-[3]" />
             </div>
-            <div className="font-bold text-emerald-600 mt-2">Checked In</div>
+            <div className="font-bold text-emerald-600 mt-2">{t("trainee.common.checkedIn")}</div>
             <div className="text-[11px] text-muted-foreground">12 Oct 2026</div>
           </div>
 
@@ -252,7 +254,7 @@ export default function TraineeAllocationDetailsPage() {
             <div className="size-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center mx-auto">
               5
             </div>
-            <div className="font-bold text-foreground mt-2">Expected Check-out</div>
+            <div className="font-bold text-foreground mt-2">{t("trainee.hostel.expectedCheckout")}</div>
             <div className="text-[11px] text-muted-foreground">25 Oct 2026</div>
           </div>
         </div>

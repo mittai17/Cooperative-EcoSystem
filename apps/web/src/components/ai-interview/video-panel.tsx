@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { AlertTriangle, Camera, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CameraStatus } from "./use-camera";
+import { useT } from "@/i18n";
 
 export function formatElapsed(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -32,6 +33,7 @@ export function VideoPanel({
   elapsedSeconds,
   onEnd,
 }: VideoPanelProps) {
+  const t = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export function VideoPanel({
             autoPlay
             muted
             playsInline
-            aria-label="Your camera preview"
+            aria-label={t("trainee.aiInterview.cameraPreview")}
             className="h-full w-full scale-x-[-1] object-cover"
           />
         ) : (
@@ -62,9 +64,9 @@ export function VideoPanel({
             )}
             <p className="max-w-sm text-sm">
               {cameraStatus === "requesting"
-                ? "Waiting for camera permission..."
+                ? t("trainee.aiInterview.waitingPermission")
                 : cameraMessage ??
-                  "Your camera turns on when the interview starts. Video stays in your browser and is never uploaded."}
+                  t("trainee.aiInterview.cameraIdle")}
             </p>
           </div>
         )}
@@ -72,8 +74,8 @@ export function VideoPanel({
         {live && (
           <div className="absolute right-3 top-3 flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
             <span className="size-2 rounded-full bg-primary" aria-hidden />
-            <span>Live</span>
-            <span className="tabular-nums" aria-label={`Elapsed ${formatElapsed(elapsedSeconds)}`}>
+            <span>{t("trainee.aiInterview.live")}</span>
+            <span className="tabular-nums" aria-label={t("trainee.aiInterview.elapsed").replace("{time}", formatElapsed(elapsedSeconds))}>
               {formatElapsed(elapsedSeconds)}
             </span>
           </div>
@@ -92,7 +94,7 @@ export function VideoPanel({
             className="h-10 rounded-full bg-primary px-6 text-white hover:bg-primary-hover"
           >
             <Square className="fill-current" aria-hidden />
-            End Interview
+            {t("trainee.aiInterview.endInterview")}
           </Button>
         </div>
       )}

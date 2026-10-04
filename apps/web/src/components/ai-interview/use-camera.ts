@@ -4,6 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export type CameraStatus = "idle" | "requesting" | "live" | "denied" | "unavailable" | "error";
 
+/** Translator for user-facing messages. Defaults to the English fallback text. */
+export type CameraTranslate = (key: string, fallback?: string) => string;
+
+const englishOnly: CameraTranslate = (_key, fallback) => fallback ?? "";
+
 export interface CameraState {
   status: CameraStatus;
   stream: MediaStream | null;
@@ -17,7 +22,7 @@ export interface CameraState {
  * The stream is only rendered in a <video> element; it is never uploaded.
  * Tracks are stopped by `stop()` and on unmount.
  */
-export function useCamera(): CameraState {
+export function useCamera(translate: CameraTranslate = englishOnly): CameraState {
   const streamRef = useRef<MediaStream | null>(null);
   const [status, setStatus] = useState<CameraStatus>("idle");
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -34,7 +39,7 @@ export function useCamera(): CameraState {
     const mediaDevices = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
     if (!mediaDevices?.getUserMedia) {
       setStatus("unavailable");
-      setMessage("This browser cannot access a camera. You can still answer by typing.");
+      setMessage(translate("trainee.aiInterview.camUnsupported", "This browser cannot access a camera. You can still answer by typing."));
       return;
     }
     setStatus("requesting");
@@ -49,17 +54,20 @@ export function useCamera(): CameraState {
       if (name === "NotAllowedError" || name === "PermissionDeniedError") {
         setStatus("denied");
         setMessage(
-          "Camera or microphone permission was denied. Allow access in your browser settings and restart the interview, or continue by typing your answers.",
+          translate(
+            "trainee.aiInterview.camDenied",
+            "Camera or microphone permission was denied. Allow access in your browser settings and restart the interview, or continue by typing your answers.",
+          ),
         );
       } else if (name === "NotFoundError" || name === "OverconstrainedError") {
         setStatus("unavailable");
-        setMessage("No camera or microphone was found. You can still answer by typing.");
+        setMessage(translate("trainee.aiInterview.camNotFound", "No camera or microphone was found. You can still answer by typing."));
       } else {
         setStatus("error");
-        setMessage("The camera could not be started. You can still answer by typing.");
+        setMessage(translate("trainee.aiInterview.camError", "The camera could not be started. You can still answer by typing."));
       }
     }
-  }, [stop]);
+  }, [stop, translate]);
 
   useEffect(() => stop, [stop]);
 

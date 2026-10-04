@@ -219,7 +219,7 @@ function UnavailableState({
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <div>
-        <Link className="contents" href="/certificates"><Button
+        <Link className="contents" href="/trainee/certificates"><Button
           variant="ghost"
           size="sm"
           className="-ml-2 min-h-11"
@@ -241,7 +241,7 @@ function UnavailableState({
             <p className="text-sm text-foreground">{description}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link className="contents" href="/certificates"><Button className="min-h-11"   nativeButton={false}>My certificates</Button></Link>
+            <Link className="contents" href="/trainee/certificates"><Button className="min-h-11"   nativeButton={false}>My certificates</Button></Link>
             <Link className="contents" href="/verify-certificate/CST-2026-DAI-00842"><Button
               variant="outline"
               className="min-h-11"
@@ -303,7 +303,7 @@ export default async function CertificateDetailPage({
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <div className="print:hidden">
-        <Link className="contents" href="/certificates"><Button
+        <Link className="contents" href="/trainee/certificates"><Button
           variant="ghost"
           size="sm"
           className="-ml-2 min-h-11"

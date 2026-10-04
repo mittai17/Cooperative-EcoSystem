@@ -31,15 +31,17 @@ import { KPICards } from "./components/kpi-cards";
 import { AIRecommendationCard } from "./components/ai-recommendation-card";
 import { UpcomingSchedulePanel } from "./components/upcoming-schedule-panel";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { useT } from "@/i18n";
+import { optionLabel } from "./option-labels";
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
-const CATEGORY_TABS: { value: ProgrammeType | "all"; label: string; icon: React.ElementType }[] = [
-  { value: "all", label: "All", icon: BookOpen },
-  { value: "training", label: "Training Programmes", icon: GraduationCap },
-  { value: "short-course", label: "Short-Term Courses", icon: Clock },
-  { value: "certification-exam", label: "Certification Exams", icon: Award },
-  { value: "skill-development", label: "Skill Development", icon: TrendingUp },
-  { value: "digital-literacy", label: "Digital Literacy", icon: Monitor },
+const CATEGORY_TABS: { value: ProgrammeType | "all"; labelKey: string; icon: React.ElementType }[] = [
+  { value: "all", labelKey: "trainee.programmes.catAll", icon: BookOpen },
+  { value: "training", labelKey: "trainee.programmes.catTraining", icon: GraduationCap },
+  { value: "short-course", labelKey: "trainee.programmes.catShort", icon: Clock },
+  { value: "certification-exam", labelKey: "trainee.programmes.catExams", icon: Award },
+  { value: "skill-development", labelKey: "trainee.programmes.catSkill", icon: TrendingUp },
+  { value: "digital-literacy", labelKey: "trainee.programmes.catDigital", icon: Monitor },
 ];
 
 const INSTITUTIONS = ["All", "VAMNICOM", "RICM Pune", "RICM Lucknow", "ICM Bhopal", "ICM Guwahati", "ICM Hyderabad", "ICM Anand", "NDRI"];
@@ -48,19 +50,19 @@ const LEVELS = ["All", "Beginner", "Intermediate", "Advanced"];
 const LANGUAGES = ["All", "English", "Hindi", "Marathi", "Tamil", "Telugu", "Gujarati", "Assamese"];
 const SORT_OPTIONS = ["Recommended", "Newest", "Start Date", "Seats Available", "Popular", "Alphabetical"];
 
-const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
-  submitted: { label: "Submitted", className: "bg-blue-50 text-blue-700 border-blue-200" },
-  pending_trainer: { label: "Pending Approval", className: "bg-amber-50 text-amber-700 border-amber-200" },
-  correction_required: { label: "Correction Required", className: "bg-orange-50 text-orange-700 border-orange-200" },
-  resubmitted: { label: "Resubmitted", className: "bg-blue-50 text-blue-700 border-blue-200" },
-  trainer_approved: { label: "Trainer Approved", className: "bg-teal-50 text-teal-700 border-teal-200" },
-  institution_approved: { label: "Seat Confirmed", className: "bg-green-50 text-green-700 border-green-200" },
-  batch_allocated: { label: "Batch Confirmed", className: "bg-green-50 text-green-700 border-green-200" },
-  waitlisted: { label: "Waitlisted", className: "bg-violet-50 text-violet-700 border-violet-200" },
-  rejected: { label: "Rejected", className: "bg-red-50 text-red-700 border-red-200" },
-  withdrawn: { label: "Withdrawn", className: "bg-muted text-muted-foreground" },
-  completed: { label: "Completed", className: "bg-green-50 text-green-700 border-green-200" },
+const STATUS_LABELS: Record<string, { labelKey: string; className: string }> = {
+  draft: { labelKey: "trainee.programmes.status.draft", className: "bg-muted text-muted-foreground" },
+  submitted: { labelKey: "trainee.programmes.status.submitted", className: "bg-blue-50 text-blue-700 border-blue-200" },
+  pending_trainer: { labelKey: "trainee.programmes.status.pendingTrainer", className: "bg-amber-50 text-amber-700 border-amber-200" },
+  correction_required: { labelKey: "trainee.programmes.status.correctionRequired", className: "bg-orange-50 text-orange-700 border-orange-200" },
+  resubmitted: { labelKey: "trainee.programmes.status.resubmitted", className: "bg-blue-50 text-blue-700 border-blue-200" },
+  trainer_approved: { labelKey: "trainee.programmes.status.trainerApproved", className: "bg-teal-50 text-teal-700 border-teal-200" },
+  institution_approved: { labelKey: "trainee.programmes.status.institutionApproved", className: "bg-green-50 text-green-700 border-green-200" },
+  batch_allocated: { labelKey: "trainee.programmes.status.batchAllocated", className: "bg-green-50 text-green-700 border-green-200" },
+  waitlisted: { labelKey: "trainee.programmes.status.waitlisted", className: "bg-violet-50 text-violet-700 border-violet-200" },
+  rejected: { labelKey: "trainee.programmes.status.rejected", className: "bg-red-50 text-red-700 border-red-200" },
+  withdrawn: { labelKey: "trainee.programmes.status.withdrawn", className: "bg-muted text-muted-foreground" },
+  completed: { labelKey: "trainee.programmes.status.completed", className: "bg-green-50 text-green-700 border-green-200" },
 };
 
 function getApplicationStatus(applications: ReturnType<ReturnType<typeof useApplications>["getByTrainee"]>, programmeId: string) {
@@ -77,6 +79,7 @@ function ProgrammeCard({
   onViewDetails: (p: Programme) => void;
   onApply: (p: Programme) => void;
 }) {
+  const t = useT();
   const { isSaved, toggle } = useSavedProgrammes();
   const { getByTrainee } = useApplications();
   const myApps = getByTrainee("trainee-ravindra");
@@ -106,15 +109,15 @@ function ProgrammeCard({
         {/* Badges overlay */}
         <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1">
           <Badge className="bg-card/95 text-foreground text-xs font-medium shadow-sm">
-            {programme.level}
+            {optionLabel(t, programme.level)}
           </Badge>
           {programme.isFree && (
-            <Badge className="bg-green-500 text-white text-xs font-medium">FREE</Badge>
+            <Badge className="bg-green-500 text-white text-xs font-medium">{t("trainee.programmes.freeBadge")}</Badge>
           )}
           {reason && (
             <Badge className="bg-primary/90 text-primary-foreground text-xs font-medium">
               <Sparkles className="size-2.5 mr-0.5" />
-              Recommended
+              {t("trainee.programmes.recommendedBadge")}
             </Badge>
           )}
         </div>
@@ -126,7 +129,7 @@ function ProgrammeCard({
             "absolute right-2.5 top-2.5 flex size-7 items-center justify-center rounded-full bg-card/90 shadow-sm transition-colors",
             saved ? "text-primary" : "text-muted-foreground hover:text-primary"
           )}
-          aria-label={saved ? "Unsave programme" : "Save programme"}
+          aria-label={saved ? t("trainee.programmes.unsave") : t("trainee.programmes.save")}
         >
           <Heart className={cn("size-3.5", saved && "fill-primary")} />
         </button>
@@ -134,7 +137,7 @@ function ProgrammeCard({
         {/* Mode chip */}
         <div className="absolute bottom-2 left-2.5">
           <span className="text-[10px] font-semibold text-white/90 bg-black/40 rounded px-1.5 py-0.5">
-            {programme.mode}
+            {optionLabel(t, programme.mode)}
           </span>
         </div>
       </div>
@@ -172,7 +175,7 @@ function ProgrammeCard({
             </Badge>
           ))}
           {programme.skills.length > 3 && (
-            <span className="text-[10px] text-muted-foreground self-center">+{programme.skills.length - 3} more</span>
+            <span className="text-[10px] text-muted-foreground self-center">+{t("trainee.programmes.moreSkills").replace("{count}", String(programme.skills.length - 3))}</span>
           )}
         </div>
 
@@ -181,11 +184,11 @@ function ProgrammeCard({
           <span className="flex items-center gap-1 text-muted-foreground">
             <Users className="size-3" />
             {isFull ? (
-              <span className="text-destructive font-medium">Full</span>
+              <span className="text-destructive font-medium">{t("trainee.programmes.full")}</span>
             ) : isLimited ? (
-              <span className="text-orange-600 font-medium">{programme.availableSeats} seats left</span>
+              <span className="text-orange-600 font-medium">{t("trainee.programmes.seatsLeft").replace("{count}", String(programme.availableSeats))}</span>
             ) : (
-              <span>{programme.availableSeats} seats left</span>
+              <span>{t("trainee.programmes.seatsLeft").replace("{count}", String(programme.availableSeats))}</span>
             )}
           </span>
           <span className="flex items-center gap-1 text-muted-foreground">
@@ -197,9 +200,9 @@ function ProgrammeCard({
         {/* Fee */}
         <div className="text-xs text-muted-foreground">
           {programme.isFree ? (
-            <span className="font-semibold text-green-600">Free Programme</span>
+            <span className="font-semibold text-green-600">{t("trainee.programmes.freeProgramme")}</span>
           ) : (
-            <span>₹{programme.fee.toLocaleString("en-IN")} registration fee</span>
+            <span>₹{programme.fee.toLocaleString("en-IN")} {t("trainee.programmes.registrationFee")}</span>
           )}
         </div>
 
@@ -211,7 +214,7 @@ function ProgrammeCard({
             className="flex-1 h-8 text-xs"
             onClick={() => onViewDetails(programme)}
           >
-            View Details
+            {t("trainee.programmes.viewDetails")}
           </Button>
           {existing ? (
             <Button
@@ -220,11 +223,11 @@ function ProgrammeCard({
               onClick={() => onViewDetails(programme)}
             >
               <CheckCircle2 className="size-3 mr-1" />
-              {STATUS_LABELS[existing.status]?.label ?? "Applied"}
+              {t(STATUS_LABELS[existing.status]?.labelKey ?? "trainee.programmes.status.applied")}
             </Button>
           ) : isFull ? (
             <Button size="sm" className="flex-1 h-8 text-xs" disabled>
-              Registration Closed
+              {t("trainee.programmes.registrationClosed")}
             </Button>
           ) : (
             <Button
@@ -232,7 +235,7 @@ function ProgrammeCard({
               className="flex-1 h-8 text-xs"
               onClick={() => onApply(programme)}
             >
-              Apply Now <ArrowRight className="ml-1 size-3" />
+              {t("trainee.programmes.applyNow")} <ArrowRight className="ml-1 size-3" />
             </Button>
           )}
         </div>
@@ -264,6 +267,7 @@ function FilterBar({
   query: string;
   setQuery: (q: string) => void;
 }) {
+  const t = useT();
   const hasFilters = Object.values(filters).some((v) => v !== "All" && v !== "Recommended") || query.length > 0;
 
   return (
@@ -274,7 +278,7 @@ function FilterBar({
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search programmes, institutions, skills…"
+          placeholder={t("trainee.programmes.searchPlaceholder")}
           className="h-10 rounded-xl pl-10 pr-10"
         />
         {query && (
@@ -289,37 +293,37 @@ function FilterBar({
         <Select value={filters.institution} onValueChange={(v) => v && onChange("institution", v)}>
           <SelectTrigger size="sm" className="w-40">
             <Building2 className="size-3.5 mr-1 text-muted-foreground" />
-            <SelectValue placeholder="Institution" />
+            <SelectValue placeholder={t("trainee.programmes.institutionPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {INSTITUTIONS.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+            {INSTITUTIONS.map((i) => <SelectItem key={i} value={i}>{optionLabel(t, i)}</SelectItem>)}
           </SelectContent>
         </Select>
 
         <Select value={filters.mode} onValueChange={(v) => v && onChange("mode", v)}>
           <SelectTrigger size="sm" className="w-36">
-            <SelectValue placeholder="Mode" />
+            <SelectValue placeholder={t("trainee.programmes.modePlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {MODES.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            {MODES.map((m) => <SelectItem key={m} value={m}>{optionLabel(t, m)}</SelectItem>)}
           </SelectContent>
         </Select>
 
         <Select value={filters.level} onValueChange={(v) => v && onChange("level", v)}>
           <SelectTrigger size="sm" className="w-36">
-            <SelectValue placeholder="Level" />
+            <SelectValue placeholder={t("trainee.programmes.levelPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {LEVELS.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+            {LEVELS.map((l) => <SelectItem key={l} value={l}>{optionLabel(t, l)}</SelectItem>)}
           </SelectContent>
         </Select>
 
         <Select value={filters.language} onValueChange={(v) => v && onChange("language", v)}>
           <SelectTrigger size="sm" className="w-36">
-            <SelectValue placeholder="Language" />
+            <SelectValue placeholder={t("trainee.programmes.languagePlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {LANGUAGES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+            {LANGUAGES.map((l) => <SelectItem key={l} value={l}>{optionLabel(t, l)}</SelectItem>)}
           </SelectContent>
         </Select>
 
@@ -327,16 +331,16 @@ function FilterBar({
           <Select value={filters.sort} onValueChange={(v) => v && onChange("sort", v)}>
             <SelectTrigger size="sm" className="w-40">
               <SlidersHorizontal className="size-3.5 mr-1 text-muted-foreground" />
-              <SelectValue placeholder="Sort by" />
+              <SelectValue placeholder={t("trainee.programmes.sortPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              {SORT_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {SORT_OPTIONS.map((s) => <SelectItem key={s} value={s}>{optionLabel(t, s)}</SelectItem>)}
             </SelectContent>
           </Select>
 
           {hasFilters && (
             <Button variant="ghost" size="sm" onClick={onClear} className="text-muted-foreground hover:text-foreground h-8 px-2">
-              <X className="size-3.5 mr-1" /> Clear
+              <X className="size-3.5 mr-1" /> {t("trainee.programmes.clear")}
             </Button>
           )}
         </div>
@@ -348,6 +352,7 @@ function FilterBar({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ProgrammesPage() {
   const router = useRouter();
+  const t = useT();
   const [activeTab, setActiveTab] = useState<ProgrammeType | "all">("all");
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>({
@@ -433,8 +438,8 @@ export default function ProgrammesPage() {
   return (
     <div className="space-y-6 pb-10">
       <PageHeader
-        title="Programme Registration"
-        description="Discover training programmes, certification exams and skill-building opportunities, then track every step from registration to approval."
+        title={t("trainee.programmes.title")}
+        description={t("trainee.programmes.description")}
       />
 
       {/* KPI Cards */}
@@ -461,7 +466,7 @@ export default function ProgrammesPage() {
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
-            {s === "programmes" ? "Browse Programmes" : s === "applications" ? "My Applications" : s === "nominations" ? "Nominations" : "Certification Exams"}
+            {s === "programmes" ? t("trainee.programmes.sectionBrowse") : s === "applications" ? t("trainee.programmes.sectionApplications") : s === "nominations" ? t("trainee.programmes.sectionNominations") : t("trainee.programmes.sectionExams")}
           </button>
         ))}
       </div>
@@ -495,7 +500,7 @@ export default function ProgrammesPage() {
                     )}
                   >
                     <Icon className="size-3.5" />
-                    {tab.label}
+                    {t(tab.labelKey)}
                   </button>
                 );
               })}
@@ -507,9 +512,9 @@ export default function ProgrammesPage() {
                 <div className="flex items-center justify-between">
                   <h2 className="font-heading text-base font-bold text-foreground flex items-center gap-2">
                     <Sparkles className="size-4 text-primary" />
-                    Recommended for You
+                    {t("trainee.programmes.recommendedTitle")}
                   </h2>
-                  <span className="text-xs text-muted-foreground">Based on your profile & career goal</span>
+                  <span className="text-xs text-muted-foreground">{t("trainee.programmes.recommendedHint")}</span>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {recommended.slice(0, 3).map((p) => (
@@ -528,19 +533,19 @@ export default function ProgrammesPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="font-heading text-base font-bold text-foreground">
-                  {activeTab === "all" && query === "" ? "All Programmes" : `Results`}
+                  {activeTab === "all" && query === "" ? t("trainee.programmes.allProgrammes") : t("trainee.programmes.results")}
                 </h2>
                 <span className="text-sm text-muted-foreground">
-                  {filtered.length} programme{filtered.length !== 1 ? "s" : ""} found
+                  {t(filtered.length === 1 ? "trainee.programmes.foundOne" : "trainee.programmes.foundMany").replace("{count}", String(filtered.length))}
                 </span>
               </div>
 
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-16 text-center">
                   <Search className="size-10 text-muted-foreground/40" />
-                  <p className="font-medium text-foreground">No programmes match your search</p>
-                  <p className="text-sm text-muted-foreground">Try clearing some filters or adjusting your search query.</p>
-                  <Button variant="outline" size="sm" onClick={handleClearFilters}>Clear Filters</Button>
+                  <p className="font-medium text-foreground">{t("trainee.programmes.noMatch")}</p>
+                  <p className="text-sm text-muted-foreground">{t("trainee.programmes.noMatchHint")}</p>
+                  <Button variant="outline" size="sm" onClick={handleClearFilters}>{t("trainee.programmes.clearFilters")}</Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -596,6 +601,7 @@ export default function ProgrammesPage() {
 
 // ─── Nominations Section ──────────────────────────────────────────────────────
 function NominationsSection() {
+  const t = useT();
   const { nominations } = useNominations();
   const myNoms = nominations.filter((n) => n.traineeId === "trainee-ravindra");
 
@@ -612,29 +618,29 @@ function NominationsSection() {
   };
 
   const STATUS_LABELS_NOM: Record<string, string> = {
-    draft: "Draft",
-    submitted: "Submitted",
-    cooperative_review: "Cooperative Review",
-    trainer_review: "Trainer Review",
-    correction_required: "Correction Required",
-    approved: "Approved",
-    rejected: "Rejected",
-    institution_confirmation: "Institution Confirmation",
-    batch_allocated: "Batch Allocated",
+    draft: "trainee.programmes.nomStatus.draft",
+    submitted: "trainee.programmes.nomStatus.submitted",
+    cooperative_review: "trainee.programmes.nomStatus.cooperative_review",
+    trainer_review: "trainee.programmes.nomStatus.trainer_review",
+    correction_required: "trainee.programmes.nomStatus.correction_required",
+    approved: "trainee.programmes.nomStatus.approved",
+    rejected: "trainee.programmes.nomStatus.rejected",
+    institution_confirmation: "trainee.programmes.nomStatus.institution_confirmation",
+    batch_allocated: "trainee.programmes.nomStatus.batch_allocated",
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-base font-bold">My Nominations</h2>
-        <Badge variant="secondary">{myNoms.length} nomination{myNoms.length !== 1 ? "s" : ""}</Badge>
+        <h2 className="font-heading text-base font-bold">{t("trainee.programmes.myNominations")}</h2>
+        <Badge variant="secondary">{t(myNoms.length === 1 ? "trainee.programmes.nominationOne" : "trainee.programmes.nominationMany").replace("{count}", String(myNoms.length))}</Badge>
       </div>
 
       {myNoms.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center rounded-2xl border border-dashed border-border bg-muted/20">
           <FileText className="size-10 text-muted-foreground/40" />
-          <p className="font-medium">No nominations yet</p>
-          <p className="text-sm text-muted-foreground">Nominations are submitted on your behalf by cooperative societies.</p>
+          <p className="font-medium">{t("trainee.programmes.noNominations")}</p>
+          <p className="text-sm text-muted-foreground">{t("trainee.programmes.noNominationsHint")}</p>
         </div>
       ) : (
         <div className="grid gap-3">
@@ -645,14 +651,14 @@ function NominationsSection() {
                   <p className="font-medium text-sm truncate">{nom.programmeTitle}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{nom.institutionName}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Nominated by: {nom.cooperativeName}
+                    {t("trainee.programmes.nominatedBy")}: {nom.cooperativeName}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Submitted: {new Date(nom.submittedAt).toLocaleDateString("en-IN")}
+                    {t("trainee.programmes.submittedOn")}: {new Date(nom.submittedAt).toLocaleDateString("en-IN")}
                   </p>
                 </div>
                 <Badge className={cn("shrink-0 text-xs", STATUS_COLOURS[nom.status] ?? "bg-muted text-muted-foreground")}>
-                  {STATUS_LABELS_NOM[nom.status] ?? nom.status}
+                  {STATUS_LABELS_NOM[nom.status] ? t(STATUS_LABELS_NOM[nom.status]) : nom.status}
                 </Badge>
               </div>
 

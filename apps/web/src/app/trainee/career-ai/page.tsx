@@ -5,28 +5,34 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Sparkles, Send, Bot, User } from "lucide-react";
+import { useT } from "@/i18n";
 
 export default function CareerAiPage() {
   const [tab, setTab] = useState("Chat");
   const [input, setInput] = useState("");
+  const t = useT();
+  const tabs = [
+    { id: "Chat", label: t("trainee.careerAi.tabChat") },
+    { id: "My Career Plan", label: t("trainee.careerAi.tabPlan") },
+  ];
   
   return (
     <div className="flex flex-col gap-6 h-[calc(100vh-8rem)]">
       <PageHeader 
-        title="AI Career Navigator"
-        description="Plan your cooperative career with AI-driven insights."
+        title={t("trainee.careerAi.title")}
+        description={t("trainee.careerAi.description")}
       />
 
       <div className="flex items-center gap-2 border-b border-border pb-2">
-        {["Chat", "My Career Plan"].map((t) => (
+        {tabs.map(({ id, label }) => (
           <Button 
-            key={t} 
-            variant={t === tab ? "default" : "ghost"} 
+            key={id} 
+            variant={id === tab ? "default" : "ghost"} 
             size="sm" 
-            onClick={() => setTab(t)}
+            onClick={() => setTab(id)}
           >
-            {t === "Chat" && <Sparkles className="mr-2 size-4" />}
-            {t}
+            {id === "Chat" && <Sparkles className="mr-2 size-4" />}
+            {label}
           </Button>
         ))}
       </div>
@@ -39,7 +45,7 @@ export default function CareerAiPage() {
                 <Bot className="size-4 text-primary" />
               </div>
               <div className="bg-muted p-3 rounded-2xl rounded-tl-sm text-sm">
-                Hello Ravindra! Based on your recent certification in Dairy Operations, I recommend exploring roles in Dairy Procurement. What kind of cooperative role are you aiming for in the next 2 years?
+                {t("trainee.careerAi.greeting").replace("{name}", "Ravindra")}
               </div>
             </div>
             
@@ -48,7 +54,7 @@ export default function CareerAiPage() {
                 <User className="size-4 text-primary-foreground" />
               </div>
               <div className="bg-primary text-primary-foreground p-3 rounded-2xl rounded-tr-sm text-sm">
-                I want to become a Dairy Cooperative Manager in Gujarat.
+                {t("trainee.careerAi.userGoal")}
               </div>
             </div>
 
@@ -57,15 +63,15 @@ export default function CareerAiPage() {
                 <Bot className="size-4 text-primary" />
               </div>
               <div className="bg-muted p-3 rounded-2xl rounded-tl-sm text-sm flex flex-col gap-2">
-                <p>Great goal! To become a Dairy Cooperative Manager in Gujarat (e.g., at Amul or local unions), you need strong financial and supply chain skills to complement your dairy operations knowledge.</p>
-                <p>I have updated your &ldquo;My Career Plan&rdquo; tab with a 12-month roadmap. Would you like me to suggest some immediate courses?</p>
+                <p>{t("trainee.careerAi.reply1")}</p>
+                <p>{t("trainee.careerAi.reply2")}</p>
               </div>
             </div>
           </CardContent>
           <div className="p-4 border-t bg-card flex gap-2">
             <input 
               type="text" 
-              placeholder="Ask about career paths, skills, or job markets..."
+              placeholder={t("trainee.careerAi.inputPlaceholder")}
               className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -80,20 +86,20 @@ export default function CareerAiPage() {
           <div className="md:col-span-1 flex flex-col gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>Goal Overview</CardTitle>
+                <CardTitle>{t("trainee.careerAi.goalOverview")}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Current Role</p>
-                  <p className="font-medium mt-1">Dairy Supervisor Trainee</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t("trainee.careerAi.currentRole")}</p>
+                  <p className="font-medium mt-1">{t("trainee.careerAi.currentRoleValue")}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Target Role</p>
-                  <p className="font-medium mt-1 text-primary">Dairy Cooperative Manager</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t("trainee.careerAi.targetRole")}</p>
+                  <p className="font-medium mt-1 text-primary">{t("trainee.careerAi.targetRoleValue")}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Estimated Timeline</p>
-                  <p className="font-medium mt-1">12-18 Months</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t("trainee.careerAi.timeline")}</p>
+                  <p className="font-medium mt-1">{t("trainee.careerAi.timelineValue")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -102,28 +108,28 @@ export default function CareerAiPage() {
           <div className="md:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Roadmap</CardTitle>
+                <CardTitle>{t("trainee.careerAi.roadmap")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="relative border-l border-muted-foreground/30 ml-3 md:ml-4 flex flex-col gap-8 pb-4">
                   <div className="relative pl-6">
                     <div className="absolute left-[-5px] top-1.5 size-2.5 rounded-full bg-success"></div>
-                    <h4 className="font-semibold text-sm">Step 1: Core Certifications</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Complete Dairy Operations fundamentals.</p>
-                    <Badge className="mt-2 bg-success/20 text-success">Completed</Badge>
+                    <h4 className="font-semibold text-sm">{t("trainee.careerAi.step1Title")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("trainee.careerAi.step1Desc")}</p>
+                    <Badge className="mt-2 bg-success/20 text-success">{t("trainee.careerAi.completed")}</Badge>
                   </div>
                   
                   <div className="relative pl-6">
                     <div className="absolute left-[-5px] top-1.5 size-2.5 rounded-full bg-primary"></div>
-                    <h4 className="font-semibold text-sm">Step 2: Bridge Financial Skill Gap</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Enrol in &ldquo;Advanced Cooperative Financials&rdquo; to handle society accounts.</p>
-                    <Button variant="outline" size="sm" className="mt-2">View Course</Button>
+                    <h4 className="font-semibold text-sm">{t("trainee.careerAi.step2Title")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("trainee.careerAi.step2Desc")}</p>
+                    <Button variant="outline" size="sm" className="mt-2">{t("trainee.careerAi.viewCourse")}</Button>
                   </div>
 
                   <div className="relative pl-6">
                     <div className="absolute left-[-5px] top-1.5 size-2.5 rounded-full bg-muted-foreground"></div>
-                    <h4 className="font-semibold text-sm text-muted-foreground">Step 3: Leadership Experience</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Complete a 2-month internship managing a micro-society.</p>
+                    <h4 className="font-semibold text-sm text-muted-foreground">{t("trainee.careerAi.step3Title")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("trainee.careerAi.step3Desc")}</p>
                   </div>
                 </div>
               </CardContent>

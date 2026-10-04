@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Application } from "@/types/application";
 import { generateApplicationId } from "@/lib/store/programme-store"; // Unused here, but kept for type completeness if needed
+import { useT } from "@/i18n";
 
 export function ApplicationDetailDrawer({
   application,
@@ -16,7 +17,14 @@ export function ApplicationDetailDrawer({
   onClose: () => void;
   onWithdraw: () => void;
 }) {
+  const t = useT();
   const canWithdraw = !["rejected", "withdrawn", "completed", "batch_allocated"].includes(application.status);
+  const DOC_STATUS_KEYS: Record<string, string> = {
+    pending: "trainee.applicationDetail.docPending",
+    uploaded: "trainee.applicationDetail.docUploaded",
+    invalid: "trainee.applicationDetail.docInvalid",
+    verified: "trainee.applicationDetail.docVerified",
+  };
 
   return (
     <>
@@ -25,7 +33,7 @@ export function ApplicationDetailDrawer({
         <div className="flex items-center justify-between border-b border-border p-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="font-heading text-lg font-bold">Application Details</h2>
+              <h2 className="font-heading text-lg font-bold">{t("trainee.applicationDetail.title")}</h2>
               <Badge variant="outline" className="font-mono text-xs">{application.id}</Badge>
             </div>
             <p className="text-sm text-muted-foreground">{application.programmeTitle}</p>
@@ -42,22 +50,22 @@ export function ApplicationDetailDrawer({
             application.status === "rejected" ? "bg-red-50 border-red-200" :
             "bg-blue-50 border-blue-200"
           )}>
-            <p className="text-sm font-bold mb-1">Current Stage: {application.currentStage}</p>
+            <p className="text-sm font-bold mb-1">{t("trainee.applicationDetail.currentStage")} {application.currentStage}</p>
             {application.correctionNote && <p className="text-xs text-orange-700">{application.correctionNote}</p>}
             {application.rejectionReason && <p className="text-xs text-red-700">{application.rejectionReason}</p>}
             {application.batchAllocation && (
               <div className="mt-2 text-xs text-green-800 space-y-0.5">
-                <p><strong>Batch:</strong> {application.batchAllocation.batchName}</p>
-                <p><strong>Trainer:</strong> {application.batchAllocation.trainerName}</p>
-                <p><strong>Schedule:</strong> {new Date(application.batchAllocation.startDate).toLocaleDateString()} — {application.batchAllocation.time}</p>
-                <p><strong>Venue:</strong> {application.batchAllocation.room}</p>
+                <p><strong>{t("trainee.applicationDetail.batch")}</strong> {application.batchAllocation.batchName}</p>
+                <p><strong>{t("trainee.applicationDetail.trainer")}</strong> {application.batchAllocation.trainerName}</p>
+                <p><strong>{t("trainee.applicationDetail.schedule")}</strong> {new Date(application.batchAllocation.startDate).toLocaleDateString()} — {application.batchAllocation.time}</p>
+                <p><strong>{t("trainee.applicationDetail.venue")}</strong> {application.batchAllocation.room}</p>
               </div>
             )}
           </div>
 
           {/* Timeline */}
           <div>
-            <h3 className="text-sm font-bold mb-3 uppercase text-muted-foreground tracking-wider">Application Timeline</h3>
+            <h3 className="text-sm font-bold mb-3 uppercase text-muted-foreground tracking-wider">{t("trainee.applicationDetail.timeline")}</h3>
             <div className="space-y-4 pl-2">
               {application.timeline.map((event, i) => (
                 <div key={event.id} className="relative pl-6">
@@ -69,7 +77,7 @@ export function ApplicationDetailDrawer({
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {new Date(event.timestamp).toLocaleString("en-IN", {
                       day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-                    })} • by {event.actor}
+                    })} • {t("trainee.applicationDetail.by")} {event.actor}
                   </p>
                   {event.note && (
                     <div className="mt-1.5 rounded bg-muted/50 p-2 text-xs italic text-muted-foreground border-l-2 border-border">
@@ -83,26 +91,26 @@ export function ApplicationDetailDrawer({
 
           {/* Submitted Data */}
           <div>
-            <h3 className="text-sm font-bold mb-3 uppercase text-muted-foreground tracking-wider">Submitted Details</h3>
+            <h3 className="text-sm font-bold mb-3 uppercase text-muted-foreground tracking-wider">{t("trainee.applicationDetail.submittedDetails")}</h3>
             <div className="rounded-xl border border-border bg-card divide-y divide-border">
               <div className="p-4 grid grid-cols-2 gap-4">
-                <div><p className="text-xs text-muted-foreground">Name</p><p className="text-sm font-medium">{application.traineeName}</p></div>
-                <div><p className="text-xs text-muted-foreground">Phone</p><p className="text-sm font-medium">{application.personalInfo?.phone}</p></div>
-                <div><p className="text-xs text-muted-foreground">Cooperative</p><p className="text-sm font-medium">{application.personalInfo?.cooperativeMembership}</p></div>
-                <div><p className="text-xs text-muted-foreground">Experience</p><p className="text-sm font-medium">{application.personalInfo?.experience}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.name")}</p><p className="text-sm font-medium">{application.traineeName}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.phone")}</p><p className="text-sm font-medium">{application.personalInfo?.phone}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.cooperative")}</p><p className="text-sm font-medium">{application.personalInfo?.cooperativeMembership}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.experience")}</p><p className="text-sm font-medium">{application.personalInfo?.experience}</p></div>
               </div>
               <div className="p-4 grid grid-cols-2 gap-4">
-                <div><p className="text-xs text-muted-foreground">Language</p><p className="text-sm font-medium">{application.preferences.preferredLanguage}</p></div>
-                <div><p className="text-xs text-muted-foreground">Batch Preference</p><p className="text-sm font-medium">{application.preferences.preferredBatch}</p></div>
-                <div><p className="text-xs text-muted-foreground">Hostel</p><p className="text-sm font-medium">{application.preferences.hostelRequired ? "Required" : "Not Required"}</p></div>
-                <div><p className="text-xs text-muted-foreground">Meals</p><p className="text-sm font-medium">{application.preferences.mealRequired ? "Required" : "Not Required"}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.language")}</p><p className="text-sm font-medium">{application.preferences.preferredLanguage}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.batchPreference")}</p><p className="text-sm font-medium">{application.preferences.preferredBatch}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.hostel")}</p><p className="text-sm font-medium">{application.preferences.hostelRequired ? t("trainee.applicationDetail.required") : t("trainee.applicationDetail.notRequired")}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("trainee.applicationDetail.meals")}</p><p className="text-sm font-medium">{application.preferences.mealRequired ? t("trainee.applicationDetail.required") : t("trainee.applicationDetail.notRequired")}</p></div>
               </div>
             </div>
           </div>
 
           {/* Documents */}
           <div>
-            <h3 className="text-sm font-bold mb-3 uppercase text-muted-foreground tracking-wider">Uploaded Documents</h3>
+            <h3 className="text-sm font-bold mb-3 uppercase text-muted-foreground tracking-wider">{t("trainee.applicationDetail.documents")}</h3>
             <div className="space-y-2">
               {application.documents.map((doc) => (
                 <div key={doc.type} className="flex items-center justify-between rounded-lg border p-3 bg-card">
@@ -114,7 +122,7 @@ export function ApplicationDetailDrawer({
                     </div>
                   </div>
                   <Badge variant={doc.status === "verified" ? "default" : "outline"} className={doc.status === "verified" ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>
-                    {doc.status}
+                    {t(DOC_STATUS_KEYS[doc.status] ?? "trainee.applicationDetail.docPending")}
                   </Badge>
                 </div>
               ))}
@@ -125,12 +133,12 @@ export function ApplicationDetailDrawer({
         <div className="border-t border-border p-5 flex justify-between bg-muted/20">
           {canWithdraw ? (
             <Button variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={onWithdraw}>
-              Withdraw Application
+              {t("trainee.applicationDetail.withdrawApp")}
             </Button>
           ) : (
             <div />
           )}
-          <Button variant="ghost" onClick={onClose}>Close</Button>
+          <Button variant="ghost" onClick={onClose}>{t("trainee.applicationDetail.close")}</Button>
         </div>
       </div>
     </>

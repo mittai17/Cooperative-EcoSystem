@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 export interface LogoProps {
   className?: string;
@@ -80,6 +83,7 @@ export function Logo({
   priority = true,
 }: LogoProps) {
   const s = sizeMap[size];
+  const t = useT();
 
   // Full Wordmark Graphic Logo (with tagline)
   if (variant === "full") {
@@ -88,7 +92,7 @@ export function Logo({
         {/* Light mode full graphic logo */}
         <Image
           src="/brand/logo-full.png"
-          alt="CoopSetu AI - Learn, Skill, Work, Grow Together"
+          alt={t("brand.logoAlt")}
           width={s.fullWidth}
           height={s.fullHeight}
           priority={priority}
@@ -103,7 +107,7 @@ export function Logo({
         {/* Dark mode / Inverted full graphic logo */}
         <Image
           src="/brand/logo-full-dark.png"
-          alt="CoopSetu AI - Learn, Skill, Work, Grow Together"
+          alt={t("brand.logoAlt")}
           width={s.fullWidth}
           height={s.fullHeight}
           priority={priority}
@@ -125,7 +129,7 @@ export function Logo({
       <span className={cn("inline-flex items-center shrink-0 select-none", className)}>
         <Image
           src="/brand/logo-emblem.png"
-          alt="CoopSetu AI Emblem"
+          alt={t("brand.emblemAlt")}
           width={s.emblemPx}
           height={s.emblemPx}
           priority={priority}
@@ -148,7 +152,7 @@ export function Logo({
     >
       <Image
         src="/brand/logo-emblem.png"
-        alt="CoopSetu AI Emblem"
+        alt={t("brand.emblemAlt")}
         width={s.emblemPx}
         height={s.emblemPx}
         priority={priority}

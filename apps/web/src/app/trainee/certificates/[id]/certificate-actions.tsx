@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 type CopyState = "idle" | "copied" | "failed";
 
@@ -55,6 +56,7 @@ export function CertificateActions({
 }: CertificateActionsProps) {
   const [copyState, setCopyState] = useState<CopyState>("idle");
   const [shareNote, setShareNote] = useState<string | null>(null);
+  const t = useT();
 
   const handleCopy = async () => {
     const copied = await writeToClipboard(verificationUrl);
@@ -64,7 +66,7 @@ export function CertificateActions({
 
   const handleShare = async () => {
     const payload = {
-      title: `Certificate ${certificateId}`,
+      title: t("trainee.certificateDetail.shareTitle").replace("{id}", certificateId),
       text: `${holderName} - ${programmeTitle}`,
       url: verificationUrl,
     };
@@ -72,7 +74,7 @@ export function CertificateActions({
     if (navigator.share) {
       try {
         await navigator.share(payload);
-        setShareNote("Shared.");
+        setShareNote(t("trainee.certificateDetail.shared"));
         setCopyState("idle");
         return;
       } catch (error) {
@@ -88,8 +90,8 @@ export function CertificateActions({
     setCopyState(copied ? "copied" : "failed");
     setShareNote(
       copied
-        ? "This browser cannot open a share sheet, so the verification link was copied instead."
-        : "This browser blocked both the share sheet and the clipboard. Copy the link below.",
+        ? t("trainee.certificateDetail.shareFallbackCopied")
+        : t("trainee.certificateDetail.shareBlocked"),
     );
   };
 
@@ -98,7 +100,7 @@ export function CertificateActions({
       <div className="flex flex-wrap gap-2 print:hidden">
         <Button type="button" className="min-h-11" onClick={() => window.print()}>
           <Printer className="size-4" />
-          Print certificate
+          {t("trainee.certificateDetail.printCertificate")}
         </Button>
         <Button
           type="button"
@@ -109,7 +111,7 @@ export function CertificateActions({
           }}
         >
           {copyState === "copied" ? <Check className="size-4" /> : <Copy className="size-4" />}
-          {copyState === "copied" ? "Link copied" : "Copy verification link"}
+          {copyState === "copied" ? t("trainee.certificateDetail.linkCopied") : t("trainee.certificateDetail.copyLink")}
         </Button>
         <Button
           type="button"
@@ -120,14 +122,14 @@ export function CertificateActions({
           }}
         >
           <Share2 className="size-4" />
-          Share
+          {t("trainee.certificateDetail.share")}
         </Button>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="verification-url" className="flex items-center gap-1.5">
           <Link2 className="size-3.5" />
-          Public verification link
+          {t("trainee.certificateDetail.publicLink")}
         </Label>
         <Input
           id="verification-url"
@@ -143,8 +145,8 @@ export function CertificateActions({
           )}
         >
           {copyState === "failed"
-            ? "The clipboard was blocked. Select the link above and copy it manually."
-            : "Anyone with this link can open the public verification page for this certificate."}
+            ? t("trainee.certificateDetail.clipboardBlocked")
+            : t("trainee.certificateDetail.publicLinkHint")}
         </p>
         {shareNote && <p className="text-xs text-muted-foreground">{shareNote}</p>}
       </div>

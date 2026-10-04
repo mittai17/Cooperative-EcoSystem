@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { DEMO_TRAINEE_PROFILE } from "@/lib/services/eligibility-service";
 import type { Programme } from "@/types/programme";
 import { MOCK_PROGRAMMES } from "@/lib/mock-data/programmes-data";
+import { useT } from "@/i18n";
 
 export function AIRecommendationCard({ onExplore }: { onExplore: (p: Programme) => void }) {
+  const t = useT();
   // Hardcode finding the most recommended one for the demo profile
   const recommendedProg = MOCK_PROGRAMMES.find((p) => p.id === "prog-pacs-accounting-002");
 
@@ -18,23 +20,23 @@ export function AIRecommendationCard({ onExplore }: { onExplore: (p: Programme) 
 
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="size-4 text-primary" />
-        <h3 className="font-heading text-sm font-bold text-foreground">AI Career Match</h3>
+        <h3 className="font-heading text-sm font-bold text-foreground">{t("trainee.programmes.aiCardTitle")}</h3>
       </div>
 
       <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-        Based on your profile as a{" "}
+        {t("trainee.programmes.aiCardBefore")}{" "}
         <span className="font-semibold text-foreground">{DEMO_TRAINEE_PROFILE.occupation}</span>{" "}
-        with <span className="font-semibold text-foreground">{DEMO_TRAINEE_PROFILE.experience} years</span>{" "}
-        experience, we highly recommend:
+        {t("trainee.programmes.aiCardWith")} <span className="font-semibold text-foreground">{t("trainee.programmes.aiCardYears").replace("{years}", String(DEMO_TRAINEE_PROFILE.experience))}</span>{" "}
+        {t("trainee.programmes.aiCardExperience")}
       </p>
 
       <div className="rounded-xl border border-border bg-background p-3 mb-4">
         <p className="font-semibold text-sm line-clamp-2">{recommendedProg.title}</p>
-        <p className="text-[10px] text-muted-foreground mt-1">Enhances digital accounting skills crucial for modern PACS management.</p>
+        <p className="text-[10px] text-muted-foreground mt-1">{t("trainee.programmes.aiCardDesc")}</p>
       </div>
 
       <Button size="sm" className="w-full h-8 text-xs" onClick={() => onExplore(recommendedProg)}>
-        Explore Programme <ArrowRight className="size-3 ml-1" />
+        {t("trainee.programmes.exploreProgramme")} <ArrowRight className="size-3 ml-1" />
       </Button>
     </div>
   );

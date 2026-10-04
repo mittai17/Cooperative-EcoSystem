@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Info, RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { AnswerComposer } from "@/components/ai-interview/answer-composer";
@@ -25,12 +25,9 @@ import {
   type TraineeEvaluation,
   type TraineeTarget,
 } from "@/lib/trainee/ai-interview-api";
+import { useT } from "@/i18n";
 
 type Phase = "idle" | "starting" | "active" | "complete" | "ended";
-
-const PRACTICE_HEADING = "PRACTICE FEEDBACK — not shared with employers, not a hiring decision";
-const WELCOME_BODY =
-  "I will ask you real interview questions and listen to your answers. Please speak clearly. Take your time.";
 
 interface ActiveSession {
   id: string;
@@ -40,6 +37,12 @@ interface ActiveSession {
 }
 
 export default function TraineeAiInterviewPage() {
+  const t = useT();
+  // Keeps the latest translator for the one-time target load without re-fetching on locale change.
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
   const [target, setTarget] = useState<TraineeTarget | null>(null);
   const [targetError, setTargetError] = useState<string | null>(null);
   const [targetReloadKey, setTargetReloadKey] = useState(0);
@@ -60,11 +63,12 @@ export default function TraineeAiInterviewPage() {
   const [evaluating, setEvaluating] = useState(false);
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
 
-  const camera = useCamera();
+  const camera = useCamera(t);
   const speech = useSpeech(
     useCallback((text: string) => {
       setDraft((prev) => (prev.trim() ? `${prev.trimEnd()} ${text}` : text));
     }, []),
+    t,
   );
 
   useEffect(() => {
@@ -76,7 +80,7 @@ export default function TraineeAiInterviewPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setTargetError(describeApiError(err, "Could not load your target role."));
+        setTargetError(describeApiError(err, tRef.current("trainee.aiInterview.loadRoleFailed")));
       });
     return () => {
       cancelled = true;
@@ -116,11 +120,11 @@ export default function TraineeAiInterviewPage() {
       });
       setEvaluation(result);
     } catch (err) {
-      setEvaluationError(describeApiError(err, "Could not generate your practice feedback."));
+      setEvaluationError(describeApiError(err, t("trainee.aiInterview.feedbackFailed")));
     } finally {
       setEvaluating(false);
     }
-  }, []);
+  }, [t]);
 
   const profileRole = target?.target_role?.trim() || "";
   const effectiveRole = roleOverride.trim() || profileRole;
@@ -139,8 +143,8 @@ export default function TraineeAiInterviewPage() {
         id: nextMessageId("welcome"),
         kind: "welcome",
         role: "ai",
-        title: `Welcome to your AI mock interview for ${targetRole}.`,
-        text: WELCOME_BODY,
+        title: t("trainee.aiInterview.welcomeTitle").replace("{role}", targetRole),
+        text: t("trainee.aiInterview.welcomeBody"),
       };
       const firstQuestion: TranscriptMessage = {
         id: nextMessageId("ai"),
@@ -162,7 +166,7 @@ export default function TraineeAiInterviewPage() {
       void camera.start();
     } catch (err) {
       setPhase("idle");
-      setStartError(describeApiError(err, "Could not start the interview."));
+      setStartError(describeApiError(err, t("trainee.aiInterview.startFailed")));
     }
   }
 
@@ -209,7 +213,7 @@ export default function TraineeAiInterviewPage() {
       setMessages(historyBefore);
       setDraft(answer);
       setSubmitting(false);
-      setTurnError(describeApiError(err, "Your answer could not be sent. Please try again."));
+      setTurnError(describeApiError(err, t("trainee.aiInterview.sendFailed")));
     }
   }
 
@@ -233,29 +237,27 @@ export default function TraineeAiInterviewPage() {
   const hasAnswers = messages.some((message) => message.role === "candidate");
   const transcriptEmpty =
     phase === "idle" || phase === "starting"
-      ? "Check the role you are practising for, then start. The interviewer's questions will appear here."
-      : "No messages yet.";
+      ? t("trainee.aiInterview.emptyIdle")
+      : t("trainee.aiInterview.noMessages");
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="AI Mock Interview Studio"
-        description="Practise interview questions for your own target role, then review private practice feedback."
+        title={t("trainee.aiInterview.title")}
+        description={t("trainee.aiInterview.description")}
       />
 
       <div className="flex items-start gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-slate-700">
         <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
         <p>
-          Your camera feed stays in your browser. Only typed or transcribed answers are sent to CoopSetu
-          AI for questions and feedback. Practice feedback is private to you and is never shared with
-          employers.
+          {t("trainee.aiInterview.privacyNote")}
         </p>
       </div>
 
       <Card>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-slate-800">Practising for</span>
+            <span className="text-sm font-medium text-slate-800">{t("trainee.aiInterview.practisingFor")}</span>
             {target === null && !targetError && <Skeleton className="h-9 w-full max-w-md" />}
             {targetError && (
               <div className="flex flex-wrap items-center gap-3">
@@ -265,7 +267,7 @@ export default function TraineeAiInterviewPage() {
                 </p>
                 <Button type="button" variant="outline" size="sm" onClick={retryLoadTarget}>
                   <RotateCcw aria-hidden />
-                  Retry
+                  {t("trainee.common.retry")}
                 </Button>
               </div>
             )}
@@ -274,9 +276,9 @@ export default function TraineeAiInterviewPage() {
                 {profileRole ? (
                   <>
                     <p className="text-base font-semibold text-slate-900">{profileRole}</p>
-                    <p className="text-sm text-muted-foreground">From your profile.</p>
+                    <p className="text-sm text-muted-foreground">{t("trainee.aiInterview.fromProfile")}</p>
                     {(target.skills ?? []).length > 0 ? (
-                      <div className="flex flex-wrap gap-1.5" aria-label="Skills this interview covers">
+                      <div className="flex flex-wrap gap-1.5" aria-label={t("trainee.aiInterview.skillsLabel")}>
                         {(target.skills ?? []).map((skill) => (
                           <Badge key={skill} variant="secondary">
                             {skill}
@@ -284,19 +286,19 @@ export default function TraineeAiInterviewPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No skills listed on your profile yet.</p>
+                      <p className="text-sm text-muted-foreground">{t("trainee.aiInterview.noSkills")}</p>
                     )}
                   </>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    No target role yet.{" "}
+                    {t("trainee.aiInterview.noTargetRole")}{" "}
                     <Link
                       href="/trainee/profile"
                       className="font-medium text-primary underline-offset-4 hover:underline"
                     >
-                      Set a target role on your profile
+                      {t("trainee.aiInterview.setRoleLink")}
                     </Link>
-                    , or enter one below.
+                    {t("trainee.aiInterview.orEnterBelow")}
                   </p>
                 )}
               </div>
@@ -306,13 +308,13 @@ export default function TraineeAiInterviewPage() {
           <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <label htmlFor="role-override" className="text-sm font-medium text-slate-800">
-                Practise a different role <span className="font-normal text-muted-foreground">(optional)</span>
+                {t("trainee.aiInterview.differentRole")} <span className="font-normal text-muted-foreground">{t("trainee.aiInterview.optional")}</span>
               </label>
               <Input
                 id="role-override"
                 value={roleOverride}
                 onChange={(event) => setRoleOverride(event.target.value)}
-                placeholder={profileRole || "e.g. Dairy Management Trainee"}
+                placeholder={profileRole || t("trainee.aiInterview.rolePlaceholder")}
                 maxLength={120}
                 disabled={phase !== "idle"}
               />
@@ -323,17 +325,17 @@ export default function TraineeAiInterviewPage() {
                 onClick={() => void startInterview()}
                 disabled={!effectiveRole || phase === "starting"}
               >
-                {phase === "starting" ? "Starting..." : "Start interview"}
+                {phase === "starting" ? t("trainee.aiInterview.starting") : t("trainee.aiInterview.startInterview")}
               </Button>
             ) : (
               <Button type="button" variant="outline" onClick={resetForNewInterview} disabled={isActive}>
-                New interview
+                {t("trainee.aiInterview.newInterview")}
               </Button>
             )}
           </div>
 
           {!effectiveRole && target !== null && (
-            <p className="text-xs text-muted-foreground">Enter a role or set one on your profile to start.</p>
+            <p className="text-xs text-muted-foreground">{t("trainee.aiInterview.enterRoleHint")}</p>
           )}
           {startError && (
             <p className="flex items-center gap-2 text-sm text-destructive">
@@ -355,16 +357,16 @@ export default function TraineeAiInterviewPage() {
             onEnd={handleEnd}
           />
           <p className="text-center text-xs text-muted-foreground">
-            The camera stops when you end the interview. Video is never uploaded.
+            {t("trainee.aiInterview.cameraNote")}
           </p>
         </div>
 
         <Card className="flex min-h-[28rem] flex-col p-0">
           <CardHeader className="flex flex-row items-center justify-between border-b border-border px-4 py-3">
             <CardTitle className="text-sm font-semibold text-slate-900">
-              {session ? session.targetRole : "Interview transcript"}
+              {session ? session.targetRole : t("trainee.aiInterview.transcriptTitle")}
             </CardTitle>
-            {session?.source === "fallback" && <Badge variant="secondary">Fallback questions</Badge>}
+            {session?.source === "fallback" && <Badge variant="secondary">{t("trainee.aiInterview.fallbackQuestions")}</Badge>}
           </CardHeader>
 
           <Transcript messages={messages} emptyMessage={transcriptEmpty} />
@@ -390,8 +392,8 @@ export default function TraineeAiInterviewPage() {
             <div className="flex flex-col gap-3 border-t border-border p-4 text-sm text-muted-foreground">
               <p>
                 {phase === "ended"
-                  ? "Practice ended. The camera and microphone are off."
-                  : "Practice complete. The camera and microphone are off."}
+                  ? t("trainee.aiInterview.practiceEnded")
+                  : t("trainee.aiInterview.practiceComplete")}
               </p>
               {phase === "ended" && hasAnswers && !evaluation && !evaluating && (
                 <div>
@@ -400,7 +402,7 @@ export default function TraineeAiInterviewPage() {
                     variant="outline"
                     onClick={() => session && void requestEvaluation(session, messages)}
                   >
-                    Get practice feedback
+                    {t("trainee.aiInterview.getFeedback")}
                   </Button>
                 </div>
               )}
@@ -417,7 +419,7 @@ export default function TraineeAiInterviewPage() {
           evaluating={evaluating}
           error={evaluationError}
           onRetry={() => session && void requestEvaluation(session, messages)}
-          heading={PRACTICE_HEADING}
+          heading={t("trainee.aiInterview.practiceHeading")}
         />
       )}
     </div>

@@ -17,7 +17,7 @@ import {
  * into IndexedDB for offline access.
  */
 export async function downloadCourseForOffline(course: Course): Promise<void> {
-  const curriculum = buildCurriculum(course);
+  const curriculum = buildCurriculum(course, (k) => k);
   const flatLessons = flattenLessons(curriculum);
 
   // Generate lesson contents and quiz metadata for offline reading

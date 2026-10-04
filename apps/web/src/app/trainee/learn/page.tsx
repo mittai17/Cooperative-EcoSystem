@@ -41,6 +41,7 @@ import {
   type DikshaVideo,
 } from "@/lib/content/diksha-api";
 import { DikshaContentPlayer } from "@/components/lms/DikshaContentPlayer";
+import { useT } from "@/i18n";
 
 const ALL_SUBJECTS = "All subjects";
 const SUBJECT_OPTIONS: string[] = [ALL_SUBJECTS, ...DIKSHA_SUBJECTS];
@@ -60,10 +61,10 @@ const LANGUAGES = [
 ];
 
 const CONTENT_TYPES = [
-  { label: "All Types", value: "all" },
-  { label: "Video", value: "video" },
-  { label: "Reading / PDF", value: "document" },
-  { label: "Course / Collection", value: "course" },
+  { labelKey: "trainee.learn.allTypes", value: "all" },
+  { labelKey: "trainee.learn.typeVideo", value: "video" },
+  { labelKey: "trainee.learn.typeDocument", value: "document" },
+  { labelKey: "trainee.learn.typeCourse", value: "course" },
 ];
 
 const RECOMMENDED_COURSES = [
@@ -110,12 +111,13 @@ function subjectParam(value: string): DikshaSubject | undefined {
   return (DIKSHA_SUBJECTS as readonly string[]).includes(value) ? (value as DikshaSubject) : undefined;
 }
 
-function formatSize(sizeMb: number | null): string {
-  if (sizeMb === null || !Number.isFinite(sizeMb)) return "Size unknown";
+function formatSize(sizeMb: number | null, unknownLabel: string): string {
+  if (sizeMb === null || !Number.isFinite(sizeMb)) return unknownLabel;
   return `${sizeMb.toFixed(1)} MB`;
 }
 
 export default function LearnPage() {
+  const t = useT();
   const [queryInput, setQueryInput] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [committedQuery, setCommittedQuery] = useState("");
@@ -168,7 +170,7 @@ export default function LearnPage() {
       setSearchError(
         err instanceof DikshaApiError
           ? err.message
-          : "Could not load videos. Check your connection and try again.",
+          : t("trainee.learn.loadFailed"),
       );
     } finally {
       if (seq === requestSeq.current) {
@@ -182,11 +184,11 @@ export default function LearnPage() {
     event.preventDefault();
     const q = queryInput.trim();
     if (q.length < DIKSHA_QUERY_MIN) {
-      setFormError(`Enter at least ${DIKSHA_QUERY_MIN} characters to search.`);
+      setFormError(t("trainee.learn.formMinError").replace("{min}", String(DIKSHA_QUERY_MIN)));
       return;
     }
     if (q.length > DIKSHA_QUERY_MAX) {
-      setFormError(`Search can be at most ${DIKSHA_QUERY_MAX} characters.`);
+      setFormError(t("trainee.learn.formMaxError").replace("{max}", String(DIKSHA_QUERY_MAX)));
       return;
     }
     setFormError(null);
@@ -225,16 +227,14 @@ export default function LearnPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Learn"
-        description="Discover and consume certified educational content from DIKSHA, the Government of India learning gateway, seamlessly inside CoopSetu."
+        title={t("trainee.learn.title")}
+        description={t("trainee.learn.description")}
       />
 
       <div className="flex items-start gap-2.5 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3.5 text-xs text-slate-700 dark:text-slate-300">
         <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
         <p>
-          <strong>In-App Learning & Certification:</strong> All DIKSHA videos and readings play
-          directly inside CoopSetu. Completing a resource tracks your progress, unlocks post-lesson
-          assessments, updates your <strong>Skill Passport</strong>, and awards accredited certificates.
+          <strong>{t("trainee.learn.infoTitle")}</strong> {t("trainee.learn.infoBody")} <strong>{t("trainee.learn.infoSkill")}</strong>{t("trainee.learn.infoEnd")}
         </p>
       </div>
 
@@ -244,7 +244,7 @@ export default function LearnPage() {
           <form onSubmit={handleSearch} className="flex flex-col gap-4" noValidate>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="learn-search" className="text-sm font-semibold text-slate-800 dark:text-white">
-                Search learning content...
+                {t("trainee.learn.searchLabel")}
               </label>
               <div className="flex gap-2">
                 <Input
@@ -255,7 +255,7 @@ export default function LearnPage() {
                     setQueryInput(event.target.value);
                     if (formError) setFormError(null);
                   }}
-                  placeholder="For example: cooperative management, accounting, dairy, leadership"
+                  placeholder={t("trainee.learn.searchPlaceholder")}
                   maxLength={DIKSHA_QUERY_MAX}
                   aria-invalid={formError ? true : undefined}
                   aria-describedby={formError ? "learn-search-error" : undefined}
@@ -264,7 +264,7 @@ export default function LearnPage() {
                 />
                 <Button type="submit" disabled={loading} className="rounded-xl px-5">
                   <Search aria-hidden className="size-4 mr-1.5" />
-                  Search
+                  {t("trainee.learn.searchButton")}
                 </Button>
               </div>
               {formError && (
@@ -278,7 +278,7 @@ export default function LearnPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
               {/* Language */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Language</span>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{t("trainee.learn.filterLanguage")}</span>
                 <Select value={selectedLanguage} onValueChange={(val) => setSelectedLanguage(val ?? "All Languages")}>
                   <SelectTrigger className="w-full text-xs h-9 rounded-xl">
                     <SelectValue />
@@ -286,7 +286,7 @@ export default function LearnPage() {
                   <SelectContent>
                     {LANGUAGES.map((lang) => (
                       <SelectItem key={lang} value={lang} className="text-xs">
-                        {lang}
+                        {lang === "All Languages" ? t("trainee.learn.allLanguages") : lang}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -295,15 +295,15 @@ export default function LearnPage() {
 
               {/* Type */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Type</span>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{t("trainee.learn.filterType")}</span>
                 <Select value={selectedType} onValueChange={(val) => setSelectedType(val ?? "all")}>
                   <SelectTrigger className="w-full text-xs h-9 rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CONTENT_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value} className="text-xs">
-                        {t.label}
+                    {CONTENT_TYPES.map((ct) => (
+                      <SelectItem key={ct.value} value={ct.value} className="text-xs">
+                        {t(ct.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -312,7 +312,7 @@ export default function LearnPage() {
 
               {/* Subject */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Subject</span>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{t("trainee.learn.filterSubject")}</span>
                 <Select value={subject} onValueChange={(value) => handleSubjectChange(value ?? ALL_SUBJECTS)}>
                   <SelectTrigger className="w-full text-xs h-9 rounded-xl">
                     <SelectValue />
@@ -320,7 +320,7 @@ export default function LearnPage() {
                   <SelectContent>
                     {SUBJECT_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option} className="text-xs">
-                        {option}
+                        {option === ALL_SUBJECTS ? t("trainee.learn.allSubjects") : option}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -329,20 +329,20 @@ export default function LearnPage() {
 
               {/* Source */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Source</span>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{t("trainee.learn.filterSource")}</span>
                 <Select value={selectedSource} onValueChange={(val) => setSelectedSource(val ?? "DIKSHA")}>
                   <SelectTrigger className="w-full text-xs h-9 rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="DIKSHA" className="text-xs">
-                      DIKSHA (National)
+                      {t("trainee.learn.sourceDiksha")}
                     </SelectItem>
                     <SelectItem value="COOPSETU" className="text-xs">
-                      CoopSetu Native
+                      {t("trainee.learn.sourceCoopsetu")}
                     </SelectItem>
                     <SelectItem value="ALL" className="text-xs">
-                      All Sources
+                      {t("trainee.learn.sourceAll")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -356,13 +356,13 @@ export default function LearnPage() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Recommended for You</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">{t("trainee.learn.recommendedTitle")}</h2>
             <p className="text-xs text-slate-500">
-              Curated cooperative courses aligned with national training frameworks.
+              {t("trainee.learn.recommendedDesc")}
             </p>
           </div>
           <Badge variant="outline" className="text-xs font-normal">
-            Certified Curriculum
+            {t("trainee.learn.certifiedCurriculum")}
           </Badge>
         </div>
 
@@ -403,7 +403,7 @@ export default function LearnPage() {
 
                   <Link href={`/learn/content/${course.id}`}>
                     <Button size="sm" className="h-7 text-xs rounded-lg px-3">
-                      Start Learning
+                      {t("trainee.learn.startLearning")}
                     </Button>
                   </Link>
                 </div>
@@ -415,10 +415,10 @@ export default function LearnPage() {
 
       {/* Search Results & Player Grid */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        <section aria-label="Search results" className="flex min-w-0 flex-col gap-4">
+        <section aria-label={t("trainee.learn.resultsAria")} className="flex min-w-0 flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {searchedOnce ? `Search Results (${items.length})` : "Course Content Catalog"}
+              {searchedOnce ? t("trainee.learn.searchResults").replace("{count}", String(items.length)) : t("trainee.learn.catalogTitle")}
             </h2>
           </div>
 
@@ -430,7 +430,7 @@ export default function LearnPage() {
               </p>
               <Button type="button" variant="outline" size="sm" onClick={handleRetry}>
                 <RotateCcw aria-hidden className="size-3.5 mr-1" />
-                Retry
+                {t("trainee.learn.retry")}
               </Button>
             </div>
           )}
@@ -439,16 +439,16 @@ export default function LearnPage() {
             <div className="rounded-2xl border border-dashed border-border px-4 py-12 text-center text-xs text-muted-foreground space-y-2">
               <Search className="size-8 mx-auto text-slate-400" />
               <p className="font-medium text-slate-700 dark:text-slate-300">
-                Search topics above to discover DIKSHA videos and readings in your preferred language.
+                {t("trainee.learn.emptyPrompt")}
               </p>
               <p className="text-[11px] text-slate-400">
-                Try searching for: <em>dairy operations</em>, <em>cooperative bylaws</em>, or <em>accounting</em>.
+                {t("trainee.learn.tryPrefix")} <em>{t("trainee.learn.tryExamples")}</em>.
               </p>
             </div>
           )}
 
           {loading && (
-            <div className="grid gap-3 sm:grid-cols-2" aria-busy="true" aria-label="Loading content">
+            <div className="grid gap-3 sm:grid-cols-2" aria-busy="true" aria-label={t("trainee.learn.loadingAria")}>
               {Array.from({ length: 4 }, (_, index) => (
                 <Skeleton key={index} className="h-32 w-full rounded-2xl" />
               ))}
@@ -457,7 +457,7 @@ export default function LearnPage() {
 
           {showEmpty && (
             <p className="rounded-2xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-              No matching resources found on DIKSHA. Try another topic or language.
+              {t("trainee.learn.noResults")}
             </p>
           )}
 
@@ -489,16 +489,16 @@ export default function LearnPage() {
                             </Badge>
                           )}
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            {video.language ?? "All Languages"}
+                            {video.language ?? t("trainee.learn.allLanguages")}
                           </Badge>
-                          <span className="text-[10px] text-muted-foreground">{formatSize(video.size_mb)}</span>
+                          <span className="text-[10px] text-muted-foreground">{formatSize(video.size_mb, t("trainee.learn.sizeUnknown"))}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <span className="truncate max-w-[130px]">{video.license ?? "DIKSHA Public"}</span>
+                        <span className="truncate max-w-[130px]">{video.license ?? t("trainee.learn.licenseDefault")}</span>
                         <span className="text-primary font-medium hover:underline flex items-center gap-0.5">
-                          Play <Play className="size-2.5 fill-current" />
+                          {t("trainee.learn.play")} <Play className="size-2.5 fill-current" />
                         </span>
                       </div>
                     </button>
@@ -511,24 +511,24 @@ export default function LearnPage() {
           {items.length > 0 && hasMore && (
             <div className="flex justify-center pt-2">
               <Button type="button" variant="outline" size="sm" onClick={handleLoadMore} disabled={loadingMore}>
-                {loadingMore ? "Loading..." : "Load more"}
+                {loadingMore ? t("trainee.learn.loading") : t("trainee.learn.loadMore")}
               </Button>
             </div>
           )}
         </section>
 
         {/* Selected Player Preview & Full Player Launcher */}
-        <aside aria-label="Content viewer" className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+        <aside aria-label={t("trainee.learn.viewerAria")} className="min-w-0 lg:sticky lg:top-6 lg:self-start">
           <Card className="rounded-2xl overflow-hidden shadow-sm">
             <CardHeader className="p-4 pb-2 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold">
-                  {selected ? "In-App Content Player" : "Content Preview"}
+                  {selected ? t("trainee.learn.inAppPlayer") : t("trainee.learn.contentPreview")}
                 </CardTitle>
                 {selected && (
                   <Link href={`/learn/content/${selected.identifier}`}>
                     <Button size="sm" className="h-7 text-xs rounded-lg gap-1.5 bg-primary text-white">
-                      <Maximize2 className="size-3" /> Open Full Player & Quiz
+                      <Maximize2 className="size-3" /> {t("trainee.learn.openFullPlayer")}
                     </Button>
                   </Link>
                 )}
@@ -539,7 +539,7 @@ export default function LearnPage() {
               {!selected && (
                 <div className="flex aspect-video w-full flex-col items-center justify-center rounded-2xl bg-muted/30 px-6 text-center text-xs text-muted-foreground gap-2">
                   <Play className="size-8 text-slate-400 stroke-1" />
-                  <p>Select any resource from the left to watch or read directly in CoopSetu.</p>
+                  <p>{t("trainee.learn.selectPrompt")}</p>
                 </div>
               )}
 
@@ -552,7 +552,7 @@ export default function LearnPage() {
                       videoUrl: selected.video_url,
                       license: selected.license || "CC BY 4.0",
                       licenseStatus: "ALLOWED_WITH_ATTRIBUTION",
-                      attribution: `Source: DIKSHA (diksha.gov.in) · ${selected.copyright || "NCERT"} · ${selected.license || "CC BY 4.0"}`,
+                      attribution: t("trainee.learn.attribution").replace("{copyright}", selected.copyright || "NCERT").replace("{license}", selected.license || "CC BY 4.0"),
                       embeddingAllowed: true,
                     }}
                   />
@@ -561,17 +561,17 @@ export default function LearnPage() {
                     <h3 className="font-bold text-sm text-slate-900 dark:text-white">{selected.title}</h3>
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
                       {selected.subject && <Badge variant="secondary">{selected.subject}</Badge>}
-                      <Badge variant="outline">{selected.language ?? "Language not tagged"}</Badge>
-                      <span>{formatSize(selected.size_mb)}</span>
+                      <Badge variant="outline">{selected.language ?? t("trainee.learn.languageNotTagged")}</Badge>
+                      <span>{formatSize(selected.size_mb, t("trainee.learn.sizeUnknown"))}</span>
                     </div>
 
                     <div className="pt-2 flex items-center justify-between">
                       <span className="text-xs text-slate-500">
-                        License: <strong>{selected.license || "DIKSHA Public"}</strong>
+                        {t("trainee.learn.licenseLabel")} <strong>{selected.license || t("trainee.learn.licenseDefault")}</strong>
                       </span>
                       <Link href={`/learn/content/${selected.identifier}`}>
                         <Button size="sm" variant="default" className="text-xs h-7">
-                          Start Lesson & Certification →
+                          {t("trainee.learn.startLesson")}
                         </Button>
                       </Link>
                     </div>

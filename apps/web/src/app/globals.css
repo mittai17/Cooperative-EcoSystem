@@ -230,6 +230,51 @@
   h6 {
     @apply font-heading;
   }
+
+  /* Script faces for the i18n layer. The provider sets data-script on <body>
+     (and each language menu item) from the locale's ISO 15924 script code. */
+  [data-script="Deva"] {
+    --font-script: var(--font-noto-devanagari), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-devanagari), var(--font-jakarta);
+  }
+  [data-script="Gujr"] {
+    --font-script: var(--font-noto-gujarati), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-gujarati), var(--font-jakarta);
+  }
+  [data-script="Taml"] {
+    --font-script: var(--font-noto-tamil), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-tamil), var(--font-jakarta);
+  }
+  [data-script="Telu"] {
+    --font-script: var(--font-noto-telugu), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-telugu), var(--font-jakarta);
+  }
+  [data-script="Knda"] {
+    --font-script: var(--font-noto-kannada), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-kannada), var(--font-jakarta);
+  }
+  [data-script="Mlym"] {
+    --font-script: var(--font-noto-malayalam), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-malayalam), var(--font-jakarta);
+  }
+  [data-script="Guru"] {
+    --font-script: var(--font-noto-gurmukhi), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-gurmukhi), var(--font-jakarta);
+  }
+  [data-script="Orya"] {
+    --font-script: var(--font-noto-oriya), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-oriya), var(--font-jakarta);
+  }
+  [data-script="Beng"] {
+    --font-script: var(--font-noto-bengali), var(--font-dm-sans);
+    --font-script-heading: var(--font-noto-bengali), var(--font-jakarta);
+  }
+  [data-script] {
+    font-family: var(--font-script, var(--font-dm-sans));
+  }
+  [data-script] :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-script-heading, var(--font-jakarta));
+  }
 }
 
 @layer utilities {

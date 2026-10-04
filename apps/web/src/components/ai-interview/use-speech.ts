@@ -39,6 +39,11 @@ function subscribeNoop(): () => void {
   return () => {};
 }
 
+/** Translator for user-facing messages. Defaults to the English fallback text. */
+export type SpeechTranslate = (key: string, fallback?: string) => string;
+
+const englishOnly: SpeechTranslate = (_key, fallback) => fallback ?? "";
+
 export interface SpeechState {
   supported: boolean;
   listening: boolean;
@@ -54,7 +59,10 @@ export interface SpeechState {
  * `onFinal` receives each finalised phrase. When the API is missing the hook
  * reports `supported: false` and the UI falls back to the text input.
  */
-export function useSpeech(onFinal: (text: string) => void): SpeechState {
+export function useSpeech(
+  onFinal: (text: string) => void,
+  translate: SpeechTranslate = englishOnly,
+): SpeechState {
   // Server snapshot is `false`, so server and client markup match before hydration.
   const supported = useSyncExternalStore(
     subscribeNoop,
@@ -80,7 +88,7 @@ export function useSpeech(onFinal: (text: string) => void): SpeechState {
   const start = useCallback(() => {
     const Ctor = getRecognitionCtor();
     if (!Ctor) {
-      setError("Voice answers are not supported in this browser. Type your answer instead.");
+      setError(translate("trainee.aiInterview.speechUnsupported", "Voice answers are not supported in this browser. Type your answer instead."));
       return;
     }
     setError(null);
@@ -106,9 +114,11 @@ export function useSpeech(onFinal: (text: string) => void): SpeechState {
     recognition.onerror = (event) => {
       if (event.error === "no-speech" || event.error === "aborted") return;
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        setError("Microphone access for speech recognition was blocked. Type your answer instead.");
+        setError(translate("trainee.aiInterview.speechBlocked", "Microphone access for speech recognition was blocked. Type your answer instead."));
       } else {
-        setError(`Speech recognition stopped (${event.error}). Type your answer or try again.`);
+        setError(
+          translate("trainee.aiInterview.speechStopped", "Speech recognition stopped ({code}). Type your answer or try again.").replace("{code}", event.error),
+        );
       }
       setListening(false);
     };
@@ -125,9 +135,9 @@ export function useSpeech(onFinal: (text: string) => void): SpeechState {
       setListening(true);
     } catch {
       recognitionRef.current = null;
-      setError("Speech recognition could not start. Type your answer instead.");
+      setError(translate("trainee.aiInterview.speechCouldNotStart", "Speech recognition could not start. Type your answer instead."));
     }
-  }, []);
+  }, [translate]);
 
   useEffect(() => {
     return () => {

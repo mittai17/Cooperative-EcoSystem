@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { FormEvent, ReactNode } from "react";
 import { DemoBanner } from "@/components/admin/shared/demo-banner";
+import { useT } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 /*
@@ -155,6 +156,7 @@ export function FormActions({
   submittingLabel: string;
   serverError: string | null;
 }) {
+  const t = useT();
   return (
     <>
       {serverError ? (
@@ -167,7 +169,7 @@ export function FormActions({
           href={cancelHref}
           className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted"
         >
-          Cancel
+          {t("common.cancel", "Cancel")}
         </Link>
         <button type="submit" disabled={submitting} className={primaryButtonClass}>
           {submitting ? submittingLabel : submitLabel}

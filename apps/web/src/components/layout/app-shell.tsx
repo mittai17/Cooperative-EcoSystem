@@ -29,6 +29,7 @@ import { roleNav } from "@/lib/nav-config";
 import type { UserRole } from "@/lib/types";
 import { DemoRoleSwitcherBanner } from "@/components/auth/demo-role-switcher-banner";
 import { getDemoUserForRole, signOutDemo } from "@/lib/demo-users";
+import { useT } from "@/i18n";
 
 interface AppShellProps {
   role: UserRole;
@@ -37,47 +38,30 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-const roleNotifications: Record<UserRole, { title: string; detail: string }[]> = {
-  trainee: [
-    { title: "New assessment scheduled", detail: "Bookkeeping with Tally, Module 3 Quiz due Oct 2" },
-    { title: "Skill Passport updated", detail: "Dairy Operations confidence rose to 88%" },
-    { title: "New job match", detail: "Dairy Procurement Supervisor, 91% match" },
-  ],
-  institution: [
-    { title: "2 nominations pending", detail: "Cooperative Management Fundamentals" },
-    { title: "Attendance dip flagged", detail: "Week 3 attendance fell to 85%" },
-  ],
-  trainer: [
-    { title: "Attendance not marked", detail: "2 classes awaiting today's attendance" },
-    { title: "Grading queue growing", detail: "15 project submissions awaiting review" },
-  ],
-  employer: [
-    { title: "New verified match", detail: "Ravindra S. Patil, 94% match for Dairy Supervisor" },
-    { title: "Posting closing soon", detail: "Apprentice Cooperative Society Secretary" },
-  ],
-  admin: [
-    { title: "Monthly outcomes report ready", detail: "September employment funnel updated" },
-    { title: "New institution onboarded", detail: "Fisheries Cooperative Federation, Kochi" },
-  ],
-  kiosk: [
-    { title: "Terminal Online", detail: "Station 01 sync complete with Central Hub" },
-    { title: "Attendance Buffer", detail: "18 offline records synced successfully" },
-  ],
+/** Number of demo notifications per role. Their text lives in shell.demoNotes.<role>.<index>. */
+const demoNoteCounts: Record<UserRole, number> = {
+  trainee: 3,
+  institution: 2,
+  trainer: 2,
+  employer: 2,
+  admin: 2,
+  kiosk: 2,
 };
 
 /** Small pinned illustration card at the bottom of the trainee sidebar,
  * matching the reference's "Keep Learning" spotlight card -- a flat,
  * geometric SVG in the brand red palette, no photo. */
 function SidebarSpotlightCard({ role }: { role: UserRole }) {
+  const t = useT();
   if (role === "institution") {
     return (
       <div className="mx-3 mb-4 overflow-hidden rounded-2xl bg-gradient-to-b from-rose-50 to-orange-50/60 p-3.5 border border-rose-100/80 dark:border-border dark:bg-card">
-        <p className="font-heading text-xs font-bold text-foreground leading-tight">Building Stronger Cooperatives</p>
-        <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Train. Empower. Transform.</p>
+        <p className="font-heading text-xs font-bold text-foreground leading-tight">{t("shell.spotlight.institution.title")}</p>
+        <p className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("shell.spotlight.institution.tagline")}</p>
         <div className="mt-2.5 h-20 w-full overflow-hidden rounded-xl border border-rose-200/50">
           <img 
             src="/vamnicom-campus.jpg" 
-            alt="VAMNICOM Campus" 
+            alt={t("shell.spotlight.campusAlt")} 
             className="w-full h-full object-cover"
           />
         </div>
@@ -87,8 +71,8 @@ function SidebarSpotlightCard({ role }: { role: UserRole }) {
 
   return (
     <div className="mx-3 mb-4 overflow-hidden rounded-2xl bg-tint-red-bg p-4">
-      <p className="font-heading text-sm font-bold text-foreground">Keep Learning</p>
-      <p className="text-xs text-muted-foreground">Build a Better Tomorrow</p>
+      <p className="font-heading text-sm font-bold text-foreground">{t("shell.spotlight.keepLearning.title")}</p>
+      <p className="text-xs text-muted-foreground">{t("shell.spotlight.keepLearning.tagline")}</p>
       <svg viewBox="0 0 160 88" fill="none" className="mt-3 h-20 w-full" aria-hidden="true">
         <circle cx="34" cy="66" r="30" className="fill-primary/15" />
         <circle cx="128" cy="20" r="14" className="fill-primary/20" />
@@ -107,6 +91,7 @@ function SidebarSpotlightCard({ role }: { role: UserRole }) {
 
 function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => void }) {
   const pathname = usePathname();
+  const t = useT();
   const meta = roleNav[role];
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({
     "Hostel Management": true,
@@ -144,7 +129,7 @@ function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => v
               >
                 <div className="flex items-center gap-3">
                   <Icon className={cn("size-4.5 shrink-0", isParentActive ? "text-red-600 dark:text-red-400" : "")} strokeWidth={1.9} />
-                  <span>{item.label}</span>
+                  <span>{t(`nav.${role}.${item.href}`, item.label)}</span>
                 </div>
                 <ChevronDown
                   className={cn(
@@ -171,7 +156,7 @@ function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => v
                         )}
                       >
                         <span className={cn("size-1.5 rounded-full shrink-0", isChildActive ? "bg-red-600" : "bg-muted-foreground/40")} />
-                        <span className="truncate">{child.label}</span>
+                        <span className="truncate">{t(`nav.${role}.children.${child.href}`, child.label)}</span>
                       </Link>
                     );
                   })}
@@ -195,7 +180,7 @@ function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => v
             )}
           >
             <Icon className={cn("size-4.5 shrink-0", active ? "text-red-600 dark:text-red-400" : "")} strokeWidth={1.9} />
-            <span className="flex-1 truncate">{item.label}</span>
+            <span className="flex-1 truncate">{t(`nav.${role}.${item.href}`, item.label)}</span>
             {item.badge && (
               <span className="rounded-full bg-rose-100/90 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-rose-900/60 dark:text-red-300">
                 {item.badge}
@@ -211,6 +196,11 @@ function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: () => v
 export function AppShell({ role, userName, userSubtitle, children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const meta = roleNav[role];
+  const t = useT();
+  const notifications = Array.from({ length: demoNoteCounts[role] }, (_, index) => ({
+    title: t(`shell.demoNotes.${role}.${index}.title`),
+    detail: t(`shell.demoNotes.${role}.${index}.detail`),
+  }));
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -220,7 +210,7 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
           <Logo size="sm" />
         </div>
         <div className="px-4 pt-4">
-          <span className="demo-data-tag">{meta.label} workspace &middot; demo</span>
+          <span className="demo-data-tag">{t("shell.workspaceTag").replace("{role}", meta.label)}</span>
         </div>
         <SidebarNav role={role} />
         {(role === "trainee" || role === "institution") && <SidebarSpotlightCard role={role} />}
@@ -249,16 +239,16 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
               size="icon"
               className="shrink-0 md:hidden"
               onClick={() => setMobileOpen(true)}
-              aria-label="Open navigation menu"
+              aria-label={t("shell.openNavigation")}
             >
               <Menu className="size-4.5" />
             </Button>
             <div className="relative hidden w-full max-w-md sm:block">
               <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search institutions, trainers, trainees, programs..."
+                placeholder={t("shell.searchPlaceholder")}
                 className="rounded-full bg-muted/60 pl-9 pr-14 text-xs sm:text-sm"
-                aria-label="Search"
+                aria-label={t("shell.search")}
               />
               <kbd className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 rounded border bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-2xs">
                 Ctrl K
@@ -270,7 +260,7 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant="ghost" size="icon" aria-label="Notifications" className="relative cursor-pointer">
+                  <Button variant="ghost" size="icon" aria-label={t("shell.notifications")} className="relative cursor-pointer">
                     <Bell className="size-4.5" />
                     <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-2xs">
                       3
@@ -279,9 +269,9 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                 }
               />
               <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("shell.notifications")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {roleNotifications[role].map((note) => (
+                {notifications.map((note) => (
                   <div key={note.title} className="flex flex-col gap-0.5 rounded-md px-1.5 py-1.5 text-sm">
                     <span className="font-medium text-foreground">{note.title}</span>
                     <span className="text-xs text-muted-foreground">{note.detail}</span>
@@ -289,12 +279,12 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                 ))}
                 <DropdownMenuSeparator />
                 <p className="px-1.5 py-1 text-center text-xs text-muted-foreground">
-                  Demo notifications, live alerts arrive with the backend integration
+                  {t("shell.demoNotesFooter")}
                 </p>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="ghost" size="icon" aria-label="Messages" className="cursor-pointer">
+            <Button variant="ghost" size="icon" aria-label={t("shell.messages")} className="cursor-pointer">
               <MessageSquare className="size-4.5" />
             </Button>
 
@@ -305,8 +295,8 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
             {(() => {
               const currentUser = getDemoUserForRole(role);
               const isNCCT = role === "admin";
-              const effectiveName = userName || (isNCCT ? "Admin User" : currentUser.name);
-              const effectiveSubtitle = userSubtitle || (isNCCT ? "NCCT Admin" : currentUser.roleTitle);
+              const effectiveName = userName || (isNCCT ? t("shell.adminUser") : currentUser.name);
+              const effectiveSubtitle = userSubtitle || (isNCCT ? t("nav.roles.admin") : currentUser.roleTitle);
               const effectiveInitials = isNCCT ? "AD" : currentUser.initials;
 
               return (
@@ -317,7 +307,7 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                         variant="ghost"
                         size="sm"
                         className="relative flex items-center gap-2 rounded-full p-1 pl-2 hover:bg-muted cursor-pointer"
-                        aria-label="User account menu"
+                        aria-label={t("shell.userMenu")}
                       >
                         <span className="flex size-8 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-red-600 border border-rose-200">
                           {effectiveInitials}
@@ -335,7 +325,7 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                       <p className="font-semibold text-foreground">{effectiveName}</p>
                       <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
                       <span className="mt-1.5 inline-block rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-red-600 capitalize">
-                        {role} workspace
+                        {t("shell.roleWorkspace").replace("{role}", t(`nav.roles.${role}`))}
                       </span>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -344,7 +334,7 @@ export function AppShell({ role, userName, userSubtitle, children }: AppShellPro
                       className="text-destructive focus:text-destructive cursor-pointer"
                     >
                       <LogOut className="mr-2 size-3.5" />
-                      <span>Sign Out</span>
+                      <span>{t("shell.signOut")}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

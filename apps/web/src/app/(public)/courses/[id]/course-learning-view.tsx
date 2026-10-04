@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/lib/types";
-import { flattenLessons, type Module } from "./curriculum";
+import { buildCurriculum, flattenLessons } from "./curriculum";
 import {
   downloadCourseForOffline,
   deleteCourseFromOffline,
@@ -39,6 +39,7 @@ import {
   useOfflineSync,
 } from "@/lib/offline/sync-manager";
 import { getCachedCourse } from "@/lib/offline/db";
+import { useT } from "@/i18n";
 
 function formatTime(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
@@ -46,7 +47,9 @@ function formatTime(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export function CourseLearningView({ course, curriculum }: { course: Course; curriculum: Module[] }) {
+export function CourseLearningView({ course }: { course: Course }) {
+  const t = useT();
+  const curriculum = useMemo(() => buildCurriculum(course, t), [course, t]);
   const allLessons = useMemo(() => flattenLessons(curriculum), [curriculum]);
   const [completed, setCompleted] = useState<Set<string>>(
     () => new Set(allLessons.filter((l) => l.completedByDefault).map((l) => l.id))
@@ -172,10 +175,10 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
       {/* Top Navigation & Offline Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
-          href="/my-learning"
+          href="/trainee/my-learning"
           className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ChevronLeft className="size-4" /> Back to My Learning
+          <ChevronLeft className="size-4" /> {t("public.courseLearning.backToLearning")}
         </Link>
 
         {/* Offline Cache Button */}
@@ -183,16 +186,16 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
           {isSavedOffline ? (
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 border border-emerald-500/20">
-                <CheckCircle2 className="size-3.5" /> Saved for Offline
+                <CheckCircle2 className="size-3.5" /> {t("public.courseLearning.savedOffline")}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleOfflineDownload}
-                title="Remove from offline cache"
+                title={t("public.courseLearning.removeOfflineTitle")}
                 className="h-7 text-xs text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="size-3.5 mr-1" /> Remove
+                <Trash2 className="size-3.5 mr-1" /> {t("public.courseLearning.remove")}
               </Button>
             </div>
           ) : (
@@ -204,7 +207,7 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
               className="h-8 gap-1.5 text-xs font-medium"
             >
               <Download className={cn("size-3.5", isDownloading && "animate-bounce")} />
-              {isDownloading ? "Saving to IndexedDB..." : "Download for Offline"}
+              {isDownloading ? t("public.courseLearning.savingOffline") : t("public.courseLearning.downloadOffline")}
             </Button>
           )}
         </div>
@@ -216,16 +219,16 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
             <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{course.title}</h1>
             {!isOnline && (
               <Badge variant="secondary" className="bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
-                Offline Mode
+                {t("public.courseLearning.offlineMode")}
               </Badge>
             )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">by {course.instructor}</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-semibold text-foreground">{percentComplete}% complete</span>
+          <span className="font-semibold text-foreground">{t("public.courseLearning.percentComplete").replace("{percent}", String(percentComplete))}</span>
           <span className="text-muted-foreground">
-            {completed.size}/{allLessons.length} lessons
+            {t("public.courseLearning.progressCount").replace("{done}", String(completed.size)).replace("{total}", String(allLessons.length))}
           </span>
         </div>
       </div>
@@ -233,18 +236,18 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
 
       <Tabs defaultValue="course" className="mt-6">
         <TabsList variant="line" className="border-b border-border">
-          <TabsTrigger value="course">Course</TabsTrigger>
+          <TabsTrigger value="course">{t("public.courseLearning.tabs.course")}</TabsTrigger>
           <TabsTrigger value="quiz">
-            <HelpCircle className="size-3.5" /> Quick Quiz
+            <HelpCircle className="size-3.5" /> {t("public.courseLearning.tabs.quiz")}
           </TabsTrigger>
           <TabsTrigger value="notes">
-            <StickyNote className="size-3.5" /> Offline Notes
+            <StickyNote className="size-3.5" /> {t("public.courseLearning.tabs.notes")}
           </TabsTrigger>
           <TabsTrigger value="discussion">
-            <MessageSquare className="size-3.5" /> Discussion
+            <MessageSquare className="size-3.5" /> {t("public.courseLearning.tabs.discussion")}
           </TabsTrigger>
           <TabsTrigger value="resources">
-            <FolderOpen className="size-3.5" /> Resources
+            <FolderOpen className="size-3.5" /> {t("public.courseLearning.tabs.resources")}
           </TabsTrigger>
         </TabsList>
 
@@ -253,8 +256,8 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
             {/* Curriculum sidebar */}
             <div className="rounded-2xl border border-border bg-card shadow-sm">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                <p className="text-sm font-semibold text-foreground">Course Content</p>
-                <span className="text-xs text-muted-foreground">{allLessons.length} lessons</span>
+                <p className="text-sm font-semibold text-foreground">{t("public.courseLearning.courseContent")}</p>
+                <span className="text-xs text-muted-foreground">{t("public.courseLearning.lessonCount").replace("{count}", String(allLessons.length))}</span>
               </div>
               <div className="max-h-[600px] overflow-y-auto p-2">
                 {curriculum.map((module) => {
@@ -291,7 +294,7 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
                                 )}
                                 <span className="line-clamp-1 flex-1">{lesson.title}</span>
                                 <span className="text-xs tabular-nums text-muted-foreground">
-                                  {lesson.durationMinutes}m
+                                  {t("public.courseLearning.minutesShort").replace("{count}", String(lesson.durationMinutes))}
                                 </span>
                               </button>
                             );
@@ -318,7 +321,7 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
                   type="button"
                   onClick={() => setPlaying(!playing)}
                   className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-primary/90 text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary"
-                  aria-label={playing ? "Pause" : "Play"}
+                  aria-label={playing ? t("public.courseLearning.pause") : t("public.courseLearning.play")}
                 >
                   {playing ? <Pause className="size-7 fill-current" /> : <Play className="size-7 fill-current pl-0.5" />}
                 </button>
@@ -340,17 +343,15 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
                   <h2 className="text-lg font-semibold text-foreground">{currentLesson.title}</h2>
                   {completed.has(currentLesson.id) && (
                     <Badge variant="outline" className="text-success border-success/30 bg-success/5 gap-1">
-                      <Check className="size-3" /> Completed
+                      <Check className="size-3" /> {t("public.courseLearning.completed")}
                     </Badge>
                   )}
                 </div>
                 <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="size-3.5" /> {currentLesson.durationMinutes} minutes
+                  <Clock className="size-3.5" /> {t("public.courseLearning.minutes").replace("{count}", String(currentLesson.durationMinutes))}
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  Learn the fundamentals behind &ldquo;{currentLesson.title.toLowerCase()}&rdquo; and see how it applies to
-                  real cooperative-sector scenarios, with practical examples drawn from {course.category.toLowerCase()}{" "}
-                  practice.
+                  {t("public.courseLearning.lessonBody").replace("{title}", currentLesson.title.toLowerCase()).replace("{category}", course.category.toLowerCase())}
                 </p>
 
                 <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -361,14 +362,14 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
                     disabled={completed.has(currentLesson.id)}
                   >
                     <Check className="size-4" />
-                    {completed.has(currentLesson.id) ? "Marked as Completed" : "Mark Complete"}
+                    {completed.has(currentLesson.id) ? t("public.courseLearning.markedCompleted") : t("public.courseLearning.markComplete")}
                   </Button>
                   <Button
                     className="gap-1.5 sm:flex-1"
                     onClick={handleNextLesson}
                     disabled={isLast && completed.has(currentLesson.id)}
                   >
-                    {isLast ? "Finish Course" : "Next Lesson"}
+                    {isLast ? t("public.courseLearning.finishCourse") : t("public.courseLearning.nextLesson")}
                     <ArrowRight className="size-4" />
                   </Button>
                 </div>
@@ -382,28 +383,23 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm max-w-2xl mx-auto">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div>
-                <h3 className="text-base font-semibold text-foreground">Offline Knowledge Check</h3>
+                <h3 className="text-base font-semibold text-foreground">{t("public.courseLearning.quiz.title")}</h3>
                 <p className="text-xs text-muted-foreground">
-                  Test your understanding of {currentLesson.title}. Submissions sync automatically when online.
+                  {t("public.courseLearning.quiz.intro").replace("{title}", currentLesson.title)}
                 </p>
               </div>
               <Badge variant="secondary" className="text-xs">
-                Question 1 of 1
+                {t("public.courseLearning.quiz.questionOf")}
               </Badge>
             </div>
 
             <div className="mt-5">
               <p className="text-sm font-medium text-foreground leading-relaxed">
-                What is the primary governing authority responsible for adopting bylaws and approving budgets in an Indian primary cooperative society?
+                {t("public.courseLearning.quiz.question")}
               </p>
 
               <div className="mt-4 space-y-2.5">
-                {[
-                  "General Body of Members (All primary shareholding members)",
-                  "External Commercial Banking Syndicate",
-                  "Municipal Corporation Commissioner",
-                  "Independent Third-Party Auditing Firm",
-                ].map((option, idx) => (
+                {[0, 1, 2, 3].map((idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -416,7 +412,7 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
                       quizSubmitted && idx === 0 && "border-emerald-500 bg-emerald-500/10 text-emerald-600 font-semibold"
                     )}
                   >
-                    <span>{option}</span>
+                    <span>{t(`public.courseLearning.quiz.options.${idx}`)}</span>
                     {quizSubmitted && idx === 0 && <CheckCircle2 className="size-4 text-emerald-600" />}
                   </button>
                 ))}
@@ -426,10 +422,10 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
                 <div className="mt-5 rounded-xl bg-emerald-500/10 p-4 border border-emerald-500/20">
                   <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-semibold text-sm">
                     <CheckCircle2 className="size-4" />
-                    <span>Answer Recorded into Offline Sync Queue!</span>
+                    <span>{t("public.courseLearning.quiz.recorded")}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Score: {selectedQuizOption === 0 ? "100%" : "50%"} • Synced or enqueued for server synchronization.
+                    {t("public.courseLearning.quiz.score").replace("{score}", selectedQuizOption === 0 ? "100%" : "50%")}
                   </p>
                 </div>
               ) : (
@@ -440,7 +436,7 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
                     className="gap-2"
                   >
                     <Send className="size-4" />
-                    Submit Answer
+                    {t("public.courseLearning.quiz.submit")}
                   </Button>
                 </div>
               )}
@@ -451,25 +447,26 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
         {/* Offline Notes Tab */}
         <TabsContent value="notes" className="mt-6">
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-foreground mb-2">Lesson Study Guide & Notes</h3>
+            <h3 className="text-base font-semibold text-foreground mb-2">{t("public.courseLearning.notes.title")}</h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Stored locally on your device for offline reading anytime.
+              {t("public.courseLearning.notes.storedLocally")}
             </p>
             <div className="prose dark:prose-invert max-w-none text-sm text-muted-foreground leading-relaxed space-y-3">
               <p>
-                <strong>Focus Area:</strong> {currentLesson.title} in {course.category}.
+                <strong>{t("public.courseLearning.notes.focusArea")}</strong>{" "}
+                {t("public.courseLearning.notes.focusBody").replace("{title}", currentLesson.title).replace("{category}", course.category)}
               </p>
               <p>
-                In democratic cooperative enterprises, every member has one vote regardless of the number of shares held. Transparent bookkeeping, routine audits, and accurate inventory accounting ensure that member welfare remains protected.
+                {t("public.courseLearning.notes.principle")}
               </p>
               <div className="rounded-xl bg-muted/50 p-4 border border-border">
                 <h4 className="font-semibold text-foreground text-xs uppercase tracking-wider mb-2">
-                  Key Cooperative Bylaw Checklist
+                  {t("public.courseLearning.notes.checklistTitle")}
                 </h4>
                 <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li>Mandatory annual general meetings (AGM) within six months of the financial year end.</li>
-                  <li>Proper maintenance of share registers, dividend distribution accounts, and member attendance logs.</li>
-                  <li>Adherence to statutory reserve fund allocations (typically 25% of net profit before patronage refund).</li>
+                  <li>{t("public.courseLearning.notes.checklist.0")}</li>
+                  <li>{t("public.courseLearning.notes.checklist.1")}</li>
+                  <li>{t("public.courseLearning.notes.checklist.2")}</li>
                 </ul>
               </div>
             </div>
@@ -479,9 +476,9 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
         <TabsContent value="discussion" className="mt-6">
           <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-card py-16 text-center">
             <MessageSquare className="size-8 text-muted-foreground" />
-            <p className="font-medium text-foreground">No discussion threads yet</p>
+            <p className="font-medium text-foreground">{t("public.courseLearning.discussion.title")}</p>
             <p className="max-w-sm text-sm text-muted-foreground">
-              Peer and instructor discussion for this course arrives in a later build pass.
+              {t("public.courseLearning.discussion.body")}
             </p>
           </div>
         </TabsContent>
@@ -489,9 +486,9 @@ export function CourseLearningView({ course, curriculum }: { course: Course; cur
         <TabsContent value="resources" className="mt-6">
           <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-card py-16 text-center">
             <FolderOpen className="size-8 text-muted-foreground" />
-            <p className="font-medium text-foreground">No downloadable resources yet</p>
+            <p className="font-medium text-foreground">{t("public.courseLearning.resources.title")}</p>
             <p className="max-w-sm text-sm text-muted-foreground">
-              Slide decks, templates, and reference sheets for this course arrive in a later build pass.
+              {t("public.courseLearning.resources.body")}
             </p>
           </div>
         </TabsContent>

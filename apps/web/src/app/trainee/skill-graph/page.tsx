@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Info, Target, Briefcase, BookOpen, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 // Node definitions
 type NodeType = "Skill" | "Course" | "Job" | "Certification";
@@ -71,6 +72,8 @@ const colorMap = {
 };
 
 export default function SkillGraphPage() {
+  const t = useT();
+  const typeLabel = (type: string) => t(`trainee.skillGraph.type${type}`);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>("s1");
 
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
@@ -105,25 +108,25 @@ export default function SkillGraphPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader 
-        title="Your Skill Universe"
-        description="Visualize the connections between your skills, courses, certifications, and career paths."
+        title={t("trainee.skillGraph.title")}
+        description={t("trainee.skillGraph.description")}
       />
 
       <div className="flex gap-4 mb-2">
         {Object.entries(colorMap).map(([type, colors]) => (
           <Badge key={type} variant="outline" className={cn("flex items-center gap-1", colors.text, colors.bg, "border-transparent")}>
             <div className="size-2 rounded-full" style={{ backgroundColor: colors.fill }} />
-            {type}
+            {typeLabel(type)}
           </Badge>
         ))}
-        <span className="text-sm text-muted-foreground ml-auto">{nodes.length} Total Nodes</span>
+        <span className="text-sm text-muted-foreground ml-auto">{nodes.length} {t("trainee.skillGraph.totalNodes")}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
         <Card className="lg:col-span-2 overflow-hidden flex flex-col">
           <CardHeader className="pb-0">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              Interactive Graph <Info className="size-4 text-muted-foreground" />
+              {t("trainee.skillGraph.interactiveGraph")} <Info className="size-4 text-muted-foreground" />
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 p-0 relative">
@@ -189,7 +192,7 @@ export default function SkillGraphPage() {
                   </div>
                   <div>
                     <CardTitle className="leading-tight">{selectedNode.label}</CardTitle>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">{selectedNode.type}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">{typeLabel(selectedNode.type)}</p>
                   </div>
                 </div>
               </CardHeader>
@@ -197,42 +200,42 @@ export default function SkillGraphPage() {
                 
                 {selectedNode.type === "Skill" && (
                   <div>
-                    <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Proficiency Details</h4>
+                    <h4 className="text-sm font-semibold mb-2 text-muted-foreground">{t("trainee.skillGraph.proficiency")}</h4>
                     <div className="flex justify-between items-center bg-muted/50 p-3 rounded-md">
-                      <span className="font-medium text-sm">Confidence</span>
+                      <span className="font-medium text-sm">{t("trainee.skillGraph.confidence")}</span>
                       <span className="font-bold text-primary">85%</span>
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Connections</h4>
+                  <h4 className="text-sm font-semibold mb-3 text-muted-foreground">{t("trainee.skillGraph.connections")}</h4>
                   <div className="flex flex-col gap-2">
                     {relatedNodes.length > 0 ? (
                       relatedNodes.map(n => (
                         <div key={n.id} className="flex items-center gap-2 p-2 rounded-md border bg-card hover:bg-muted/30 cursor-pointer transition-colors" onClick={() => setSelectedNodeId(n.id)}>
                           <div className={cn("size-2 rounded-full", colorMap[n.type].bg)} style={{ backgroundColor: colorMap[n.type].fill }} />
                           <span className="text-sm font-medium">{n.label}</span>
-                          <span className="ml-auto text-[10px] text-muted-foreground uppercase">{n.type}</span>
+                          <span className="ml-auto text-[10px] text-muted-foreground uppercase">{typeLabel(n.type)}</span>
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-muted-foreground">No connections found.</p>
+                      <p className="text-sm text-muted-foreground">{t("trainee.skillGraph.noConnections")}</p>
                     )}
                   </div>
                 </div>
 
                 {selectedNode.type === "Skill" && (
                   <div>
-                    <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Evidence</h4>
+                    <h4 className="text-sm font-semibold mb-2 text-muted-foreground">{t("trainee.skillGraph.evidence")}</h4>
                     <div className="border-l-2 border-primary/20 pl-4 py-1 flex flex-col gap-3">
                       <div>
-                        <p className="text-sm font-medium">Completed Assessment</p>
-                        <p className="text-xs text-muted-foreground">Score: 92% • Sep 2026</p>
+                        <p className="text-sm font-medium">{t("trainee.skillGraph.completedAssessment")}</p>
+                        <p className="text-xs text-muted-foreground">{t("trainee.skillGraph.assessmentDetail")}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">Project Submission</p>
-                        <p className="text-xs text-muted-foreground">Peer Reviewed • Aug 2026</p>
+                        <p className="text-sm font-medium">{t("trainee.skillGraph.projectSubmission")}</p>
+                        <p className="text-xs text-muted-foreground">{t("trainee.skillGraph.projectDetail")}</p>
                       </div>
                     </div>
                   </div>
@@ -243,7 +246,7 @@ export default function SkillGraphPage() {
           ) : (
             <CardContent className="p-8 text-center flex flex-col items-center justify-center h-full text-muted-foreground">
               <Target className="size-12 mb-4 opacity-20" />
-              <p>Select a node in the graph to view its details and connections.</p>
+              <p>{t("trainee.skillGraph.selectNode")}</p>
             </CardContent>
           )}
         </Card>

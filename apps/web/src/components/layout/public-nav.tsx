@@ -8,18 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { LanguageSelector } from "@/components/layout/language-selector";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { useT } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/programmes", label: "Programmes" },
-  { href: "/courses", label: "Courses" },
-  { href: "/jobs", label: "Jobs" },
-  { href: "/#roles", label: "Institutions" },
-  { href: "/#about", label: "About" },
+  { href: "/trainee/programmes", key: "programmes" },
+  { href: "/courses", key: "courses" },
+  { href: "/jobs", key: "jobs" },
+  { href: "/#roles", key: "institutions" },
+  { href: "/#about", key: "about" },
 ];
 
 export function PublicNav() {
   const pathname = usePathname();
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
@@ -41,7 +43,7 @@ export function PublicNav() {
                   active && "bg-muted text-foreground"
                 )}
               >
-                {link.label}
+                {t(`public.nav.${link.key}`)}
               </Link>
             );
           })}
@@ -50,8 +52,8 @@ export function PublicNav() {
         <div className="hidden items-center gap-2 md:flex">
           <LanguageSelector />
           <ThemeToggle />
-          <Link className="contents" href="/demo"><Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10"   nativeButton={false}>⚡ Demo Hub</Button></Link>
-          <Link className="contents" href="/sign-in"><Button   nativeButton={false}>Sign In</Button></Link>
+          <Link className="contents" href="/demo"><Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10"   nativeButton={false}>⚡ {t("public.nav.demoHub")}</Button></Link>
+          <Link className="contents" href="/sign-in"><Button   nativeButton={false}>{t("public.nav.signIn")}</Button></Link>
         </div>
 
         <div className="flex items-center gap-1 md:hidden">
@@ -60,7 +62,7 @@ export function PublicNav() {
             type="button"
             onClick={() => setOpen((v) => !v)}
             className="inline-flex items-center justify-center rounded-md p-2 text-foreground"
-            aria-label="Toggle navigation menu"
+            aria-label={t("public.nav.toggleMenu")}
             aria-expanded={open}
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -78,22 +80,22 @@ export function PublicNav() {
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                {link.label}
+                {t(`public.nav.${link.key}`)}
               </Link>
             ))}
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-border pt-3">
-              <span className="text-xs text-muted-foreground">Language</span>
+              <span className="text-xs text-muted-foreground">{t("public.nav.language")}</span>
               <LanguageSelector />
             </div>
             <div className="mt-1 flex gap-2">
               <Link className="contents" href="/sign-in" onClick={() => setOpen(false)}>
                 <Button variant="outline" className="flex-1" nativeButton={false}>
-                  Sign In
+                  {t("public.nav.signIn")}
                 </Button>
               </Link>
               <Link className="contents" href="/sign-up" onClick={() => setOpen(false)}>
                 <Button className="flex-1" nativeButton={false}>
-                  Get Started
+                  {t("public.nav.getStarted")}
                 </Button>
               </Link>
             </div>

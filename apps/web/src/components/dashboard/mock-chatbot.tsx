@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Bot, User, Sparkles } from "lucide-react";
+import { MessageSquare, X, Send, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/i18n";
 
 type Message = {
   id: string;
@@ -15,34 +16,24 @@ type Message = {
   timestamp: string;
 };
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: "msg-1",
-    role: "bot",
-    content: "Hi Ravindra! I am CoopSetu AI, your career and learning assistant. How can I help you today?",
-    timestamp: new Date().toISOString(),
-  }
-];
-
-const SUGGESTIONS = [
-  "What courses should I take next?",
-  "How do I apply for PACS Digital Accounting?",
-  "Show my skill passport summary",
-];
-
-const BOT_RESPONSES = [
-  "Based on your profile, I recommend completing the 'PACS Digital Accounting' certification next. It perfectly aligns with your experience.",
-  "You can navigate to the 'Programmes' tab from the sidebar to register for new courses.",
-  "Your skill passport currently shows 'Advanced' in Dairy Operations and 'Intermediate' in PACS Accounting.",
-  "Is there anything else I can assist you with regarding your cooperative career path?",
-];
+const SUGGESTION_COUNT = 3;
+const BOT_RESPONSE_COUNT = 4;
 
 export function MockChatbot() {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<Message[]>(() => [
+    {
+      id: "msg-1",
+      role: "bot",
+      content: t("shell.chatbot.greeting").replace("{name}", "Ravindra"),
+      timestamp: new Date().toISOString(),
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const nextMessageId = useRef(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -56,7 +47,7 @@ export function MockChatbot() {
     if (!text.trim()) return;
 
     const newUserMsg: Message = {
-      id: `msg-${Date.now()}`,
+      id: `msg-${++nextMessageId.current}`,
       role: "user",
       content: text,
       timestamp: new Date().toISOString(),
@@ -68,9 +59,10 @@ export function MockChatbot() {
 
     // Mock AI response
     setTimeout(() => {
-      const randomResponse = BOT_RESPONSES[Math.floor(Math.random() * BOT_RESPONSES.length)];
+      const randomIndex = Math.floor(Math.random() * BOT_RESPONSE_COUNT);
+      const randomResponse = t(`shell.chatbot.responses.${randomIndex}`);
       const newBotMsg: Message = {
-        id: `msg-${Date.now() + 1}`,
+        id: `msg-${++nextMessageId.current}`,
         role: "bot",
         content: randomResponse,
         timestamp: new Date().toISOString(),
@@ -105,7 +97,7 @@ export function MockChatbot() {
           <div>
             <CardTitle className="text-sm font-bold">CoopSetu AI</CardTitle>
             <p className="text-[10px] text-green-600 font-medium flex items-center gap-1">
-              <span className="size-1.5 rounded-full bg-green-500" /> Online
+              <span className="size-1.5 rounded-full bg-green-500" /> {t("shell.chatbot.online")}
             </p>
           </div>
         </div>
@@ -161,7 +153,7 @@ export function MockChatbot() {
         
         {messages.length < 3 && !isTyping && (
           <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-            {SUGGESTIONS.map((suggestion) => (
+            {Array.from({ length: SUGGESTION_COUNT }, (_, index) => t(`shell.chatbot.suggestions.${index}`)).map((suggestion) => (
               <Badge 
                 key={suggestion} 
                 variant="secondary" 
@@ -185,7 +177,7 @@ export function MockChatbot() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything..."
+              placeholder={t("shell.chatbot.placeholder")}
               className="flex-1 rounded-full text-sm h-9"
             />
             <Button

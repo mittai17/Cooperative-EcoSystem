@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ApiError, useApi } from "@/lib/use-api";
+import { useT } from "@/i18n";
 
 interface AssessmentSummary {
   id: string;
@@ -49,12 +50,18 @@ interface SubmitResult {
   skill_updated: string | null;
 }
 
+const TAB_KEYS: Record<"Upcoming" | "Completed" | "Missed", string> = {
+  Upcoming: "trainee.assessments.tabUpcoming",
+  Completed: "trainee.assessments.tabCompleted",
+  Missed: "trainee.assessments.tabMissed",
+};
+
 function isMissed(item: AssessmentSummary): boolean {
   return item.status === "upcoming" && !!item.due_date && new Date(item.due_date) < new Date();
 }
 
 function formatDue(value: string | null): string {
-  if (!value) return "No due date";
+  if (!value) return "";
   return new Date(value).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
@@ -66,6 +73,7 @@ function formatCountdown(seconds: number): string {
 }
 
 export default function AssessmentsPage() {
+  const t = useT();
   const api = useApi();
   const [tab, setTab] = useState<"Upcoming" | "Completed" | "Missed">("Upcoming");
   const [assessments, setAssessments] = useState<AssessmentSummary[] | null>(null);
@@ -316,28 +324,28 @@ const DEMO_QUESTIONS: Question[] = [
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Assessments Hub"
-        description="Take timed module quizzes and proficiency evaluations, graded instantly by the server."
+        title={t("trainee.assessments.title")}
+        description={t("trainee.assessments.description")}
       />
 
       {loadError && (
         <Alert variant="destructive">
           <AlertCircle />
-          <AlertTitle>Couldn&apos;t load assessments</AlertTitle>
+          <AlertTitle>{t("trainee.assessments.loadFailed")}</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       )}
 
       <div className="flex items-center gap-2 border-b border-border pb-2">
-        {(["Upcoming", "Completed", "Missed"] as const).map((t) => (
-          <Button key={t} variant={t === tab ? "default" : "ghost"} size="sm" onClick={() => setTab(t)}>
-            {t}
-            {t === "Completed" && completedList.length > 0 && (
+        {(["Upcoming", "Completed", "Missed"] as const).map((name) => (
+          <Button key={name} variant={name === tab ? "default" : "ghost"} size="sm" onClick={() => setTab(name)}>
+            {t(TAB_KEYS[name])}
+            {name === "Completed" && completedList.length > 0 && (
               <span className="ml-1.5 rounded-full bg-emerald-500/20 px-1.5 py-0.2 text-[10px] font-bold text-emerald-600">
                 {completedList.length}
               </span>
             )}
-            {t === "Missed" && missedList.length > 0 && (
+            {name === "Missed" && missedList.length > 0 && (
               <span className="ml-1.5 rounded-full bg-destructive/20 px-1.5 py-0.2 text-[10px] font-bold text-destructive">
                 {missedList.length}
               </span>
@@ -352,7 +360,7 @@ const DEMO_QUESTIONS: Question[] = [
         ) : tab === "Upcoming" ? (
           upcomingList.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">
-              No upcoming assessments right now.
+              {t("trainee.assessments.noUpcoming")}
             </div>
           ) : (
             upcomingList.map((a) => (
@@ -361,23 +369,23 @@ const DEMO_QUESTIONS: Question[] = [
                   <div className="flex flex-col gap-1">
                     <p className="text-sm font-medium text-foreground">{a.title}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <Badge variant="outline">{a.duration_minutes} min</Badge>
+                      <Badge variant="outline">{a.duration_minutes} {t("trainee.assessments.min")}</Badge>
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Calendar className="size-3" /> Due: {formatDue(a.due_date)}
+                        <Calendar className="size-3" /> {t("trainee.assessments.due")}: {formatDue(a.due_date) || t("trainee.assessments.noDueDate")}
                       </span>
-                      <span className="text-xs text-muted-foreground">{a.attempts_left} attempt{a.attempts_left === 1 ? "" : "s"} left</span>
+                      <span className="text-xs text-muted-foreground">{a.attempts_left} {a.attempts_left === 1 ? t("trainee.assessments.attempt") : t("trainee.assessments.attempts")} {t("trainee.assessments.left")}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {a.status === "in_progress" ? (
                       <Button onClick={() => resumeAssessment(a)} disabled={starting === a.id}>
                         {starting === a.id && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-                        Resume Assessment
+                        {t("trainee.assessments.resume")}
                       </Button>
                     ) : (
                       <Button onClick={() => startAssessment(a)} disabled={starting === a.id || a.attempts_left === 0}>
                         {starting === a.id && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-                        Start Assessment
+                        {t("trainee.assessments.start")}
                       </Button>
                     )}
                   </div>
@@ -388,7 +396,7 @@ const DEMO_QUESTIONS: Question[] = [
         ) : tab === "Completed" ? (
           completedList.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">
-              No completed assessments yet. Start an upcoming assessment to test your knowledge!
+              {t("trainee.assessments.noCompleted")}
             </div>
           ) : (
             completedList.map((a) => (
@@ -398,11 +406,11 @@ const DEMO_QUESTIONS: Question[] = [
                     <p className="text-sm font-medium text-foreground">{a.title}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className={cn("text-xs font-medium", (a.best_score ?? 0) >= a.passing_score ? "text-emerald-600" : "text-destructive")}>
-                        {(a.best_score ?? 0) >= a.passing_score ? "Passed" : "Not yet passed"}
+                        {(a.best_score ?? 0) >= a.passing_score ? t("trainee.assessments.passed") : t("trainee.assessments.notYetPassed")}
                       </span>
                       {a.attempts_left > 0 && (a.best_score ?? 0) < a.passing_score && (
                         <Button size="sm" variant="outline" onClick={() => startAssessment(a)} disabled={starting === a.id}>
-                          Retake
+                          {t("trainee.assessments.retake")}
                         </Button>
                       )}
                     </div>
@@ -417,7 +425,7 @@ const DEMO_QUESTIONS: Question[] = [
           )
         ) : missedList.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">
-            No missed assessments. Keep up the good work!
+            {t("trainee.assessments.noMissed")}
           </div>
         ) : (
           missedList.map((a) => (
@@ -426,10 +434,10 @@ const DEMO_QUESTIONS: Question[] = [
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-foreground">{a.title}</p>
                   <span className="flex items-center gap-1 text-xs text-destructive">
-                    <Calendar className="size-3" /> Was due {formatDue(a.due_date)}
+                    <Calendar className="size-3" /> {t("trainee.assessments.wasDue")} {formatDue(a.due_date)}
                   </span>
                 </div>
-                <Badge variant="outline" className="text-destructive border-destructive/40">Missed</Badge>
+                <Badge variant="outline" className="text-destructive border-destructive/40">{t("trainee.assessments.tabMissed")}</Badge>
               </CardContent>
             </Card>
           ))
@@ -449,7 +457,7 @@ const DEMO_QUESTIONS: Question[] = [
               )}
             </div>
             <DialogDescription className="text-xs">
-              {attempt ? `${answeredCount} of ${attempt.questions.length} answered. Answers save automatically.` : ""}
+              {attempt ? t("trainee.assessments.answeredCount").replace("{answered}", String(answeredCount)).replace("{total}", String(attempt.questions.length)) : ""}
             </DialogDescription>
           </DialogHeader>
 
@@ -459,11 +467,11 @@ const DEMO_QUESTIONS: Question[] = [
                 <CheckCircle2 className="size-8" />
               </div>
               <h4 className="font-bold text-foreground">
-                {result.passed ? "Assessment passed!" : "Assessment submitted"}
+                {result.passed ? t("trainee.assessments.passedTitle") : t("trainee.assessments.submittedTitle")}
               </h4>
               <p className="text-2xl font-bold mt-1 text-foreground">{result.score}%</p>
               {result.skill_updated && (
-                <p className="text-xs text-muted-foreground mt-1">Skill Passport updated: {result.skill_updated}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("trainee.assessments.skillUpdated")} {result.skill_updated}</p>
               )}
             </div>
           ) : (
@@ -477,15 +485,15 @@ const DEMO_QUESTIONS: Question[] = [
               {windowClosed && (
                 <Alert variant="destructive">
                   <AlertCircle />
-                  <AlertTitle>Time&apos;s up</AlertTitle>
-                  <AlertDescription>Submit now — the server will only grade answers saved before the timer ran out.</AlertDescription>
+                  <AlertTitle>{t("trainee.assessments.timesUp")}</AlertTitle>
+                  <AlertDescription>{t("trainee.assessments.timesUpBody")}</AlertDescription>
                 </Alert>
               )}
               {attempt?.questions.map((question, index) => (
                 <div key={question.id} className="rounded-xl bg-muted/40 p-3 border border-border">
                   <p className="text-sm font-medium text-foreground">
                     {index + 1}. {question.prompt}
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">({question.marks} mark{question.marks === 1 ? "" : "s"})</span>
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">({question.marks} {question.marks === 1 ? t("trainee.assessments.mark") : t("trainee.assessments.marks")})</span>
                   </p>
                   <div className="mt-2 space-y-2">
                     {question.type === "true_false"
@@ -501,7 +509,7 @@ const DEMO_QUESTIONS: Question[] = [
                                 selected ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:bg-muted/50 text-foreground",
                               )}
                             >
-                              <span>{value ? "True" : "False"}</span>
+                              <span>{value ? t("trainee.assessments.true") : t("trainee.assessments.false")}</span>
                               {selected && <CheckCircle2 className="size-4" />}
                             </button>
                           );
@@ -540,11 +548,11 @@ const DEMO_QUESTIONS: Question[] = [
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setAttempt(null)} disabled={submitting}>
-                  Save &amp; close
+                  {t("trainee.assessments.saveClose")}
                 </Button>
                 <Button onClick={submitAttempt} disabled={submitting} className="gap-1.5">
                   {submitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                  Submit Evaluation
+                  {t("trainee.assessments.submitEvaluation")}
                 </Button>
               </div>
             </div>

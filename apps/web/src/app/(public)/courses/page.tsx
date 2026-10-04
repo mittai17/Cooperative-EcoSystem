@@ -16,9 +16,12 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { courses } from "@/lib/mock-data/courses";
+import { useT } from "@/i18n";
 import type { Course } from "@/lib/types";
 
-const categories = ["All categories", ...Array.from(new Set(courses.map((c) => c.category)))];
+/** Sentinel value for "no category filter". The label is translated at render time. */
+const ALL_CATEGORIES = "__all__";
+const categories = [ALL_CATEGORIES, ...Array.from(new Set(courses.map((c) => c.category)))];
 
 function thumbnailFor(course: Course) {
   return `https://picsum.photos/seed/coopsetu-${course.id}/640/420`;
@@ -26,7 +29,8 @@ function thumbnailFor(course: Course) {
 
 export default function CoursesPage() {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All categories");
+  const [category, setCategory] = useState(ALL_CATEGORIES);
+  const t = useT();
 
   const filtered = useMemo(() => {
     return courses.filter((c) => {
@@ -34,7 +38,7 @@ export default function CoursesPage() {
         query.trim().length === 0 ||
         c.title.toLowerCase().includes(query.toLowerCase()) ||
         c.skills.some((s) => s.toLowerCase().includes(query.toLowerCase()));
-      const matchesCategory = category === "All categories" || c.category === category;
+      const matchesCategory = category === ALL_CATEGORIES || c.category === category;
       return matchesQuery && matchesCategory;
     });
   }, [query, category]);
@@ -42,12 +46,9 @@ export default function CoursesPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-bold text-foreground">Self-paced & instructor-led courses</h1>
-        <p className="max-w-2xl text-muted-foreground">
-          Shorter, skill-focused courses that feed directly into your AI Skill Passport as verified
-          evidence.
-        </p>
-        <span className="demo-data-tag w-fit">Sample course catalogue for demo purposes</span>
+        <h1 className="font-heading text-3xl font-bold text-foreground">{t("public.courseCatalog.title")}</h1>
+        <p className="max-w-2xl text-muted-foreground">{t("public.courseCatalog.body")}</p>
+        <span className="demo-data-tag w-fit">{t("public.courseCatalog.demoTag")}</span>
       </div>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -56,18 +57,18 @@ export default function CoursesPage() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search courses or skills…"
+            placeholder={t("public.courseCatalog.searchPlaceholder")}
             className="pl-9"
           />
         </div>
-        <Select value={category} onValueChange={(value) => setCategory(value ?? "All categories")}>
+        <Select value={category} onValueChange={(value) => setCategory(value ?? ALL_CATEGORIES)}>
           <SelectTrigger className="w-full sm:w-64">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {categories.map((c) => (
               <SelectItem key={c} value={c}>
-                {c}
+                {c === ALL_CATEGORIES ? t("public.courseCatalog.allCategories") : c}
               </SelectItem>
             ))}
           </SelectContent>
@@ -75,7 +76,7 @@ export default function CoursesPage() {
       </div>
 
       <p className="mt-4 text-sm text-muted-foreground">
-        {filtered.length} course{filtered.length === 1 ? "" : "s"} found
+        {t(filtered.length === 1 ? "public.courseCatalog.countOne" : "public.courseCatalog.countMany").replace("{count}", String(filtered.length))}
       </p>
 
       <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -93,7 +94,7 @@ export default function CoursesPage() {
                 <h2 className="font-heading text-base font-semibold leading-snug text-foreground">
                   {course.title}
                 </h2>
-                <p className="mt-0.5 text-sm text-muted-foreground">by {course.instructor}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">{t("public.courseCatalog.byInstructor").replace("{name}", course.instructor)}</p>
               </div>
               <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{course.description}</p>
               <div className="flex flex-wrap gap-1.5">
@@ -105,7 +106,7 @@ export default function CoursesPage() {
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <Clock className="size-3.5" /> {course.durationHours} hours
+                  <Clock className="size-3.5" /> {t("public.courseCatalog.hours").replace("{count}", String(course.durationHours))}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Users className="size-3.5" /> {course.enrolled.toLocaleString("en-IN")}
@@ -115,8 +116,8 @@ export default function CoursesPage() {
                 </span>
               </div>
               <div className="flex gap-2 pt-1">
-                <Link className="contents" href={`/courses/${course.id}`}><Button className="flex-1"   nativeButton={false}>View Course</Button></Link>
-                <Link className="contents" href="/skill-passport"><Button variant="outline" className="flex-1"   nativeButton={false}>Skill impact</Button></Link>
+                <Link className="contents" href={`/courses/${course.id}`}><Button className="flex-1"   nativeButton={false}>{t("public.courseCatalog.viewCourse")}</Button></Link>
+                <Link className="contents" href="/trainee/skill-passport"><Button variant="outline" className="flex-1"   nativeButton={false}>{t("public.courseCatalog.skillImpact")}</Button></Link>
               </div>
             </div>
           </Card>

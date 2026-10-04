@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n";
 
 export function CertificateSearchForm({ initialId }: { initialId: string }) {
   const router = useRouter();
   const [value, setValue] = useState(initialId);
+  const t = useT();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,11 +25,11 @@ export function CertificateSearchForm({ initialId }: { initialId: string }) {
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Enter certificate ID, e.g. CST-2026-DAI-00842"
+        placeholder={t("public.verify.searchPlaceholder")}
       />
       <Button type="submit">
         <Search className="size-4" />
-        Verify
+        {t("public.verify.submit")}
       </Button>
     </form>
   );

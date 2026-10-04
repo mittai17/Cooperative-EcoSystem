@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
 
@@ -78,6 +79,7 @@ function SectionHeading({ icon: Icon, children }: { icon: React.ElementType; chi
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const t = useT();
   return (
     <Badge
       variant="outline"
@@ -88,7 +90,7 @@ function StatusBadge({ status }: { status: string }) {
           : "border-muted bg-muted/40 text-muted-foreground",
       )}
     >
-      {status}
+      {status === "Active" ? t("trainee.profile.statusActive") : status === "Completed" ? t("trainee.profile.statusCompleted") : status}
     </Badge>
   );
 }
@@ -96,6 +98,7 @@ function StatusBadge({ status }: { status: string }) {
 // ── Profile tab ───────────────────────────────────────────────────────────────
 
 function ProfileTab() {
+  const t = useT();
   return (
     <div className="space-y-8">
       {/* Avatar + basic info */}
@@ -110,7 +113,7 @@ function ProfileTab() {
             <button
               type="button"
               className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition hover:bg-primary/90"
-              aria-label="Change photo"
+              aria-label={t("trainee.profile.changePhoto")}
             >
               <Camera className="size-3" />
             </button>
@@ -118,8 +121,8 @@ function ProfileTab() {
 
           <div className="text-center sm:text-left">
             <p className="text-lg font-bold text-foreground">{USER.name}</p>
-            <p className="text-sm text-muted-foreground">Roll No: {USER.rollNo}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Member since {USER.joinedDate}</p>
+            <p className="text-sm text-muted-foreground">{t("trainee.profile.rollNo")} {USER.rollNo}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("trainee.profile.memberSince")} {USER.joinedDate}</p>
           </div>
         </div>
 
@@ -127,40 +130,40 @@ function ProfileTab() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="p-name">Full name</Label>
+            <Label htmlFor="p-name">{t("trainee.profile.fullName")}</Label>
             <Input id="p-name" defaultValue={USER.name} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="p-phone">
               <Phone className="mr-1 inline size-3.5" />
-              Phone
+              {t("trainee.profile.phone")}
             </Label>
             <Input id="p-phone" defaultValue={USER.phone} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="p-email">
               <Mail className="mr-1 inline size-3.5" />
-              Email
+              {t("trainee.profile.email")}
             </Label>
             <Input id="p-email" type="email" defaultValue={USER.email} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="p-location">
               <MapPin className="mr-1 inline size-3.5" />
-              Location
+              {t("trainee.profile.location")}
             </Label>
             <Input id="p-location" defaultValue={USER.location} />
           </div>
         </div>
 
         <div className="mt-4 flex justify-end">
-          <Button size="sm">Save changes</Button>
+          <Button size="sm">{t("trainee.profile.saveChanges")}</Button>
         </div>
       </Card>
 
       {/* Programme enrolment history */}
       <div>
-        <SectionHeading icon={GraduationCap}>Programme Enrolment History</SectionHeading>
+        <SectionHeading icon={GraduationCap}>{t("trainee.profile.enrolmentHistory")}</SectionHeading>
         <div className="mt-3 space-y-3">
           {ENROLLMENTS.map((e) => (
             <Card key={e.id} className="flex items-center gap-4 p-4">
@@ -174,7 +177,7 @@ function ProfileTab() {
               <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <StatusBadge status={e.status} />
                 {e.grade && (
-                  <span className="text-xs font-semibold text-foreground">Grade: {e.grade}</span>
+                  <span className="text-xs font-semibold text-foreground">{t("trainee.profile.grade")}: {e.grade}</span>
                 )}
               </div>
               <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -189,6 +192,7 @@ function ProfileTab() {
 // ── Settings tab ──────────────────────────────────────────────────────────────
 
 function SettingsTab() {
+  const t = useT();
   const [notifications, setNotifications] = useState({
     assessments: true,
     jobs: true,
@@ -201,14 +205,14 @@ function SettingsTab() {
     <div className="space-y-6">
       {/* Notification preferences */}
       <Card className="p-6">
-        <SectionHeading icon={Bell}>Notification Preferences</SectionHeading>
+        <SectionHeading icon={Bell}>{t("trainee.profile.notificationPrefs")}</SectionHeading>
         <div className="mt-4 space-y-4">
           {(
             [
-              { key: "assessments", label: "Assessment reminders", desc: "Upcoming quizzes and deadlines" },
-              { key: "jobs", label: "New job matches", desc: "Jobs matching your Skill Passport" },
-              { key: "certificates", label: "Certificate updates", desc: "Issue and renewal alerts" },
-              { key: "marketing", label: "Platform news", desc: "New features and announcements" },
+              { key: "assessments", label: t("trainee.profile.notifAssessments"), desc: t("trainee.profile.notifAssessmentsDesc") },
+              { key: "jobs", label: t("trainee.profile.notifJobs"), desc: t("trainee.profile.notifJobsDesc") },
+              { key: "certificates", label: t("trainee.profile.notifCertificates"), desc: t("trainee.profile.notifCertificatesDesc") },
+              { key: "marketing", label: t("trainee.profile.notifMarketing"), desc: t("trainee.profile.notifMarketingDesc") },
             ] as const
           ).map(({ key, label, desc }) => (
             <div key={key} className="flex items-center justify-between gap-4">
@@ -229,9 +233,9 @@ function SettingsTab() {
 
       {/* Language */}
       <Card className="p-6">
-        <SectionHeading icon={Globe}>Language</SectionHeading>
+        <SectionHeading icon={Globe}>{t("trainee.profile.language")}</SectionHeading>
         <p className="mt-1 text-xs text-muted-foreground">
-          Choose your preferred interface language (full localization in v2).
+          {t("trainee.profile.languageHint")}
         </p>
         <div className="mt-4 flex gap-3">
           {(["EN", "HI"] as const).map((lang) => (
@@ -258,28 +262,29 @@ function SettingsTab() {
 // ── Security tab ──────────────────────────────────────────────────────────────
 
 function SecurityTab() {
+  const t = useT();
   return (
     <Card className="p-6">
-      <SectionHeading icon={Lock}>Change Password</SectionHeading>
+      <SectionHeading icon={Lock}>{t("trainee.profile.changePassword")}</SectionHeading>
       <p className="mt-1 text-xs text-muted-foreground">
-        Password changes require backend integration — UI preview only.
+        {t("trainee.profile.passwordHint")}
       </p>
       <div className="mt-5 space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="pw-current">Current password</Label>
+          <Label htmlFor="pw-current">{t("trainee.profile.currentPassword")}</Label>
           <Input id="pw-current" type="password" placeholder="••••••••" />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="pw-new">New password</Label>
-          <Input id="pw-new" type="password" placeholder="At least 8 characters" />
+          <Label htmlFor="pw-new">{t("trainee.profile.newPassword")}</Label>
+          <Input id="pw-new" type="password" placeholder={t("trainee.profile.newPasswordHint")} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="pw-confirm">Confirm new password</Label>
-          <Input id="pw-confirm" type="password" placeholder="Repeat new password" />
+          <Label htmlFor="pw-confirm">{t("trainee.profile.confirmPassword")}</Label>
+          <Input id="pw-confirm" type="password" placeholder={t("trainee.profile.repeatPassword")} />
         </div>
         <div className="flex justify-end">
           <Button size="sm" disabled>
-            Update password (demo)
+            {t("trainee.profile.updatePassword")}
           </Button>
         </div>
       </div>
@@ -290,20 +295,21 @@ function SecurityTab() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
+  const t = useT();
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">My Profile</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("trainee.profile.title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage your personal info, enrolments, and preferences.
+          {t("trainee.profile.description")}
         </p>
       </div>
 
       <Tabs defaultValue="profile">
         <TabsList className="mb-6">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="profile">{t("trainee.profile.tabProfile")}</TabsTrigger>
+          <TabsTrigger value="settings">{t("trainee.profile.tabSettings")}</TabsTrigger>
+          <TabsTrigger value="security">{t("trainee.profile.tabSecurity")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">

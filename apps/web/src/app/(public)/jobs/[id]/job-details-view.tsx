@@ -13,7 +13,6 @@ import {
   MapPin,
   Sparkles,
   CheckCircle2,
-  Send,
   BadgeCheck,
   ArrowRight,
 } from "lucide-react";
@@ -32,6 +31,7 @@ import type { Job } from "@/lib/types";
 import { getJobMatch, getRecommendedCourse } from "@/lib/job-match";
 import { buildCompanyBlurb, buildRequirements, buildResponsibilities } from "./job-copy";
 import { getActiveDemoSession } from "@/lib/demo-users";
+import { useT } from "@/i18n";
 
 function MatchGauge({ percent }: { percent: number }) {
   const size = 176;
@@ -91,11 +91,12 @@ export function JobDetailsView({ job }: { job: Job }) {
   const applicantName = session.name || "Ravindra Suresh Patil";
   const applicantEmail = session.email || "ravindra.patil@coopsetu.ai";
 
+  const t = useT();
   const match = getJobMatch(job);
   const recommendedCourse = getRecommendedCourse(job);
-  const responsibilities = buildResponsibilities(job);
-  const requirements = buildRequirements(job);
-  const companyBlurb = buildCompanyBlurb(job);
+  const responsibilities = buildResponsibilities(job, t);
+  const requirements = buildRequirements(job, t);
+  const companyBlurb = buildCompanyBlurb(job, t);
 
   const handleSubmitApplication = () => {
     setSubmitting(true);
@@ -132,7 +133,7 @@ export function JobDetailsView({ job }: { job: Job }) {
         href="/jobs"
         className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ChevronLeft className="size-4" /> Back to Jobs
+        <ChevronLeft className="size-4" /> {t("public.jobDetails.backToJobs")}
       </Link>
 
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -140,11 +141,11 @@ export function JobDetailsView({ job }: { job: Job }) {
           <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{job.title}</h1>
             <Badge className="gap-1 bg-success/10 text-success">
-              <Sparkles className="size-3" /> {match.percent}% Match
+              <Sparkles className="size-3" /> {t("public.jobDetails.match").replace("{percent}", String(match.percent))}
             </Badge>
             {isApplied && (
               <Badge className="gap-1 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                <CheckCircle2 className="size-3" /> Application Submitted
+                <CheckCircle2 className="size-3" /> {t("public.jobDetails.applicationSubmittedBadge")}
               </Badge>
             )}
           </div>
@@ -162,15 +163,15 @@ export function JobDetailsView({ job }: { job: Job }) {
         </div>
         <div className="flex shrink-0 gap-2 items-center">
           {isApplied ? (
-            <Link className="contents" href="/applications"><Button size="lg" variant="secondary"   nativeButton={false}>View in Applications <ArrowRight className="ml-1.5 size-4" /></Button></Link>
+            <Link className="contents" href="/trainee/applications"><Button size="lg" variant="secondary"   nativeButton={false}>{t("public.jobDetails.viewInApplications")} <ArrowRight className="ml-1.5 size-4" /></Button></Link>
           ) : (
             <Button size="lg" onClick={() => setApplyModalOpen(true)}>
-              Apply with Skill Passport
+              {t("public.jobDetails.applyWithPassport")}
             </Button>
           )}
           <Button size="lg" variant="outline" className="gap-1.5" onClick={() => setSaved((v) => !v)}>
             {saved ? <BookmarkCheck className="size-4 text-primary" /> : <Bookmark className="size-4" />}
-            {saved ? "Saved" : "Save"}
+            {saved ? t("public.jobDetails.saved") : t("public.jobDetails.save")}
           </Button>
         </div>
       </div>
@@ -179,7 +180,7 @@ export function JobDetailsView({ job }: { job: Job }) {
       <Dialog open={applyModalOpen} onOpenChange={setApplyModalOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-heading text-xl">Apply to {job.title}</DialogTitle>
+            <DialogTitle className="font-heading text-xl">{t("public.jobDetails.applyTitle").replace("{title}", job.title)}</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               {job.employer} &middot; {job.location}
             </DialogDescription>
@@ -190,15 +191,15 @@ export function JobDetailsView({ job }: { job: Job }) {
               <div className="size-12 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
                 <CheckCircle2 className="size-6" />
               </div>
-              <h3 className="font-bold text-lg text-foreground">Application Submitted!</h3>
+              <h3 className="font-bold text-lg text-foreground">{t("public.jobDetails.submittedTitle")}</h3>
               <p className="text-xs text-muted-foreground max-w-sm">
-                Your verified Skill Passport and contact details have been sent to <strong>{job.employer}</strong>. You can monitor the review progress in your Applications hub.
+                {t("public.jobDetails.submittedBodyBefore")} <strong>{job.employer}</strong>{t("public.jobDetails.submittedBodyAfter")}
               </p>
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" onClick={() => setApplyModalOpen(false)}>
-                  Done
+                  {t("public.jobDetails.done")}
                 </Button>
-                <Link className="contents" href="/applications"><Button size="sm"   nativeButton={false}>Go to Applications</Button></Link>
+                <Link className="contents" href="/trainee/applications"><Button size="sm"   nativeButton={false}>{t("public.jobDetails.goToApplications")}</Button></Link>
               </div>
             </div>
           ) : (
@@ -207,23 +208,23 @@ export function JobDetailsView({ job }: { job: Job }) {
                 <BadgeCheck className="size-5 text-primary shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-foreground text-xs sm:text-sm">
-                    Verified Skill Passport Attached ({match.percent}% Job Match)
+                    {t("public.jobDetails.passportAttached").replace("{percent}", String(match.percent))}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Includes your NCCT-certified skills: {job.skillsRequired.slice(0, 3).join(", ")}.
+                    {t("public.jobDetails.includesSkills").replace("{skills}", job.skillsRequired.slice(0, 3).join(", "))}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2 rounded-lg border border-border p-3 bg-muted/20">
-                <p className="text-xs font-semibold text-foreground">Applicant Details</p>
+                <p className="text-xs font-semibold text-foreground">{t("public.jobDetails.applicantDetails")}</p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-muted-foreground">Candidate:</span>
+                    <span className="text-muted-foreground">{t("public.jobDetails.candidate")}</span>
                     <p className="font-medium text-foreground">{applicantName}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Email:</span>
+                    <span className="text-muted-foreground">{t("public.jobDetails.email")}</span>
                     <p className="font-medium text-foreground truncate">{applicantEmail}</p>
                   </div>
                 </div>
@@ -231,10 +232,10 @@ export function JobDetailsView({ job }: { job: Job }) {
 
               <div>
                 <label className="text-xs font-medium text-foreground block mb-1">
-                  Note to Employer (Optional)
+                  {t("public.jobDetails.noteToEmployer")}
                 </label>
                 <Textarea
-                  placeholder="Share a short note about your practical cooperative experience or availability..."
+                  placeholder={t("public.jobDetails.notePlaceholder")}
                   value={coverNote}
                   onChange={(e) => setCoverNote(e.target.value)}
                   className="text-xs min-h-[80px]"
@@ -243,10 +244,10 @@ export function JobDetailsView({ job }: { job: Job }) {
 
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <Button variant="ghost" size="sm" onClick={() => setApplyModalOpen(false)}>
-                  Cancel
+                  {t("public.jobDetails.cancel")}
                 </Button>
                 <Button size="sm" onClick={handleSubmitApplication} disabled={submitting}>
-                  {submitting ? "Submitting..." : "Confirm & Apply"}
+                  {submitting ? t("public.jobDetails.submitting") : t("public.jobDetails.confirmApply")}
                 </Button>
               </div>
             </div>
@@ -256,20 +257,20 @@ export function JobDetailsView({ job }: { job: Job }) {
 
       <Tabs defaultValue="overview" className="mt-6">
         <TabsList variant="line" className="flex-wrap border-b border-border">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="requirements">Requirements</TabsTrigger>
-          <TabsTrigger value="skills">Skills</TabsTrigger>
-          <TabsTrigger value="match">Why You Match</TabsTrigger>
-          <TabsTrigger value="company">Company</TabsTrigger>
+          <TabsTrigger value="overview">{t("public.jobDetails.tabs.overview")}</TabsTrigger>
+          <TabsTrigger value="requirements">{t("public.jobDetails.tabs.requirements")}</TabsTrigger>
+          <TabsTrigger value="skills">{t("public.jobDetails.tabs.skills")}</TabsTrigger>
+          <TabsTrigger value="match">{t("public.jobDetails.tabs.match")}</TabsTrigger>
+          <TabsTrigger value="company">{t("public.jobDetails.tabs.company")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-5">
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="text-base font-semibold text-foreground">About this role</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("public.jobDetails.aboutRole")}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{job.description}</p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="text-base font-semibold text-foreground">What you&apos;ll do</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("public.jobDetails.whatYoullDo")}</h2>
             <ul className="mt-3 flex flex-col gap-2.5">
               {responsibilities.map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
@@ -281,21 +282,21 @@ export function JobDetailsView({ job }: { job: Job }) {
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-sm">
-              <p className="text-xs text-muted-foreground">Salary</p>
+              <p className="text-xs text-muted-foreground">{t("public.jobDetails.salary")}</p>
               <p className="mt-1 text-sm font-semibold text-foreground">{job.salaryRange}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-sm">
-              <p className="text-xs text-muted-foreground">Openings</p>
+              <p className="text-xs text-muted-foreground">{t("public.jobDetails.openings")}</p>
               <p className="mt-1 text-sm font-semibold text-foreground">{job.openings}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-sm">
-              <p className="text-xs text-muted-foreground">Sector</p>
+              <p className="text-xs text-muted-foreground">{t("public.jobDetails.sector")}</p>
               <p className="mt-1 text-sm font-semibold text-foreground">{job.sector}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-sm">
-              <p className="text-xs text-muted-foreground">Posted</p>
+              <p className="text-xs text-muted-foreground">{t("public.jobDetails.posted")}</p>
               <p className="mt-1 text-sm font-semibold text-foreground">
-                {job.postedDaysAgo === 0 ? "Today" : `${job.postedDaysAgo}d ago`}
+                {job.postedDaysAgo === 0 ? t("public.jobDetails.today") : t("public.jobDetails.postedAgo").replace("{count}", String(job.postedDaysAgo))}
               </p>
             </div>
           </div>
@@ -303,7 +304,7 @@ export function JobDetailsView({ job }: { job: Job }) {
 
         <TabsContent value="requirements" className="mt-6">
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="text-base font-semibold text-foreground">What you&apos;ll need</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("public.jobDetails.whatYoullNeed")}</h2>
             <ul className="mt-3 flex flex-col gap-2.5">
               {requirements.map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
@@ -317,7 +318,7 @@ export function JobDetailsView({ job }: { job: Job }) {
 
         <TabsContent value="skills" className="mt-6">
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="text-base font-semibold text-foreground">Skills required</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("public.jobDetails.skillsRequired")}</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {job.skillsRequired.map((skill) => (
                 <Badge key={skill} variant="secondary" className="text-sm font-normal">
@@ -332,12 +333,12 @@ export function JobDetailsView({ job }: { job: Job }) {
           <div className="grid grid-cols-1 gap-6 rounded-2xl border border-border bg-card p-6 shadow-sm md:grid-cols-2">
             <div className="flex flex-col items-center justify-center gap-2">
               <MatchGauge percent={match.percent} />
-              <p className="text-sm text-muted-foreground">Based on your verified Skill Passport</p>
+              <p className="text-sm text-muted-foreground">{t("public.jobDetails.basedOnPassport")}</p>
             </div>
             <div className="flex flex-col gap-5">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">
-                  Matched Skills ({match.matched.length}/{job.skillsRequired.length})
+                  {t("public.jobDetails.matchedSkills").replace("{matched}", String(match.matched.length)).replace("{total}", String(job.skillsRequired.length))}
                 </h3>
                 <ul className="mt-2 flex flex-col gap-2">
                   {job.skillsRequired.map((skill) => {
@@ -360,7 +361,7 @@ export function JobDetailsView({ job }: { job: Job }) {
               </div>
               {match.missing.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Missing Skills</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{t("public.jobDetails.missingSkills")}</h3>
                   <ul className="mt-2 flex flex-col gap-2">
                     {match.missing.map((skill) => (
                       <li key={skill} className="flex items-center gap-2 text-sm text-foreground">
@@ -380,17 +381,17 @@ export function JobDetailsView({ job }: { job: Job }) {
                 <Sparkles className="size-5" strokeWidth={1.9} />
               </span>
               <div>
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Recommended Course</p>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("public.jobDetails.recommendedCourse")}</p>
                 <p className="text-sm font-semibold text-foreground">{recommendedCourse.title}</p>
                 <p className="text-xs text-muted-foreground">
-                  {recommendedCourse.durationHours} hours &middot; {recommendedCourse.category}
+                  {t("public.courseCatalog.hours").replace("{count}", String(recommendedCourse.durationHours))} &middot; {recommendedCourse.category}
                 </p>
               </div>
             </div>
             <Link className="contents" href={`/courses/${recommendedCourse.id}`}><Button
               className="w-full shrink-0 sm:w-auto"
               
-             nativeButton={false}>View Course</Button></Link>
+             nativeButton={false}>{t("public.courseCatalog.viewCourse")}</Button></Link>
           </div>
         </TabsContent>
 

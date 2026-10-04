@@ -14,12 +14,12 @@ export interface Module {
   lessons: Lesson[];
 }
 
-const moduleTemplates = [
-  { title: "Introduction", verbs: ["What is", "History and Principles of", "Why it matters:"] },
-  { title: "Core Concepts", verbs: ["Understanding", "Key Frameworks in", "Applying"] },
-  { title: "Practical Application", verbs: ["Hands-on Practice:", "Case Study:", "Field Exercise:"] },
-  { title: "Assessment & Review", verbs: ["Reviewing", "Common Pitfalls in", "Wrapping Up"] },
-];
+/** Translator passed in from a client component (useT). */
+export type CurriculumT = (key: string) => string;
+
+/** Each module has three lesson title templates; "{topic}" is replaced with a skill name. */
+const MODULE_COUNT = 4;
+const LESSONS_PER_TEMPLATE = 3;
 
 /**
  * Deterministically derives a plausible module/lesson curriculum from a
@@ -27,10 +27,10 @@ const moduleTemplates = [
  * has content to render without adding fields to the shared Course type or
  * mock-data file.
  */
-export function buildCurriculum(course: Course): Module[] {
+export function buildCurriculum(course: Course, t: CurriculumT): Module[] {
   const topics = course.skills.length > 0 ? course.skills : [course.category];
   const totalMinutes = course.durationHours * 60;
-  const moduleCount = Math.min(moduleTemplates.length, Math.max(2, Math.ceil(course.durationHours / 8)));
+  const moduleCount = Math.min(MODULE_COUNT, Math.max(2, Math.ceil(course.durationHours / 8)));
   const lessonsPerModule = Math.max(2, Math.round(6 / moduleCount) + 1);
   const totalLessons = moduleCount * lessonsPerModule;
   const perLesson = Math.max(8, Math.round(totalMinutes / totalLessons / 5) * 5);
@@ -39,14 +39,13 @@ export function buildCurriculum(course: Course): Module[] {
   const modules: Module[] = [];
 
   for (let m = 0; m < moduleCount; m++) {
-    const template = moduleTemplates[m];
     const lessons: Lesson[] = [];
     for (let l = 0; l < lessonsPerModule; l++) {
       const topic = topics[lessonCounter % topics.length];
-      const verb = template.verbs[l % template.verbs.length];
+      const template = t(`public.courseLearning.curriculum.modules.${m}.lessons.${l % LESSONS_PER_TEMPLATE}`);
       lessons.push({
         id: `${course.id}-m${m}-l${l}`,
-        title: `${verb} ${topic}`,
+        title: template.replace("{topic}", topic),
         durationMinutes: perLesson,
         // Seed the first module (and first lesson of the second) as already
         // watched, so the progress bar starts partway through like a
@@ -55,7 +54,7 @@ export function buildCurriculum(course: Course): Module[] {
       });
       lessonCounter++;
     }
-    modules.push({ id: `${course.id}-m${m}`, title: template.title, lessons });
+    modules.push({ id: `${course.id}-m${m}`, title: t(`public.courseLearning.curriculum.modules.${m}.title`), lessons });
   }
 
   return modules;

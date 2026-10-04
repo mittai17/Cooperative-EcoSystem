@@ -1,203 +1,334 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertCircle, MapPin, Search, ShieldCheck } from "lucide-react";
+import { useMemo, useState } from "react";
+import { AlertCircle, RotateCcw, Search, SearchX } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { ApiError, useApi } from "@/lib/use-api";
+import { CandidateCard } from "@/components/employer/candidates/candidate-card";
+import {
+  EDUCATION_OPTIONS,
+  EMPTY_CANDIDATE_FILTERS,
+  EXPERIENCE_OPTIONS,
+  MATCH_FLOOR_OPTIONS,
+  PROFICIENCY_OPTIONS,
+  applyCandidateFilters,
+  countActiveFilters,
+  type CandidateFilterState,
+} from "@/components/employer/candidates/candidate-filters";
+import { FilterSelect } from "@/components/employer/candidates/filter-select";
+import { useResource } from "@/components/employer/candidates/use-resource";
+import {
+  type CandidateSummary,
+  hasField,
+  listMyJobs,
+  searchCandidates,
+} from "@/lib/employer/candidates-api";
+import { useApi } from "@/lib/use-api";
 
-interface Candidate {
-  id: string;
-  name: string;
+interface ServerFilters {
+  skill: string;
   location: string;
-  occupation: string | null;
-  match_score: number | null;
+  verifiedOnly: boolean;
+  jobId: string;
 }
 
-interface CandidateDetail {
-  id: string;
-  name: string;
-  bio: string | null;
-  location: string;
-  occupation: string | null;
-  education_level: string | null;
-  years_of_experience: number | null;
-  skills: { name: string; level: string; confidence: number; verified: boolean }[];
-  certificates: { id: string; programme_title: string; verification_code: string; verification_state: string }[];
+const NO_JOB = "none";
+const SEARCH_LIMIT = 100;
+
+function matchesText(candidate: CandidateSummary, needle: string): boolean {
+  if (!needle) return true;
+  const haystack = [
+    candidate.name,
+    candidate.occupation ?? "",
+    candidate.location,
+    candidate.education_level ?? "",
+    ...(candidate.skills ?? []).map((skill) => skill.name),
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(needle.toLowerCase());
 }
 
 export default function CandidatesPage() {
   const api = useApi();
-  const [query, setQuery] = useState("");
-  const [skill, setSkill] = useState("");
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
-  const [candidates, setCandidates] = useState<Candidate[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [detail, setDetail] = useState<CandidateDetail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState<string | null>(null);
+  const [text, setText] = useState("");
+  const [draft, setDraft] = useState<ServerFilters>({ skill: "", location: "", verifiedOnly: false, jobId: "" });
+  const [applied, setApplied] = useState<ServerFilters>({ skill: "", location: "", verifiedOnly: false, jobId: "" });
+  const [filters, setFilters] = useState<CandidateFilterState>(EMPTY_CANDIDATE_FILTERS);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  async function search() {
-    setCandidates(null);
-    setError(null);
-    const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
-    if (skill.trim()) params.set("skill", skill.trim());
-    if (verifiedOnly) params.set("verified_only", "true");
-    params.set("limit", "24");
-    try {
-      const data = await api.get<{ candidates: Candidate[] }>(`/api/v1/employer/candidates?${params.toString()}`);
-      setCandidates(data.candidates);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.detail : "Could not reach the CoopSetu API");
-      setCandidates([]);
-    }
+  const jobs = useResource(() => listMyJobs(api), []);
+  const results = useResource(
+    () =>
+      searchCandidates(api, {
+        skill: applied.skill,
+        location: applied.location,
+        verified_only: applied.verifiedOnly,
+        job_id: applied.jobId || undefined,
+        limit: SEARCH_LIMIT,
+      }),
+    [JSON.stringify(applied)],
+  );
+
+  const records = useMemo(() => results.data ?? [], [results.data]);
+  const support = useMemo(
+    () => ({
+      education: records.length === 0 || hasField(records, "education_level"),
+      experience: records.length === 0 || hasField(records, "years_of_experience"),
+      certification: records.length === 0 || hasField(records, "certificate_count"),
+      availability: records.length === 0 || hasField(records, "availability"),
+      proficiency: records.length === 0 || hasField(records, "skills"),
+      match: applied.jobId !== "" && (records.length === 0 || hasField(records, "match_score")),
+    }),
+    [records, applied.jobId],
+  );
+
+  const visible = useMemo(
+    () => applyCandidateFilters(records.filter((candidate) => matchesText(candidate, text.trim())), filters),
+    [records, text, filters],
+  );
+
+  const hasAnyFilter =
+    countActiveFilters(filters) > 0 ||
+    text.trim() !== "" ||
+    applied.skill !== "" ||
+    applied.location !== "" ||
+    applied.jobId !== "" ||
+    applied.verifiedOnly;
+  const jobTitle = jobs.data?.find((job) => job.id === applied.jobId)?.title;
+
+  function applyServerFilters() {
+    setApplied({ ...draft });
   }
 
-  useEffect(() => {
-    const id = window.setTimeout(() => void search(), 0);
-    return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function viewProfile(id: string) {
-    setDetail(null);
-    setDetailError(null);
-    setDetailLoading(true);
-    try {
-      const data = await api.get<CandidateDetail>(`/api/v1/employer/candidates/${id}`);
-      setDetail(data);
-    } catch (err) {
-      setDetailError(err instanceof ApiError ? err.detail : "Could not load this candidate.");
-    } finally {
-      setDetailLoading(false);
-    }
+  function clearAll() {
+    setText("");
+    setFilters(EMPTY_CANDIDATE_FILTERS);
+    const cleared: ServerFilters = { skill: "", location: "", verifiedOnly: false, jobId: "" };
+    setDraft(cleared);
+    setApplied(cleared);
   }
+
+  const jobOptions = [
+    { value: NO_JOB, label: "No job (general search)" },
+    ...(jobs.data ?? []).map((job) => ({ value: job.id, label: job.title })),
+  ];
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Candidate Discovery"
-        description="Search verified trainees who have opted their Skill Passport in to employer visibility."
+        title="AI Candidate Discovery"
+        description="Find the best candidates from verified Skill Passports. Only trainees who opted in to employer visibility appear here."
       />
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-end sm:flex-wrap">
-          <div className="relative flex-1 min-w-48">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name"
-              className="pl-9"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && search()}
-            />
-          </div>
-          <div className="flex-1 min-w-40 space-y-1.5">
-            <Label htmlFor="cand-skill">Skill</Label>
-            <Input
-              id="cand-skill"
-              placeholder="e.g. Bookkeeping"
-              value={skill}
-              onChange={(e) => setSkill(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && search()}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch id="verified-only" checked={verifiedOnly} onCheckedChange={(v) => setVerifiedOnly(Boolean(v))} />
-            <Label htmlFor="verified-only" className="text-sm text-muted-foreground">Verified skills only</Label>
-          </div>
-          <Button onClick={search}>Search</Button>
-        </CardContent>
-      </Card>
-
-      {error && (
+      {results.error && (
         <Alert variant="destructive">
           <AlertCircle />
           <AlertTitle>Search failed</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{results.error}</AlertDescription>
         </Alert>
       )}
 
-      {candidates === null ? (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 3 }, (_, i) => (
-            <Skeleton key={i} className="h-48 w-full" />
+      {notice && (
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <p className="text-sm text-foreground">{notice}</p>
+          <Button variant="ghost" size="sm" onClick={() => setNotice(null)}>
+            Dismiss
+          </Button>
+        </div>
+      )}
+
+      <Card>
+        <CardContent className="flex flex-col gap-4">
+          <form
+            className="flex flex-col gap-4 lg:flex-row lg:items-end"
+            onSubmit={(event) => {
+              event.preventDefault();
+              applyServerFilters();
+            }}
+          >
+            <div className="relative flex-[2] space-y-1.5">
+              <Label htmlFor="cand-search" className="text-xs font-medium text-muted-foreground">
+                Search name, skill, role, location or education
+              </Label>
+              <Search className="pointer-events-none absolute bottom-2.5 left-2.5 size-4 text-muted-foreground" />
+              <Input
+                id="cand-search"
+                placeholder="e.g. Dairy Management, Bookkeeping, Anand"
+                className="pl-9"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+              />
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="cand-skill" className="text-xs font-medium text-muted-foreground">
+                Skill (server)
+              </Label>
+              <Input
+                id="cand-skill"
+                placeholder="Skill name"
+                value={draft.skill}
+                onChange={(event) => setDraft({ ...draft, skill: event.target.value })}
+              />
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="cand-location" className="text-xs font-medium text-muted-foreground">
+                Location (server)
+              </Label>
+              <Input
+                id="cand-location"
+                placeholder="District or state"
+                value={draft.location}
+                onChange={(event) => setDraft({ ...draft, location: event.target.value })}
+              />
+            </div>
+            <FilterSelect
+              id="cand-job"
+              label="Score against job"
+              value={draft.jobId || NO_JOB}
+              options={jobOptions}
+              onChange={(value) => {
+                const jobId = value === NO_JOB ? "" : value;
+                const next = { ...draft, jobId };
+                setDraft(next);
+                setApplied(next);
+              }}
+            />
+            <div className="flex items-center gap-2 pb-2">
+              <Switch
+                id="verified-only"
+                checked={draft.verifiedOnly}
+                onCheckedChange={(checked) => setDraft({ ...draft, verifiedOnly: Boolean(checked) })}
+              />
+              <Label htmlFor="verified-only" className="text-sm text-muted-foreground">
+                Verified skills only
+              </Label>
+            </div>
+            <Button type="submit">Search</Button>
+          </form>
+
+          <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2 xl:grid-cols-6">
+            <FilterSelect
+              id="f-proficiency"
+              label="Skill proficiency"
+              value={filters.proficiency}
+              options={PROFICIENCY_OPTIONS}
+              supported={support.proficiency}
+              unsupportedHint="Not returned by search"
+              onChange={(value) => setFilters({ ...filters, proficiency: value as CandidateFilterState["proficiency"] })}
+            />
+            <FilterSelect
+              id="f-education"
+              label="Education"
+              value={filters.education}
+              options={EDUCATION_OPTIONS}
+              supported={support.education}
+              unsupportedHint="Not returned by search"
+              onChange={(value) => setFilters({ ...filters, education: value })}
+            />
+            <FilterSelect
+              id="f-experience"
+              label="Experience"
+              value={String(filters.minExperience)}
+              options={EXPERIENCE_OPTIONS}
+              supported={support.experience}
+              unsupportedHint="Not returned by search"
+              onChange={(value) => setFilters({ ...filters, minExperience: Number(value) })}
+            />
+            <FilterSelect
+              id="f-certification"
+              label="Certification"
+              value={filters.certification}
+              options={[
+                { value: "any", label: "Any" },
+                { value: "yes", label: "Has certificate" },
+              ]}
+              supported={support.certification}
+              unsupportedHint="Not returned by search"
+              onChange={(value) => setFilters({ ...filters, certification: value as CandidateFilterState["certification"] })}
+            />
+            <FilterSelect
+              id="f-availability"
+              label="Availability"
+              value={filters.availability}
+              options={[
+                { value: "any", label: "Any" },
+                { value: "immediate", label: "Immediate" },
+                { value: "30 days", label: "Within 30 days" },
+              ]}
+              supported={support.availability}
+              unsupportedHint="Not returned by search"
+              onChange={(value) => setFilters({ ...filters, availability: value })}
+            />
+            <FilterSelect
+              id="f-match"
+              label="Match score"
+              value={String(filters.minMatch)}
+              options={MATCH_FLOOR_OPTIONS}
+              supported={support.match}
+              unsupportedHint={applied.jobId ? "Not returned by search" : "Choose a job above to score"}
+              onChange={(value) => setFilters({ ...filters, minMatch: Number(value) })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground" aria-live="polite">
+          {results.loading
+            ? "Searching verified Skill Passports..."
+            : `Showing ${visible.length} of ${records.length} candidate${records.length === 1 ? "" : "s"}${
+                jobTitle ? ` scored against ${jobTitle}` : ""
+              }`}
+        </p>
+        <Button variant="ghost" size="sm" onClick={clearAll} disabled={!hasAnyFilter}>
+          <RotateCcw />
+          Clear filters
+        </Button>
+      </div>
+
+      {results.loading ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Skeleton key={i} className="h-64 w-full" />
           ))}
         </div>
-      ) : candidates.length === 0 ? (
+      ) : results.error ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <p className="text-sm font-medium text-foreground">Candidates could not be loaded</p>
+            <Button variant="outline" onClick={results.reload}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : visible.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
-            <p className="text-sm font-medium text-foreground">No candidates match these filters</p>
+            <span className="flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <SearchX className="size-6" />
+            </span>
+            <p className="text-base font-semibold text-foreground">No candidates match your current filters.</p>
             <p className="max-w-md text-sm text-muted-foreground">
-              Try a broader skill or clear the verified-only filter.
+              Try clearing a filter or searching for a broader skill or location.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {candidates.map((candidate) => (
-            <Card key={candidate.id} className="flex flex-col">
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <CardTitle className="font-heading text-lg">{candidate.name}</CardTitle>
-                    <p className="mt-1 text-sm text-muted-foreground">{candidate.occupation ?? "Occupation not set"}</p>
-                  </div>
-                  {candidate.match_score !== null && (
-                    <Badge variant={candidate.match_score > 80 ? "default" : "secondary"}>{candidate.match_score}% Match</Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 text-sm">
-                <p className="flex items-center gap-1.5 text-muted-foreground">
-                  <MapPin className="size-3.5" />
-                  {candidate.location || "Location not set"}
-                </p>
-                {detail?.id === candidate.id && (
-                  <div className="mt-3 flex flex-col gap-2">
-                    <div className="flex flex-wrap gap-1.5">
-                      {detail.skills.slice(0, 6).map((skillItem) => (
-                        <Badge key={skillItem.name} variant="outline" className="bg-primary/5">
-                          {skillItem.name}
-                          {skillItem.verified && <ShieldCheck className="ml-1 size-3 text-success" />}
-                        </Badge>
-                      ))}
-                      {detail.skills.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No skills recorded yet.</p>
-                      )}
-                    </div>
-                    {detail.certificates.length > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        {detail.certificates.length} certificate{detail.certificates.length === 1 ? "" : "s"} on record.
-                      </p>
-                    )}
-                  </div>
-                )}
-                {detailLoading && detail === null && <Skeleton className="mt-3 h-16 w-full" />}
-                {detailError && candidates.some((c) => c.id === candidate.id) && detail === null && !detailLoading && (
-                  <p className="mt-2 text-xs text-destructive">{detailError}</p>
-                )}
-              </CardContent>
-              <CardFooter className="mt-4 border-t pt-0">
-                <Button className="mt-4 w-full" variant="outline" onClick={() => viewProfile(candidate.id)}>
-                  {detail?.id === candidate.id ? "Refresh profile" : "View Profile"}
-                </Button>
-              </CardFooter>
-            </Card>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {visible.map((candidate) => (
+            <CandidateCard
+              key={candidate.id}
+              candidate={candidate}
+              jobId={applied.jobId || undefined}
+              onError={(message) => setNotice(message)}
+            />
           ))}
         </div>
       )}

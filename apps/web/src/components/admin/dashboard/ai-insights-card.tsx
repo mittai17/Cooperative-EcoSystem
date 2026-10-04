@@ -29,16 +29,16 @@ const INSIGHTS = [
 
 export function AiInsightsCard() {
   return (
-    <div className="flex flex-col justify-between h-full rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-2xs">
+    <div className="flex flex-col rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-2">
-        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900 dark:text-foreground">
-          <Sparkles className="size-4.5 text-[#E30B1C]" />
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-foreground">
+          <Sparkles className="size-4.5 text-red-600" />
           <span>AI Insights</span>
         </h2>
         <Link
           href="/admin/reports"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-[#E30B1C] hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 hover:underline"
         >
           <span>View All</span>
           <ArrowRight className="size-3" />
@@ -46,7 +46,7 @@ export function AiInsightsCard() {
       </div>
 
       {/* 3 Insight items */}
-      <div className="flex flex-col gap-3.5 my-auto">
+      <div className="flex flex-col gap-3.5 flex-1">
         {INSIGHTS.map((item, idx) => {
           const Icon = item.icon;
           return (
@@ -55,10 +55,10 @@ export function AiInsightsCard() {
                 <Icon className="size-4" />
               </span>
               <div className="min-w-0">
-                <p className="font-heading text-xs font-bold text-slate-900 dark:text-foreground leading-snug">
+                <p className="font-heading text-xs font-bold text-foreground leading-snug">
                   {item.title}
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-muted-foreground leading-relaxed mt-0.5">
+                <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
                   {item.description}
                 </p>
               </div>

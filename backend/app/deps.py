@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.database import get_db
 from app.models.user import User
 from app.services.clerk import verify_session_token, TokenVerificationError
+from app.dev_demo_auth import DEMO_CLAIM, is_dev_demo_token, resolve_dev_demo_key, resolve_dev_demo_user
 
 
 @dataclass
@@ -43,10 +44,29 @@ async def get_current_claims(authorization: str = Header(None)) -> dict:
     """Verify the Clerk session JWT and return its decoded claims. Raises
     401 for any missing/invalid/expired/unverifiable token."""
     token = _extract_bearer_token(authorization)
+    if is_dev_demo_token(token):
+        return _dev_demo_claims(token)
     try:
         return await verify_session_token(token)
     except TokenVerificationError as exc:
         raise HTTPException(status_code=401, detail=str(exc))
+
+
+def _dev_demo_claims(token: str) -> dict:
+    """DEV-ONLY: `Bearer demo:<key>` (see app/dev_demo_auth.py). Raises 401 unless
+    the dev gate passes; the returned claims carry the demo key, not a Clerk id."""
+    key = resolve_dev_demo_key(token)
+    return {"sub": f"demo:{key}", DEMO_CLAIM: key}
+
+
+async def _identity_for_claims(claims: dict, db: AsyncSession) -> AuthenticatedIdentity:
+    if DEMO_CLAIM in claims:
+        user = await resolve_dev_demo_user(db, claims[DEMO_CLAIM])
+        return AuthenticatedIdentity(clerk_user_id=user.clerk_user_id, claims=claims, db_user=user)
+    clerk_user_id = claims["sub"]
+    result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
+    db_user = result.scalar_one_or_none()
+    return AuthenticatedIdentity(clerk_user_id=clerk_user_id, claims=claims, db_user=db_user)
 
 
 async def get_current_user_clerk_id(claims: dict = Depends(get_current_claims)) -> str:
@@ -60,10 +80,7 @@ async def get_current_identity(
     """Full authenticated-identity dependency: verifies the token, then
     resolves it against our local `users` table so route handlers can make
     role/org-scoped decisions using our own data model."""
-    clerk_user_id = claims["sub"]
-    result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
-    db_user = result.scalar_one_or_none()
-    return AuthenticatedIdentity(clerk_user_id=clerk_user_id, claims=claims, db_user=db_user)
+    return await _identity_for_claims(claims, db)
 
 
 def require_role(*roles: str):
@@ -167,6 +184,8 @@ async def get_optional_claims(authorization: Optional[str] = Header(None)) -> Op
     if not authorization:
         return None
     token = _extract_bearer_token(authorization)
+    if is_dev_demo_token(token):
+        return _dev_demo_claims(token)
     try:
         return await verify_session_token(token)
     except TokenVerificationError as exc:
@@ -181,10 +200,7 @@ async def get_optional_identity(
     and resolves local user row from DB. Returns None if unauthenticated."""
     if claims is None:
         return None
-    clerk_user_id = claims["sub"]
-    result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
-    db_user = result.scalar_one_or_none()
-    return AuthenticatedIdentity(clerk_user_id=clerk_user_id, claims=claims, db_user=db_user)
+    return await _identity_for_claims(claims, db)
 
 
 def resolve_actor_id(

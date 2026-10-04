@@ -22,25 +22,25 @@ const ACTIONS = [
 
 export function QuickActions() {
   return (
-    <div className="flex flex-col justify-between h-full rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-2xs">
+    <div className="flex flex-col rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
       {/* Header */}
-      <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900 dark:text-foreground mb-3">
-        <Compass className="size-4.5 text-[#E30B1C]" />
+      <h2 className="flex items-center gap-2 font-heading text-base font-bold text-foreground mb-3">
+        <Compass className="size-4.5 text-red-600" />
         <span>Quick Actions</span>
       </h2>
 
       {/* Grid of 6 buttons */}
-      <div className="grid grid-cols-2 gap-3 flex-1">
+      <div className="grid grid-cols-2 gap-2.5 flex-1">
         {ACTIONS.map((action) => {
           const Icon = action.icon;
           return (
             <Link
               key={action.label}
               href={action.href}
-              className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200/80 dark:border-border bg-white dark:bg-card/60 p-3.5 text-center transition-all hover:border-red-200 hover:bg-rose-50/40 dark:hover:bg-rose-950/20 group cursor-pointer shadow-2xs"
+              className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-white dark:bg-card/60 p-3 text-center transition-all hover:border-red-200 hover:bg-rose-50/40 dark:hover:bg-rose-950/20 group cursor-pointer shadow-2xs"
             >
-              <Icon className="size-5 text-[#E30B1C] group-hover:scale-105 transition-transform" />
-              <span className="font-heading text-xs font-semibold text-slate-800 dark:text-foreground group-hover:text-[#E30B1C] transition-colors">
+              <Icon className="size-5 text-red-600 group-hover:scale-105 transition-transform" />
+              <span className="font-heading text-xs font-semibold text-foreground group-hover:text-red-600 transition-colors">
                 {action.label}
               </span>
             </Link>

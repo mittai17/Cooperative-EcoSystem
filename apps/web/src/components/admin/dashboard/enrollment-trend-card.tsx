@@ -29,28 +29,28 @@ export function EnrollmentTrendCard() {
   const [period, setPeriod] = useState("Last 6 months");
 
   return (
-    <div className="flex flex-col justify-between h-full rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-2xs">
+    <div className="flex flex-col rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-2">
-        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900 dark:text-foreground">
-          <TrendingUp className="size-4.5 text-[#E30B1C]" />
+        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-foreground">
+          <TrendingUp className="size-4.5 text-red-600" />
           <span>Trainee Enrollment Trend</span>
         </h2>
         <div className="relative">
           <button
             type="button"
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white dark:bg-card px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-foreground hover:bg-slate-50 cursor-pointer"
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
           >
             <span>{period}</span>
-            <ChevronDown className="size-3.5 text-slate-400" />
+            <ChevronDown className="size-3.5 text-muted-foreground" />
           </button>
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mb-2 text-xs font-medium text-slate-500">
+      <div className="flex items-center gap-4 mb-3 text-xs font-medium text-muted-foreground">
         <div className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-xs bg-[#E30B1C]" />
+          <span className="size-2.5 rounded-xs bg-[#DC2626]" />
           <span>New Enrollments</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -86,10 +86,9 @@ export function EnrollmentTrendCard() {
             <Bar
               dataKey="new_enrollments"
               name="New Enrollments"
-              fill="#E30B1C"
+              fill="#DC2626"
               radius={[3, 3, 0, 0]}
               maxBarSize={14}
-              isAnimationActive={false}
             />
             <Bar
               dataKey="certifications"
@@ -97,7 +96,6 @@ export function EnrollmentTrendCard() {
               fill="#FECDD3"
               radius={[3, 3, 0, 0]}
               maxBarSize={14}
-              isAnimationActive={false}
             />
           </BarChart>
         </ResponsiveContainer>

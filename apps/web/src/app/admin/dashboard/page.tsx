@@ -2,6 +2,8 @@
 
 import { WelcomeBanner } from "@/components/admin/dashboard/welcome-banner";
 import { KpiCardsRow } from "@/components/admin/dashboard/kpi-cards-row";
+import { EnrollmentTrendCard } from "@/components/admin/dashboard/enrollment-trend-card";
+import { InstitutionsByStateCard } from "@/components/admin/dashboard/institutions-by-state-card";
 import { RecentActivityCard } from "@/components/admin/dashboard/recent-activity-card";
 import { ProgramDistributionCard } from "@/components/admin/dashboard/program-distribution-card";
 import { PlacementOverviewCard } from "@/components/admin/dashboard/placement-overview-card";
@@ -27,14 +29,27 @@ const KPI_INITIAL_DATA = {
 
 export default function AdminDashboardPage() {
   return (
-    <div className="flex flex-col gap-5 max-w-[1600px] mx-auto pb-20">
+    <div className="flex flex-col gap-5 max-w-[1600px] mx-auto pb-10">
       {/* 1. Welcome Banner */}
       <WelcomeBanner />
 
       {/* 2. 5 KPI Cards in 1 Row */}
       <KpiCardsRow data={KPI_INITIAL_DATA} />
 
-      {/* 3. Row 1: Program Distribution | Placement Overview | Recent Activity */}
+      {/* 3. Row 1: Trainee Enrollment Trend | Institutions by State | Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <div className="lg:col-span-5 flex flex-col">
+          <EnrollmentTrendCard />
+        </div>
+        <div className="lg:col-span-4 flex flex-col">
+          <InstitutionsByStateCard />
+        </div>
+        <div className="lg:col-span-3 flex flex-col">
+          <RecentActivityCard />
+        </div>
+      </div>
+
+      {/* 4. Row 2: Program Distribution | Placement Overview | Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         <div className="lg:col-span-4 flex flex-col">
           <ProgramDistributionCard />
@@ -43,11 +58,11 @@ export default function AdminDashboardPage() {
           <PlacementOverviewCard />
         </div>
         <div className="lg:col-span-3 flex flex-col">
-          <RecentActivityCard />
+          <QuickActions />
         </div>
       </div>
 
-      {/* 4. Row 2: Top Institutions | Recent Job Placements | Quick Actions */}
+      {/* 5. Row 3: Top Institutions | Recent Job Placements | AI Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         <div className="lg:col-span-5 flex flex-col">
           <TopInstitutionsCard />
@@ -56,13 +71,8 @@ export default function AdminDashboardPage() {
           <RecentPlacementsCard />
         </div>
         <div className="lg:col-span-3 flex flex-col">
-          <QuickActions />
+          <AiInsightsCard />
         </div>
-      </div>
-
-      {/* 5. Row 3: AI Insights */}
-      <div className="grid grid-cols-1 gap-5">
-        <AiInsightsCard />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Landmark, User, Users, Award, Briefcase } from "lucide-react";
+import { Landmark, UserCheck, Users, Award, Briefcase, ArrowUp } from "lucide-react";
 import { formatCount } from "./format";
 
 interface KpiData {
@@ -25,13 +25,13 @@ export function KpiCardsRow({ data }: { data: KpiData }) {
       value: formatCount(data.institutions),
       delta: `↑ ${formatCount(data.deltas.institutions)} this month`,
       icon: Landmark,
-      iconBg: "bg-rose-50 text-[#E30B1C] dark:bg-rose-950/50 dark:text-rose-400",
+      iconBg: "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
     },
     {
       label: "Trainers",
       value: formatCount(data.trainers),
       delta: `↑ ${formatCount(data.deltas.trainers)} this month`,
-      icon: User,
+      icon: UserCheck,
       iconBg: "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
     },
     {
@@ -64,20 +64,18 @@ export function KpiCardsRow({ data }: { data: KpiData }) {
         return (
           <div
             key={c.label}
-            className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-2xs hover:shadow-xs transition-shadow"
+            className="flex flex-col rounded-2xl border border-border/80 bg-card p-5 shadow-2xs transition-all hover:shadow-xs"
           >
-            <div>
-              <span className={`flex size-10 items-center justify-center rounded-full ${c.iconBg}`}>
+            <div className="flex items-center">
+              <span className={`flex size-10 items-center justify-center rounded-xl ${c.iconBg}`}>
                 <Icon className="size-5" />
               </span>
-              <div className="mt-4">
-                <p className="font-heading text-2xl sm:text-[28px] font-bold tracking-tight text-slate-900 dark:text-foreground">
-                  {c.value}
-                </p>
-                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-muted-foreground mt-0.5">
-                  {c.label}
-                </p>
-              </div>
+            </div>
+            <div className="mt-4">
+              <p className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                {c.value}
+              </p>
+              <p className="text-sm font-medium text-muted-foreground mt-0.5">{c.label}</p>
             </div>
             <div className="mt-3 flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <span>{c.delta}</span>

@@ -48,16 +48,16 @@ const PLACEMENTS = [
 
 export function RecentPlacementsCard() {
   return (
-    <div className="flex flex-col justify-between h-full rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-2xs">
+    <div className="flex flex-col rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-2">
-        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900 dark:text-foreground">
-          <Briefcase className="size-4.5 text-[#E30B1C]" />
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-foreground">
+          <Briefcase className="size-4.5 text-red-600" />
           <span>Recent Job Placements</span>
         </h2>
         <Link
           href="/admin/jobs-placements"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-[#E30B1C] hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 hover:underline"
         >
           <span>View All</span>
           <ArrowRight className="size-3" />
@@ -65,37 +65,38 @@ export function RecentPlacementsCard() {
       </div>
 
       {/* Table */}
-      <div className="w-full my-auto">
-        <table className="w-full text-left text-xs border-collapse">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-200/80 dark:border-border/70 text-slate-400 font-semibold text-[11px]">
-              <th className="py-2 pr-2 font-medium">Candidate</th>
-              <th className="py-2 pr-2 font-medium">Role</th>
-              <th className="py-2 pr-2 font-medium">Employer</th>
-              <th className="py-2 pl-1 font-medium text-right">Date</th>
+            <tr className="border-b border-border/70 text-muted-foreground font-semibold">
+              <th className="pb-2.5 font-medium">Candidate</th>
+              <th className="pb-2.5 font-medium">Role</th>
+              <th className="pb-2.5 font-medium">Employer</th>
+              <th className="pb-2.5 font-medium text-right">Date</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-border/50">
+          <tbody className="divide-y divide-border/50">
             {PLACEMENTS.map((item, idx) => (
-              <tr key={idx} className="hover:bg-slate-50/60 dark:hover:bg-muted/40 transition-colors">
-                <td className="py-2.5 pr-2">
+              <tr key={idx} className="hover:bg-muted/40 transition-colors">
+                <td className="py-2.5">
                   <div className="flex items-center gap-2 min-w-0">
                     <img
                       src={item.avatar}
                       alt={item.candidate}
-                      className="size-6 shrink-0 rounded-full object-cover border border-slate-200"
+                      className="size-6 shrink-0 rounded-full object-cover border border-border/60"
                       onError={(e) => {
+                        // Fallback to text initials if offline
                         e.currentTarget.style.display = "none";
                       }}
                     />
-                    <span className="font-heading font-semibold text-slate-900 dark:text-foreground truncate text-xs">
+                    <span className="font-heading font-semibold text-foreground truncate">
                       {item.candidate}
                     </span>
                   </div>
                 </td>
-                <td className="py-2.5 pr-2 text-slate-500 dark:text-muted-foreground truncate text-[11px]">{item.role}</td>
-                <td className="py-2.5 pr-2 text-slate-900 dark:text-foreground font-medium truncate text-[11px]">{item.employer}</td>
-                <td className="py-2.5 pl-1 text-right text-slate-400 dark:text-muted-foreground whitespace-nowrap text-[11px]">{item.date}</td>
+                <td className="py-2.5 text-muted-foreground truncate">{item.role}</td>
+                <td className="py-2.5 text-foreground font-medium truncate">{item.employer}</td>
+                <td className="py-2.5 text-right text-muted-foreground whitespace-nowrap">{item.date}</td>
               </tr>
             ))}
           </tbody>

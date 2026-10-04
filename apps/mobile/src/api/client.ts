@@ -1,23 +1,15 @@
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
-const API_PORT = 8000;
-
-function devServerHost(): string | null {
-  const scriptURL: string | undefined = NativeModules.SourceCode?.scriptURL;
-  const match = scriptURL ? /^https?:\/\/([^/:]+)/.exec(scriptURL) : null;
-  return match ? match[1] : null;
-}
-
-export function resolveNativeApiBase(): string {
+export function resolveNativeApiBase(): string | null {
   const override = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
   if (override) {
     return `${override.replace(/\/+$/, '').replace(/\/api\/v1$/, '')}/api/v1`;
   }
-  const host = devServerHost() ?? (Platform.OS === 'android' ? '10.0.2.2' : 'localhost');
-  return `http://${host}:${API_PORT}/api/v1`;
+  return null;
 }
 
-export const API_BASE_URL = Platform.OS === 'web' ? '/api-proxy/api/v1' : resolveNativeApiBase();
+export const API_BASE_URL = Platform.OS === 'web' ? '/api-proxy/api/v1' : resolveNativeApiBase() ?? '';
+export const API_CONFIGURED = Platform.OS === 'web' || Boolean(API_BASE_URL);
 
 const REQUEST_TIMEOUT_MS = 10000;
 

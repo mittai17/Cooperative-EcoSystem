@@ -74,8 +74,8 @@ Designed following the **Maximum White UI style**, deep blue accents (`#1E3A8A`)
 - **Language**: TypeScript (strict mode enabled)
 - **Navigation**: React Navigation v7 (Bottom Tabs + Native Stack)
 - **Icons**: `lucide-react-native`
-- **Backend API**: FastAPI (`http://localhost:8000/api/v1`)
-- **Offline Resiliency**: Unified API service (`src/services/api.ts`) with graceful timeout fallbacks to structured mock schemas (`src/services/mockData.ts`).
+- **Backend API**: FastAPI deployed behind a public HTTPS origin configured with `EXPO_PUBLIC_API_BASE_URL`.
+- **Offline Resiliency**: Unified API service with persisted cache and sync queue. Production builds never fall back to localhost or mock API data.
 
 ---
 
@@ -108,11 +108,21 @@ npx expo start
 
 ---
 
-## 🌐 Connecting to Local Backend
+## 🌐 Production configuration
 
-By default, the app communicates with:
-```ts
-http://localhost:8000/api/v1
+Copy `.env.example` to `.env` for local builds and set the deployed backend origin:
+
+```bash
+EXPO_PUBLIC_API_BASE_URL=https://api.your-domain.com
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 ```
 
-When testing on a physical mobile device via Expo Go, replace `localhost` with your workstation's LAN IP (e.g., `http://192.168.1.X:8000/api/v1`) in `src/services/api.ts`.
+The app appends `/api/v1` automatically. Release builds intentionally do not resolve
+`localhost`, `127.0.0.1`, `10.0.2.2`, or the Metro host. If the cloud API URL is missing,
+the app shows a configuration screen instead of producing a broken login experience.
+
+Build an installable internal APK with:
+
+```bash
+npx eas build --profile preview --platform android
+```

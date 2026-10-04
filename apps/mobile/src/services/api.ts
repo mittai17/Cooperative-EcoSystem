@@ -1,4 +1,4 @@
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import {
   Course,
   JobMatch,
@@ -11,41 +11,19 @@ import {
   TraineeProfile,
 } from '../types';
 
-const API_PORT = 8000;
-
-/**
- * Host of the Metro dev server that served this bundle. Physical devices and
- * emulators reach the dev machine on that address, so the backend (same
- * machine, port 8000) is reachable there too. Read from the RN SourceCode
- * module because expo-constants is not resolvable from this package (it is
- * nested under expo/node_modules). Returns null in release builds, where the
- * script URL is a file/asset path.
- */
-function devServerHost(): string | null {
-  const scriptURL: string | undefined = NativeModules.SourceCode?.scriptURL;
-  const match = scriptURL ? /^https?:\/\/([^/:]+)/.exec(scriptURL) : null;
-  return match ? match[1] : null;
-}
-
-/**
- * Backend origin resolution (native):
- *   1. EXPO_PUBLIC_API_BASE_URL (e.g. https://api.example.com or http://192.168.1.5:8000)
- *   2. the Metro dev server host on port 8000 (Expo Go / dev builds)
- *   3. Android emulator alias for the host machine (10.0.2.2), else localhost
- */
 function resolveNativeApiBase(): string {
   const override = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
   if (override) {
     return `${override.replace(/\/+$/, '').replace(/\/api\/v1$/, '')}/api/v1`;
   }
-  const host = devServerHost() ?? (Platform.OS === 'android' ? '10.0.2.2' : 'localhost');
-  return `http://${host}:${API_PORT}/api/v1`;
+  return '';
 }
 
 // On web, go through the Metro dev server's same-origin /api-proxy (see
 // metro.config.js) to avoid the real backend's CORS allowlist, which only
 // permits http://localhost:3000 and http://localhost:8000.
 export const API_BASE_URL = Platform.OS === 'web' ? '/api-proxy/api/v1' : resolveNativeApiBase();
+export const API_CONFIGURED = Platform.OS === 'web' || Boolean(API_BASE_URL);
 
 // The hosted database answers in 1-2 s; anything slower than this is treated as offline.
 const REQUEST_TIMEOUT_MS = 8000;
@@ -645,4 +623,3 @@ export const apiService = {
     };
   },
 };
-

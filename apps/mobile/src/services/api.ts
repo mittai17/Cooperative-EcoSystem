@@ -370,7 +370,7 @@ function getDemoCareerAdvice(message: string): string {
   if (m.includes('course') || m.includes('program') || m.includes('certif') || m.includes('learn')) {
     return 'Recommended accredited programmes for cooperative advancement:\n\n1. **Diploma in Cooperative Management (HDCM)** — IRMA Anand (120 hrs, Sponsored)\n2. **PACS Computerisation & Cloud ERP Certification** — RICM Bhopal (60 hrs)\n3. **Bulk Milk Chilling & Quality Logistics** — VAMNICOM Pune (30 hrs)\n\nAll courses provide blockchain-verifiable credentials connected directly to DigiLocker and NCCT.';
   }
-  return 'Hello! I am your **CoopSetu AI Career Advisor**. I actively track your course completions, attendance percentage, and verified competency passport to guide your career across India\'s cooperative sector.\n\nFeel free to ask about jobs matching your skills, closing skill gaps, or applying for executive cooperative diplomas.';
+  return 'Hello! I am your **NURVEX Career Advisor**. I actively track your course completions, attendance percentage, and verified competency passport to guide your career across India\'s cooperative sector.\n\nFeel free to ask about jobs matching your skills, closing skill gaps, or applying for executive cooperative diplomas.';
 }
 
 export const apiService = {

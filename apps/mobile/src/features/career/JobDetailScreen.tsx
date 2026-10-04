@@ -235,7 +235,7 @@ export const JobDetailScreen: React.FC = () => {
           <View style={styles.trustTextWrap}>
             <Text style={styles.trustTitle}>Authenticated Cooperative Entity</Text>
             <Text style={styles.trustDesc}>
-              {job.employer} is verified under the Multi-State Cooperative Societies Act. Placements through CoopSetu AI are tracked by the NCCT placement portal.
+              {job.employer} is verified under the Multi-State Cooperative Societies Act. Placements through NURVEX are tracked by the NCCT placement portal.
             </Text>
           </View>
         </View>

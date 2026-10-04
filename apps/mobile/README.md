@@ -1,6 +1,6 @@
-# CoopSetu AI - Mobile Application (Expo & React Native)
+# NURVEX - Mobile Application (Expo & React Native)
 
-Production-grade cross-platform React Native / Expo application for **CoopSetu AI**, the National Cooperative Skilling, Certification, and Career Placement ecosystem.
+Production-grade cross-platform React Native / Expo application for **NURVEX**, the National Cooperative Skilling, Certification, and Career Placement ecosystem.
 
 Designed following the **Maximum White UI style**, deep blue accents (`#1E3A8A`), high contrast badges, and offline-first edge resiliency.
 

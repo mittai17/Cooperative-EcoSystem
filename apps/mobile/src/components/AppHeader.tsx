@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, HIT, ICON, RADII, SPACE, TEXT } from '../constants/theme';
-import { ArrowLeft, GraduationCap, WifiOff } from 'lucide-react-native';
+import { ArrowLeft, WifiOff } from 'lucide-react-native';
+import { NurvexLogo } from './NurvexLogo';
 
 interface AppHeaderProps {
   title: string;
@@ -34,15 +35,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           <ArrowLeft size={ICON.lg} color={COLORS.primaryDark} />
         </TouchableOpacity>
       ) : null}
-      {brand ? (
-        <View style={styles.brandMark}>
-          <GraduationCap size={ICON.md} color={COLORS.textInverse} />
-        </View>
-      ) : null}
+      {brand ? <NurvexLogo size="sm" /> : null}
       <View style={styles.titleText}>
-        <Text style={styles.title} numberOfLines={1} accessibilityRole="header">
-          {title}
-        </Text>
+        {!brand ? <Text style={styles.title} numberOfLines={1} accessibilityRole="header">{title}</Text> : null}
         {subtitle ? (
           <Text style={styles.subtitle} numberOfLines={1}>
             {subtitle}
@@ -102,14 +97,6 @@ const styles = StyleSheet.create({
     width: HIT,
     height: HIT,
     marginLeft: -SPACE.sm - SPACE.xs,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandMark: {
-    width: 32,
-    height: 32,
-    borderRadius: RADII.sm,
-    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },

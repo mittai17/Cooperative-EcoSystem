@@ -158,7 +158,7 @@ export const SyncStorageScreen: React.FC = () => {
     }
 
     if (pendingActions.length === 0) {
-      Alert.alert(t('common:appName', 'CoopSetu AI'), 'No pending actions in outbox.');
+      Alert.alert(t('common:appName', 'NURVEX'), 'No pending actions in outbox.');
       return;
     }
 

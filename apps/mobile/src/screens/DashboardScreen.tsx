@@ -79,7 +79,7 @@ export const DashboardScreen = ({ navigation }: any) => {
 
   if (!data) {
     return (
-      <ScrollScreen tab brand title="CoopSetu AI">
+      <ScrollScreen tab brand title="NURVEX">
         <LoadingState />
       </ScrollScreen>
     );
@@ -109,7 +109,7 @@ export const DashboardScreen = ({ navigation }: any) => {
     <ScrollScreen
       tab
       brand
-      title="CoopSetu AI"
+      title="NURVEX"
       isLive={data.isLive}
       refreshing={refreshing}
       onRefresh={onRefresh}

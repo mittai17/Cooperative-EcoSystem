@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "CoopSetu AI",
-    "slug": "coopsetu-ai",
+    "name": "NURVEX",
+    "slug": "nurvex",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "coopsetu",
-    "description": "AI-powered Skill Passport, LMS & Cooperative Employment Ecosystem — Smart India Hackathon 2026",
+    "scheme": "nurvex",
+    "description": "Learn, Skill, Work, Grow Together — the cooperative training and employment ecosystem.",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.coopsetu.app"
@@ -24,7 +24,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "name": "CoopSetu AI"
+      "name": "NURVEX"
     },
     "plugins": [
       [

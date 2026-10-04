@@ -2,23 +2,39 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Eye, Plus, X } from "lucide-react";
+import { BookOpen, Plus } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
-import { AdminToolbar } from "@/components/admin/shared/admin-toolbar";
-import { DemoBanner } from "@/components/admin/shared/demo-banner";
+import { AdminSelect, AdminToolbar } from "@/components/admin/shared/admin-toolbar";
 import { Pager } from "@/components/admin/shared/pager";
 import { StatusPill } from "@/components/admin/shared/status-pill";
 import type { Programme } from "@/lib/admin/admin-api";
 import { DEMO_PROGRAMMES, PROGRAMME_SECTORS, durationLabel, modeLabel } from "@/components/admin/programmes/programme-data";
 import { fetchAllProgrammes } from "@/components/admin/programmes/admin-helpers";
+import {
+  DetailPanel,
+  EmptyState,
+  ListCard,
+  ListErrorBanner,
+  TableScroll,
+  TableSkeleton,
+  primaryButtonClass,
+  rowClass,
+  tableClass,
+  tdClass,
+  thClass,
+  viewButtonClass,
+} from "@/components/admin/programmes/admin-ui";
 
 const ALL = "";
 const STATUS_OPTIONS = [
+  { value: ALL, label: "All Status" },
   { value: "active", label: "Active" },
   { value: "inactive", label: "Inactive" },
 ];
-const selectClass =
-  "h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-primary";
+const CATEGORY_OPTIONS = [
+  { value: ALL, label: "All Categories" },
+  ...PROGRAMME_SECTORS.map((c) => ({ value: c, label: c })),
+];
 
 export default function ProgrammesPage() {
   const [query, setQuery] = useState("");
@@ -33,7 +49,7 @@ export default function ProgrammesPage() {
   const [selected, setSelected] = useState<Programme | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // The backend list has no sector filter, so the catalogue is loaded once
+  // The backend list has no category filter, so the catalogue is loaded once
   // (all pages) and filtered and paged on the client.
   useEffect(() => {
     let cancelled = false;
@@ -75,33 +91,18 @@ export default function ProgrammesPage() {
   return (
     <div className="flex flex-col gap-6">
       <AdminPageHeader
-        icon={Eye}
+        icon={BookOpen}
         title="Training Programs"
         description="Manage training programs."
         action={
-          <Link
-            href="/admin/programmes/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover"
-          >
-            <Plus className="h-4 w-4" /> Create Program
+          <Link href="/admin/programmes/new" className={primaryButtonClass}>
+            <Plus className="size-4" aria-hidden /> Create Program
           </Link>
         }
       />
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {error && (
-          <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-4">
-            <DemoBanner />
-            <span className="text-xs text-slate-500">Live data unavailable: {error}</span>
-            <button
-              type="button"
-              onClick={() => setReloadKey((k) => k + 1)}
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              Retry
-            </button>
-          </div>
-        )}
+      <ListCard>
+        <ListErrorBanner error={error} onRetry={() => setReloadKey((k) => k + 1)} />
 
         <AdminToolbar
           search={query}
@@ -118,101 +119,68 @@ export default function ProgrammesPage() {
           }}
           filters={
             <>
-              <select
-                aria-label="Category"
-                className={selectClass}
+              <AdminSelect
+                label="Category"
                 value={sector}
-                onChange={(e) => {
-                  setSector(e.target.value);
+                options={CATEGORY_OPTIONS}
+                onChange={(value) => {
+                  setSector(value);
                   setPage(1);
                 }}
-              >
-                <option value={ALL}>All Categories</option>
-                {PROGRAMME_SECTORS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label="Status"
-                className={selectClass}
+              />
+              <AdminSelect
+                label="Status"
                 value={status}
-                onChange={(e) => {
-                  setStatus(e.target.value);
+                options={STATUS_OPTIONS}
+                onChange={(value) => {
+                  setStatus(value);
                   setPage(1);
                 }}
-              >
-                <option value={ALL}>All Status</option>
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
+              />
             </>
           }
         />
 
-        {selected && (
-          <div className="mx-5 mb-2 flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div>
-              <p className="text-base font-semibold text-slate-900">{selected.title}</p>
-              <p className="mt-1 text-sm text-slate-600">
-                {selected.sector ?? "No category"} · {durationLabel(selected.duration_weeks)} ·{" "}
-                {modeLabel(selected.mode)} · {selected.seats_filled} of {selected.seats_total} seats filled
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelected(null)}
-              className="rounded-lg p-1.5 text-slate-500 hover:bg-white hover:text-slate-900"
-              aria-label="Close programme details"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
+        {selected ? (
+          <DetailPanel
+            title={selected.title}
+            onClose={() => setSelected(null)}
+            closeLabel="Close programme details"
+          >
+            {selected.sector ?? "No category"} · {durationLabel(selected.duration_weeks)} · {modeLabel(selected.mode)} ·{" "}
+            {selected.seats_filled} of {selected.seats_total} seats filled
+          </DetailPanel>
+        ) : null}
 
-        <div className="overflow-x-auto px-5 pb-2">
-          {loading ? (
-            <div className="space-y-3 py-3" aria-busy="true" aria-label="Loading programmes">
-              {Array.from({ length: 5 }, (_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-100" />
-              ))}
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="my-4 rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
-              {catalogue.length === 0 ? "No training programs yet." : "No programmes match these filters."}
-            </div>
-          ) : (
-            <table className="w-full min-w-[720px] text-left text-sm">
+        {loading ? (
+          <TableSkeleton label="Loading programmes" />
+        ) : rows.length === 0 ? (
+          <EmptyState message={catalogue.length === 0 ? "No training programs yet." : "No programmes match these filters."} />
+        ) : (
+          <TableScroll>
+            <table className={tableClass}>
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-3 py-3 font-semibold">Program Name</th>
-                  <th className="px-3 py-3 font-semibold">Category</th>
-                  <th className="px-3 py-3 font-semibold">Duration</th>
-                  <th className="px-3 py-3 font-semibold">Mode</th>
-                  <th className="px-3 py-3 font-semibold">Status</th>
-                  <th className="px-3 py-3 text-right font-semibold">Actions</th>
+                <tr>
+                  <th className={thClass}>Program Name</th>
+                  <th className={thClass}>Category</th>
+                  <th className={thClass}>Duration</th>
+                  <th className={thClass}>Mode</th>
+                  <th className={thClass}>Status</th>
+                  <th className={`${thClass} text-right`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((p) => (
-                  <tr key={p.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                    <td className="px-3 py-3 font-medium text-slate-900">{p.title}</td>
-                    <td className="px-3 py-3 text-slate-600">{p.sector ?? "-"}</td>
-                    <td className="px-3 py-3 text-slate-600">{durationLabel(p.duration_weeks)}</td>
-                    <td className="px-3 py-3 text-slate-600">{modeLabel(p.mode)}</td>
-                    <td className="px-3 py-3">
+                  <tr key={p.id} className={rowClass}>
+                    <td className={`${tdClass} font-medium`}>{p.title}</td>
+                    <td className={`${tdClass} text-muted-foreground`}>{p.sector ?? "-"}</td>
+                    <td className={`${tdClass} text-muted-foreground`}>{durationLabel(p.duration_weeks)}</td>
+                    <td className={`${tdClass} text-muted-foreground`}>{modeLabel(p.mode)}</td>
+                    <td className={tdClass}>
                       <StatusPill status={p.status} />
                     </td>
-                    <td className="px-3 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelected(p)}
-                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-primary hover:text-primary"
-                      >
+                    <td className={`${tdClass} text-right`}>
+                      <button type="button" onClick={() => setSelected(p)} className={viewButtonClass}>
                         View
                       </button>
                     </td>
@@ -220,10 +188,10 @@ export default function ProgrammesPage() {
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </TableScroll>
+        )}
 
-        <div className="p-5">
+        <div className="px-1">
           <Pager
             page={safePage}
             pageCount={pageCount}
@@ -236,7 +204,7 @@ export default function ProgrammesPage() {
             }}
           />
         </div>
-      </div>
+      </ListCard>
     </div>
   );
 }

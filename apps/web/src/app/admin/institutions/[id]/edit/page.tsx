@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { AlertTriangle, ChevronRight, Pencil } from "lucide-react";
+import { AlertTriangle, Pencil } from "lucide-react";
 
 import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
 import { DemoBanner } from "@/components/admin/shared/demo-banner";
@@ -41,14 +41,6 @@ export default function EditInstitutionPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Link href="/admin/dashboard" className="hover:text-foreground">Admin</Link>
-        <ChevronRight className="size-3.5" aria-hidden />
-        <Link href="/admin/institutions" className="hover:text-foreground">Institutions</Link>
-        <ChevronRight className="size-3.5" aria-hidden />
-        <span className="font-medium text-foreground">Edit</span>
-      </nav>
-
       {state.status === "loading" ? (
         <div className="h-96 animate-pulse rounded-2xl bg-muted/70" aria-busy="true" aria-label="Loading institution" />
       ) : null}

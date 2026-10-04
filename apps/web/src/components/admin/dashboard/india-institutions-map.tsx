@@ -1,15 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-
-interface StateData {
-  id: string;
-  name: string;
-  count: number;
-  tier: "50+" | "20-50" | "10-20" | "5-10" | "1-5";
-  path: string;
-}
 
 const LEGEND = [
   { label: "50+", color: "#B91C1C", count: "50+" },

@@ -2,14 +2,11 @@
 
 import { useMemo, useState } from "react";
 import {
-  BookOpen,
   CircleAlert,
   CloudOff,
-  CloudUpload,
   HardDriveDownload,
   Inbox,
   LibraryBig,
-  Link2,
   Percent,
   RefreshCw,
   RefreshCcw,
@@ -60,24 +57,8 @@ const SYNC_TONE: Record<CourseSyncStatus, string> = {
   "Sync failed": "bg-destructive/10 text-destructive",
 };
 
-/** Number of animation steps a simulated Moodle pull takes to complete. */
-const SYNC_STEPS = 5;
-const SYNC_STEP_MS = 260;
-
 async function loadCourses(): Promise<LmsCourse[]> {
   return institutionCoursesSeed.map((row) => ({ ...row }));
-}
-
-function formatSyncedAt(value: string | null): string {
-  if (!value) return "Never";
-  return new Date(value).toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "UTC",
-  });
 }
 
 export default function CoursesPage() {
@@ -87,12 +68,8 @@ export default function CoursesPage() {
   const [loadState, setLoadState] = useState<LoadState>("ready");
   const [syncFilter, setSyncFilter] = useState<SyncFilter>("All");
   const [query, setQuery] = useState("");
-  const [syncingIds, setSyncingIds] = useState<string[]>([]);
-  const [syncStep, setSyncStep] = useState(0);
-  const [lastSyncedCount, setLastSyncedCount] = useState<number | null>(null);
 
   const outOfDate = courses.filter((row) => row.syncStatus !== "Synced");
-  const isSyncing = syncingIds.length > 0;
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -101,8 +78,7 @@ export default function CoursesPage() {
       if (!needle) return true;
       return (
         row.title.toLowerCase().includes(needle) ||
-        row.mappedProgramme.toLowerCase().includes(needle) ||
-        row.lmsCourseId.toLowerCase().includes(needle)
+        row.mappedProgramme.toLowerCase().includes(needle)
       );
     });
   }, [courses, syncFilter, query]);
@@ -150,45 +126,14 @@ export default function CoursesPage() {
     }
   }
 
-  /**
-   * Prototype integration. There is no Moodle web-service token wired up in this
-   * build, so the pull is simulated locally: the row animates through the
-   * stages and only then flips to Synced. Swap this for a real
-   * `webservice/rest.php` call once the backend proxy exists.
-   */
-  function startSync(ids: string[]) {
-    if (ids.length === 0 || isSyncing) return;
-    setSyncingIds(ids);
-    setSyncStep(0);
-    let step = 0;
-    const timer = setInterval(() => {
-      step += 1;
-      if (step < SYNC_STEPS) {
-        setSyncStep(step);
-        return;
-      }
-      clearInterval(timer);
-      setSyncStep(SYNC_STEPS);
-      setCourses((prev) =>
-        prev.map((row) =>
-          ids.includes(row.id)
-            ? { ...row, syncStatus: "Synced", lastSyncedAt: new Date().toISOString() }
-            : row,
-        ),
-      );
-      setLastSyncedCount(ids.length);
-      setSyncingIds([]);
-    }, SYNC_STEP_MS);
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="LMS Course Management"
-        description="Courses mapped to your programmes, mirrored from the Moodle instance used for blended delivery."
+        description="Courses mapped to your programmes, with completion and offline availability."
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <span className="demo-data-tag">Moodle mirror · demo data</span>
+            <span className="demo-data-tag">Demo data</span>
             <Button
               variant="outline"
               onClick={refresh}
@@ -197,31 +142,9 @@ export default function CoursesPage() {
             >
               <RefreshCw className={loadState === "loading" ? "size-4 animate-spin" : "size-4"} />
             </Button>
-            <Button onClick={() => startSync(outOfDate.map((row) => row.id))} disabled={isSyncing}>
-              <RefreshCcw className={isSyncing ? "mr-2 size-4 animate-spin" : "mr-2 size-4"} />
-              {isSyncing ? "Syncing…" : `Sync with Moodle${outOfDate.length ? ` (${outOfDate.length})` : ""}`}
-            </Button>
           </div>
         }
       />
-
-      {lastSyncedCount !== null && !isSyncing && (
-        <div className="flex flex-col items-start gap-2 rounded-lg border border-success/30 bg-success/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-2">
-            <Link2 className="mt-0.5 size-4 shrink-0 text-success" />
-            <div>
-              <p className="text-sm font-medium text-foreground">Local mirror updated</p>
-              <p className="mt-1 text-sm text-foreground/70">
-                {lastSyncedCount} course{lastSyncedCount === 1 ? "" : "s"} pulled into the prototype
-                mirror. No Moodle web service call is made yet.
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setLastSyncedCount(null)}>
-            Dismiss
-          </Button>
-        </div>
-      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
@@ -235,7 +158,7 @@ export default function CoursesPage() {
           label="Learners enrolled"
           value={totalEnrolled.toLocaleString("en-IN")}
           icon={Users}
-          trend="Across launched Moodle courses"
+          trend="Across launched courses"
           trendTone="neutral"
         />
         <StatCard
@@ -273,7 +196,7 @@ export default function CoursesPage() {
                 <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search course, programme, ID"
+                  placeholder="Search course or programme"
                   aria-label="Search courses"
                   className="h-9 pl-9"
                 />
@@ -344,18 +267,13 @@ export default function CoursesPage() {
                   {isFiltered
                     ? "Try a different sync state or search term to widen the catalogue."
                     : outOfDate.length === 0
-                      ? "The mirror matches the Moodle instance. New content will appear after the next pull."
-                      : "Map a Moodle course to a programme to start tracking completion."}
+                      ? "All courses in the catalogue are up to date."
+                      : "Map a course to a programme to start tracking completion."}
                 </p>
               </div>
               {isFiltered ? (
                 <Button variant="outline" size="sm" onClick={clearFilters}>
                   Clear filters
-                </Button>
-              ) : outOfDate.length > 0 ? (
-                <Button size="sm" onClick={() => startSync(outOfDate.map((row) => row.id))}>
-                  <RefreshCcw className="mr-1.5 size-3.5" />
-                  Sync {outOfDate.length} course{outOfDate.length === 1 ? "" : "s"}
                 </Button>
               ) : null}
             </div>
@@ -371,17 +289,14 @@ export default function CoursesPage() {
                     <TableHead>Avg. score</TableHead>
                     <TableHead>Curriculum</TableHead>
                     <TableHead>Offline</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {visible.map((row) => {
-                    const syncing = syncingIds.includes(row.id);
                     return (
                       <TableRow key={row.id}>
                         <TableCell>
                           <p className="font-medium text-foreground">{row.title}</p>
-                          <p className="font-mono text-xs text-foreground/60">{row.lmsCourseId}</p>
                         </TableCell>
                         <TableCell>
                           <span className="font-mono text-xs text-foreground/70">
@@ -392,19 +307,9 @@ export default function CoursesPage() {
                           </p>
                         </TableCell>
                         <TableCell>
-                          {syncing ? (
-                            <Badge variant="secondary" className="bg-primary/10 text-primary">
-                              <RefreshCcw className="size-3 animate-spin" />
-                              Syncing
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className={SYNC_TONE[row.syncStatus]}>
-                              {row.syncStatus}
-                            </Badge>
-                          )}
-                          <p className="mt-1 font-mono text-xs text-foreground/60">
-                            {syncing ? "Pulling activity" : formatSyncedAt(row.lastSyncedAt)}
-                          </p>
+                          <Badge variant="secondary" className={SYNC_TONE[row.syncStatus]}>
+                            {row.syncStatus}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-baseline justify-between gap-2">
@@ -448,26 +353,6 @@ export default function CoursesPage() {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
-                          {syncing ? (
-                            <div className="w-24">
-                              <Progress
-                                value={(syncStep / SYNC_STEPS) * 100}
-                                aria-label={`Syncing ${row.title}`}
-                              />
-                            </div>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={row.syncStatus === "Synced" || isSyncing}
-                              onClick={() => startSync([row.id])}
-                            >
-                              <RefreshCcw className="mr-1.5 size-3.5" />
-                              {row.syncStatus === "Synced" ? "Up to date" : "Sync"}
-                            </Button>
-                          )}
-                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -478,7 +363,7 @@ export default function CoursesPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="font-heading text-base">Completion by programme</CardTitle>
@@ -537,54 +422,6 @@ export default function CoursesPage() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-heading text-base">Moodle integration</CardTitle>
-            <CardDescription>How the mirror behaves in this build.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-3">
-              <BookOpen className="mt-0.5 size-4 shrink-0 text-primary" />
-              <p className="text-sm text-foreground/70">
-                Prototype integration. Sync runs entirely in the browser against the bundled demo
-                dataset; it is not a live Moodle web-service call.
-              </p>
-            </div>
-            <dl className="flex flex-col gap-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <dt className="flex items-center gap-2 text-foreground/70">
-                  <CloudUpload className="size-3.5" />
-                  Provider
-                </dt>
-                <dd className="font-mono text-xs font-medium text-foreground">Moodle 4.3</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="flex items-center gap-2 text-foreground/70">
-                  <Link2 className="size-3.5" />
-                  Pull direction
-                </dt>
-                <dd className="font-mono text-xs font-medium text-foreground">Read only</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="flex items-center gap-2 text-foreground/70">
-                  <RefreshCcw className="size-3.5" />
-                  Scheduled nightly pull
-                </dt>
-                <dd className="font-mono text-xs font-medium text-foreground">02:00 IST</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="flex items-center gap-2 text-foreground/70">
-                  <TriangleAlert className="size-3.5" />
-                  Failed rows kept for retry
-                </dt>
-                <dd className="font-mono text-xs font-medium text-foreground">
-                  {courses.filter((row) => row.syncStatus === "Sync failed").length}
-                </dd>
-              </div>
-            </dl>
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import {
   parseDomains,
   validateAppearance,
@@ -15,9 +15,7 @@ import type {
   NotificationSettings,
   SecuritySettings,
 } from "@/lib/admin/admin-api";
-
-const inputClass =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-primary";
+import { FormField, inputClass, primaryButtonClass, textareaClass } from "@/components/admin/programmes/admin-ui";
 
 export type SaveResult = { ok: true } | { ok: false; message: string };
 
@@ -43,28 +41,14 @@ function usePanelSave<T>(onSave: (value: T) => Promise<SaveResult>) {
 
 function SaveBar({ saving, result }: { saving: boolean; result: SaveResult | null }) {
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+    <div className="mt-2 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-h-[1.25rem] text-sm" role="status" aria-live="polite">
-        {result?.ok === true && <span className="font-medium text-emerald-700">Settings saved.</span>}
-        {result?.ok === false && <span className="text-red-700">Could not save: {result.message}</span>}
+        {result?.ok === true ? <span className="font-medium text-emerald-700">Settings saved.</span> : null}
+        {result?.ok === false ? <span className="text-red-700">Could not save: {result.message}</span> : null}
       </div>
-      <button
-        type="submit"
-        disabled={saving}
-        className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover disabled:opacity-60"
-      >
+      <button type="submit" disabled={saving} className={primaryButtonClass}>
         {saving ? "Saving..." : "Save Changes"}
       </button>
-    </div>
-  );
-}
-
-function Field({ label, error, children, className = "" }: { label: string; error?: string; children: ReactNode; className?: string }) {
-  return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
-      {children}
-      {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
   );
 }
@@ -81,16 +65,16 @@ function ToggleRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
-      <span>
-        <span className="block text-sm font-semibold text-slate-900">{label}</span>
-        <span className="block text-xs text-slate-500">{description}</span>
+    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 hover:bg-muted/40">
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold text-foreground">{label}</span>
+        <span className="block text-xs text-muted-foreground">{description}</span>
       </span>
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-5 w-5 accent-[var(--primary)]"
+        className="size-5 shrink-0 accent-[var(--primary)]"
       />
     </label>
   );
@@ -121,32 +105,32 @@ export function GeneralPanel({ initial, onSave }: PanelProps<GeneralSettings>) {
 
   return (
     <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-5 md:grid-cols-2">
-      <Field label="Organization Name" error={errors.org_name} className="md:col-span-2">
+      <FormField label="Organization Name" required error={errors.org_name}>
         <input className={inputClass} value={form.org_name} onChange={(e) => update("org_name", e.target.value)} />
-      </Field>
-      <Field label="Admin Email" error={errors.admin_email}>
+      </FormField>
+      <FormField label="Admin Email" error={errors.admin_email}>
         <input
           type="email"
           className={inputClass}
           value={form.admin_email ?? ""}
           onChange={(e) => update("admin_email", e.target.value)}
         />
-      </Field>
-      <Field label="Contact Number" error={errors.contact_phone}>
+      </FormField>
+      <FormField label="Contact Number" error={errors.contact_phone}>
         <input
           className={inputClass}
           value={form.contact_phone ?? ""}
           onChange={(e) => update("contact_phone", e.target.value)}
         />
-      </Field>
-      <Field label="Contact Address" error={errors.contact_address} className="md:col-span-2">
+      </FormField>
+      <FormField label="Contact Address" error={errors.contact_address} className="md:col-span-2">
         <textarea
           rows={3}
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary"
+          className={textareaClass}
           value={form.contact_address ?? ""}
           onChange={(e) => update("contact_address", e.target.value)}
         />
-      </Field>
+      </FormField>
       <div className="md:col-span-2">
         <SaveBar saving={saving} result={result} />
       </div>
@@ -169,7 +153,7 @@ export function AppearancePanel({ initial, onSave }: PanelProps<AppearanceSettin
 
   return (
     <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-5 md:grid-cols-2">
-      <Field label="Accent Colour" error={errors.accent_color}>
+      <FormField label="Accent Colour" error={errors.accent_color}>
         <div className="flex items-center gap-3">
           <input
             type="color"
@@ -179,7 +163,7 @@ export function AppearancePanel({ initial, onSave }: PanelProps<AppearanceSettin
               setForm({ ...form, accent_color: e.target.value.toUpperCase() });
               clear();
             }}
-            className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+            className="h-10 w-14 cursor-pointer rounded-lg border border-border bg-card p-1"
           />
           <input
             className={inputClass}
@@ -190,8 +174,8 @@ export function AppearancePanel({ initial, onSave }: PanelProps<AppearanceSettin
             }}
           />
         </div>
-      </Field>
-      <Field label="Density">
+      </FormField>
+      <FormField label="Density">
         <select
           className={inputClass}
           value={form.density}
@@ -203,7 +187,7 @@ export function AppearancePanel({ initial, onSave }: PanelProps<AppearanceSettin
           <option value="comfortable">Comfortable</option>
           <option value="compact">Compact</option>
         </select>
-      </Field>
+      </FormField>
       <div className="md:col-span-2">
         <SaveBar saving={saving} result={result} />
       </div>
@@ -246,7 +230,7 @@ export function NotificationsPanel({ initial, onSave }: PanelProps<NotificationS
         checked={form.weekly_digest}
         onChange={(c) => set("weekly_digest", c)}
       />
-      <Field label="Digest frequency">
+      <FormField label="Digest frequency">
         <select
           className={`${inputClass} md:max-w-xs`}
           value={form.digest_frequency}
@@ -256,7 +240,7 @@ export function NotificationsPanel({ initial, onSave }: PanelProps<NotificationS
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
-      </Field>
+      </FormField>
       <SaveBar saving={saving} result={result} />
     </form>
   );
@@ -291,23 +275,23 @@ export function SecurityPanel({ initial, onSave }: PanelProps<SecuritySettings>)
         onChange={(c) => set("mfa_required", c)}
       />
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <Field label="Session timeout (minutes)" error={errors.session_timeout_minutes}>
+        <FormField label="Session timeout (minutes)" error={errors.session_timeout_minutes}>
           <input
             className={inputClass}
             inputMode="numeric"
             value={form.session_timeout_minutes}
             onChange={(e) => set("session_timeout_minutes", Number(e.target.value))}
           />
-        </Field>
-        <Field label="Minimum password length" error={errors.password_min_length}>
+        </FormField>
+        <FormField label="Minimum password length" error={errors.password_min_length}>
           <input
             className={inputClass}
             inputMode="numeric"
             value={form.password_min_length}
             onChange={(e) => set("password_min_length", Number(e.target.value))}
           />
-        </Field>
-        <Field label="Allowed email domains (comma separated)" error={errors.allowed_email_domains} className="md:col-span-2">
+        </FormField>
+        <FormField label="Allowed email domains (comma separated)" error={errors.allowed_email_domains} className="md:col-span-2">
           <input
             className={inputClass}
             value={domainText}
@@ -317,7 +301,7 @@ export function SecurityPanel({ initial, onSave }: PanelProps<SecuritySettings>)
               clear();
             }}
           />
-        </Field>
+        </FormField>
       </div>
       <SaveBar saving={saving} result={result} />
     </form>

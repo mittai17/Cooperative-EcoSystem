@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { certificates } from "@/lib/mock-data/certificates";
+import Link from "next/link";
 import { Download, ShieldCheck } from "lucide-react";
 
 export default function CertificatesPage() {
@@ -38,10 +39,10 @@ export default function CertificatesPage() {
               </div>
             </CardContent>
             <CardFooter className="flex gap-2">
-              <Button variant="outline" className="flex-1" size="sm">
+              <Button render={<Link href={`/verify-certificate/${c.id}?print=1`} />} variant="outline" className="flex-1" size="sm">
                 <Download className="mr-2 size-4" /> Download
               </Button>
-              <Button variant="secondary" className="flex-1" size="sm">
+              <Button render={<Link href={`/verify-certificate/${c.id}`} />} variant="secondary" className="flex-1" size="sm">
                 <ShieldCheck className="mr-2 size-4" /> Verify
               </Button>
             </CardFooter>

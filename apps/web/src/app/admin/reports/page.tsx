@@ -16,6 +16,8 @@ import {
   type ReportKey,
 } from "@/components/admin/reports/report-data";
 import { downloadReportCsv } from "@/components/admin/reports/export-csv";
+import { AdminSelect } from "@/components/admin/shared/admin-toolbar";
+import { EmptyState, TableScroll, tableClass, thClass, tdClass, rowClass } from "@/components/admin/programmes/admin-ui";
 
 // Recharts measures the DOM, so the chart components are loaded only in the browser.
 const EnrollmentBarChart = dynamic(
@@ -99,15 +101,15 @@ export default function ReportsPage() {
             type="button"
             onClick={handleExport}
             disabled={exporting}
-            className="inline-flex items-center gap-2 rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 disabled:opacity-60"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-primary bg-card px-4 text-sm font-semibold text-primary shadow-sm hover:bg-primary/5 disabled:opacity-60"
           >
-            <Download className="h-4 w-4" /> {exporting ? "Exporting..." : "Export Report"}
+            <Download className="size-4" aria-hidden /> {exporting ? "Exporting..." : "Export Report"}
           </button>
         }
       />
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div role="tablist" aria-label="Report type" className="flex flex-wrap gap-6 border-b border-slate-200">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div role="tablist" aria-label="Report type" className="flex flex-wrap gap-6 border-b border-border">
           {REPORT_TABS.map((t) => (
             <button
               key={t.key}
@@ -116,7 +118,7 @@ export default function ReportsPage() {
               type="button"
               onClick={() => setTab(t.key)}
               className={`-mb-px border-b-2 px-1 pb-3 text-sm font-semibold transition-colors ${
-                tab === t.key ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-800"
+                tab === t.key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               {t.label}
@@ -124,10 +126,10 @@ export default function ReportsPage() {
           ))}
         </div>
 
-        {error && (
+        {error ? (
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            {usingDemo && <DemoBanner />}
-            <span className="text-xs text-slate-500">Live data unavailable: {error}</span>
+            {usingDemo ? <DemoBanner /> : null}
+            <span className="text-xs text-muted-foreground">Live data unavailable: {error}</span>
             <button
               type="button"
               onClick={() => setReloadKey((k) => k + 1)}
@@ -136,80 +138,74 @@ export default function ReportsPage() {
               Retry
             </button>
           </div>
-        )}
-        {exportError && (
-          <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        ) : null}
+        {exportError ? (
+          <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
             Could not export: {exportError}
           </p>
-        )}
+        ) : null}
 
         {loading ? (
           <div className="mt-6 grid gap-6 lg:grid-cols-2" aria-busy="true" aria-label="Loading report">
-            <div className="h-72 animate-pulse rounded-xl bg-slate-100" />
-            <div className="h-72 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-72 animate-pulse rounded-xl bg-muted" />
+            <div className="h-72 animate-pulse rounded-xl bg-muted" />
           </div>
         ) : (
           <>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <section className="rounded-xl border border-slate-200 p-5">
+              <section className="rounded-xl border border-border p-5">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-base font-semibold text-slate-900">{BAR_TITLES[tab]}</h2>
-                  {(tab === "enrollment" || tab === "placements") && (
-                    <select
-                      aria-label="Chart period"
-                      value={months}
-                      onChange={(e) => setMonths(Number(e.target.value))}
-                      className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-primary"
-                    >
-                      {REPORT_PERIODS.map((p) => (
-                        <option key={p.value} value={p.value}>
-                          {p.label}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <h2 className="text-base font-semibold text-foreground">{BAR_TITLES[tab]}</h2>
+                  {tab === "enrollment" || tab === "placements" ? (
+                    <AdminSelect
+                      label="Chart period"
+                      value={String(months)}
+                      options={REPORT_PERIODS.map((p) => ({ value: String(p.value), label: p.label }))}
+                      onChange={(value) => setMonths(Number(value))}
+                    />
+                  ) : null}
                 </div>
                 <div className="h-64">
                   {visibleBars.length === 0 ? <EmptyChart /> : <EnrollmentBarChart data={visibleBars} />}
                 </div>
               </section>
 
-              <section className="rounded-xl border border-slate-200 p-5">
-                <h2 className="mb-4 text-base font-semibold text-slate-900">Program-wise Distribution</h2>
+              <section className="rounded-xl border border-border p-5">
+                <h2 className="mb-4 text-base font-semibold text-foreground">Program-wise Distribution</h2>
                 <div className="h-64">
                   {donut.length === 0 ? <EmptyChart /> : <DistributionDonut data={donut} />}
                 </div>
               </section>
             </div>
 
-            <div className="mt-6 overflow-x-auto">
+            <div className="mt-6">
               {!report || report.rows.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
-                  No rows for this report yet.
-                </div>
+                <EmptyState message="No rows for this report yet." />
               ) : (
-                <table className="w-full min-w-[560px] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                      {report.columns.map((col) => (
-                        <th key={col} className="px-3 py-3 font-semibold">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {report.rows.map((row, i) => (
-                      <tr key={i} className="border-b border-slate-100 last:border-0">
-                        {row.map((cell, j) => (
-                          <td key={j} className="px-3 py-3 text-slate-700">
-                            {typeof cell === "number" ? cell.toLocaleString("en-IN") : (cell ?? "-")}
-                          </td>
+                <TableScroll>
+                  <table className={tableClass}>
+                    <thead>
+                      <tr>
+                        {report.columns.map((col) => (
+                          <th key={col} className={thClass}>
+                            {col}
+                          </th>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {report.rows.map((row, i) => (
+                        <tr key={i} className={rowClass}>
+                          {row.map((cell, j) => (
+                            <td key={j} className={tdClass}>
+                              {typeof cell === "number" ? cell.toLocaleString("en-IN") : (cell ?? "-")}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </TableScroll>
               )}
             </div>
           </>
@@ -221,7 +217,7 @@ export default function ReportsPage() {
 
 function EmptyChart() {
   return (
-    <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-slate-300 text-sm text-slate-500">
+    <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
       No chart data yet.
     </div>
   );

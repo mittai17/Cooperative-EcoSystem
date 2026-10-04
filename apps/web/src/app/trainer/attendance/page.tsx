@@ -5,15 +5,22 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
+  ArrowRight,
+  Camera,
   CalendarCheck,
   CalendarClock,
   CheckCircle2,
   Clock,
+  MapPin,
+  Monitor,
   Play,
+  Presentation,
   QrCode,
   Radio,
+  ScanLine,
   UserCheck,
   Users,
+  Wifi,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -230,6 +237,96 @@ const DEMO_TRAINER_SESSIONS: SessionRow[] = [
   },
 ];
 
+// ── Kiosk-style hero helpers ─────────────────────────────────────────────────
+
+function LiveClock() {
+  const [now, setNow] = useState<Date>(() => new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const timeStr = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+  const dateStr = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+  // Server and client clocks differ by milliseconds, so the first markup can disagree.
+  return (
+    <div className="flex flex-col items-center gap-1 text-center">
+      <p className="text-sm font-medium text-muted-foreground sm:text-base" suppressHydrationWarning>
+        {dateStr}
+      </p>
+      <p
+        className="text-5xl font-bold tabular-nums tracking-tight text-foreground sm:text-6xl"
+        suppressHydrationWarning
+      >
+        {timeStr}
+      </p>
+    </div>
+  );
+}
+
+function formatClockTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+}
+
+const DEMO_HARDWARE: { label: string; status: string; ok: boolean; icon: typeof Camera }[] = [
+  { label: "Camera", status: "Connected", ok: true, icon: Camera },
+  { label: "QR Scanner", status: "Connected", ok: true, icon: QrCode },
+  { label: "Display", status: "Online", ok: true, icon: Monitor },
+  { label: "Internet", status: "Connected", ok: true, icon: Wifi },
+];
+
+function HeroActionCard({
+  tone,
+  icon: Icon,
+  buttonIcon: ButtonIcon,
+  title,
+  description,
+  action,
+  onAction,
+}: {
+  tone: "primary" | "outline";
+  icon: typeof QrCode;
+  buttonIcon: typeof QrCode;
+  title: string;
+  description: string;
+  action: string;
+  onAction: () => void;
+}) {
+  return (
+    <Card
+      className={cn(
+        "rounded-2xl bg-card shadow-sm ring-0",
+        tone === "primary" ? "border-2 border-primary/60 bg-primary/[0.02]" : "border border-border/60"
+      )}
+    >
+      <CardContent className="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
+        <span className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Icon className="size-8" strokeWidth={1.75} />
+        </span>
+        <div className="space-y-1">
+          <h2 className="font-heading text-xl font-bold text-foreground">{title}</h2>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        <Button
+          size="lg"
+          variant={tone === "primary" ? "default" : "outline"}
+          onClick={onAction}
+          className={cn(
+            "w-full max-w-sm cursor-pointer gap-2",
+            tone === "outline" && "border-primary text-primary hover:bg-primary/5 hover:text-primary"
+          )}
+        >
+          <ButtonIcon className="size-4" />
+          {action}
+          <ArrowRight className="size-4" />
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function SlotCard({
   s,
   onStart,
@@ -317,7 +414,7 @@ function TrainerAttendanceContent() {
   const [activeTab, setActiveTab] = useState("broadcast");
   const [classes, setClasses] = useState<ClassOption[] | null>(null);
   const [classKey, setClassKey] = useState<string>("");
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError] = useState<string | null>(null);
 
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
@@ -417,6 +514,8 @@ function TrainerAttendanceContent() {
 
   useEffect(() => {
     if (!active) {
+      // Reset the countdown when the broadcast ends; it is only rendered while a session is active.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- existing countdown reset, kept as-is
       setRemaining(0);
       return;
     }
@@ -476,8 +575,15 @@ function TrainerAttendanceContent() {
     return pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0;
   }, [history]);
 
+  function openTab(tab: string) {
+    setActiveTab(tab);
+    document.getElementById("attendance-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  const recentRows = (history ?? []).slice(0, 5);
+
   return (
-    <div className="flex flex-col gap-6 pb-16">
+    <div className="flex min-w-0 flex-col gap-6 pb-16">
       <PageHeader
         title="Digital Attendance & Sessions"
         description="Generate rotating QR codes for live attendance, manage scheduled slots, and track trainee attendance records."
@@ -490,6 +596,140 @@ function TrainerAttendanceContent() {
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       )}
+
+      {/* ── Kiosk-style hero: clock, location chip, action cards ─────────── */}
+      <section
+        aria-label="Attendance home"
+        className="flex flex-col gap-6 rounded-3xl border border-border/60 bg-card p-4 shadow-sm sm:p-6 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,oklch(0.95_0.03_27/0.7),transparent_75%)]"
+      >
+        <div className="flex flex-col items-center gap-3 py-2">
+          <LiveClock />
+          {activeClass?.venue && (
+            <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/60 bg-card px-4 py-1.5 text-sm font-medium text-foreground shadow-sm">
+              <MapPin className="size-4 shrink-0 text-primary" />
+              <span className="truncate">{activeClass.venue}</span>
+            </span>
+          )}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <HeroActionCard
+            tone="primary"
+            icon={Presentation}
+            buttonIcon={QrCode}
+            title="I'm a Trainer"
+            description="Generate QR & manage attendance"
+            action="Generate QR"
+            onAction={() => openTab("broadcast")}
+          />
+          <HeroActionCard
+            tone="outline"
+            icon={ScanLine}
+            buttonIcon={CalendarCheck}
+            title="Today's sessions"
+            description="Start attendance for scheduled classes or open a live session"
+            action="View today's sessions"
+            onAction={() => openTab("today")}
+          />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+          {/* Recent Attendance */}
+          <Card className="min-w-0 rounded-2xl border-border/60 bg-card shadow-sm ring-0">
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 font-heading text-base">
+                <Clock className="size-4 text-primary" />
+                Recent Attendance
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer gap-1"
+                onClick={() => openTab("history")}
+              >
+                View All <ArrowRight className="size-3.5" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {history === null ? (
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                </div>
+              ) : recentRows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No recent sessions found.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Name</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {recentRows.map((s) => (
+                        <TableRow key={s.session_id}>
+                          <TableCell className="text-sm tabular-nums">{formatClockTime(s.opens_at)}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "rounded-full px-2.5 text-[11px] font-semibold",
+                                s.is_open
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                  : "border-primary/30 bg-primary/5 text-primary"
+                              )}
+                            >
+                              {s.is_open ? "IN" : "OUT"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">{s.session_id}</TableCell>
+                          <TableCell className="max-w-[16rem] truncate text-sm font-medium text-foreground">
+                            {s.session_name || s.programme_title}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Hardware Status: no telemetry API exists, so this is demo data */}
+          <Card className="min-w-0 rounded-2xl border-border/60 bg-card shadow-sm ring-0">
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
+              <CardTitle className="font-heading text-base">Hardware Status</CardTitle>
+              <span className="demo-data-tag">Demo data</span>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <ul className="divide-y divide-border/60 rounded-xl border border-border/60">
+                {DEMO_HARDWARE.map((h) => (
+                  <li key={h.label} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
+                    <span className="flex items-center gap-2.5 text-foreground">
+                      <span className="flex size-7 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        <h.icon className="size-3.5" />
+                      </span>
+                      {h.label}
+                    </span>
+                    <span className={cn("flex items-center gap-1.5 text-xs font-medium", h.ok ? "text-emerald-600" : "text-destructive")}>
+                      <span className={cn("size-1.5 rounded-full", h.ok ? "bg-emerald-500" : "bg-destructive")} />
+                      {h.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                No device telemetry API is connected yet, so these statuses are sample values, not live readings.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
       {/* ── 4 Stat Cards ─────────────────────────────────────────────────── */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -524,8 +764,8 @@ function TrainerAttendanceContent() {
       </div>
 
       {/* ── Tabs Navigation ──────────────────────────────────────────────── */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex flex-wrap gap-2 h-auto p-1 bg-muted/60 rounded-xl">
+      <Tabs id="attendance-tabs" value={activeTab} onValueChange={setActiveTab} className="scroll-mt-6">
+        <TabsList className="flex h-auto flex-wrap gap-2 rounded-xl border border-border/60 bg-card p-1.5 shadow-sm">
           <TabsTrigger value="broadcast" className="gap-2 cursor-pointer">
             <QrCode className="size-4" /> Live QR Broadcast
           </TabsTrigger>

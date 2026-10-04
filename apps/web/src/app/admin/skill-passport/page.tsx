@@ -4,17 +4,30 @@ import { useEffect, useMemo, useState } from "react";
 import { IdCard } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared/admin-page-header";
 import { AdminToolbar } from "@/components/admin/shared/admin-toolbar";
-import { DemoBanner } from "@/components/admin/shared/demo-banner";
 import { KpiCard } from "@/components/admin/shared/kpi-card";
+import { Pager } from "@/components/admin/shared/pager";
 import type { SkillPassportRow } from "@/lib/admin/admin-api";
 import { DEMO_SKILL_PASSPORT } from "@/components/admin/skill-passport/skill-passport-data";
 import { fetchAllSkillPassport } from "@/components/admin/programmes/admin-helpers";
+import {
+  EmptyState,
+  ListCard,
+  ListErrorBanner,
+  TableScroll,
+  TableSkeleton,
+  rowClass,
+  tableClass,
+  tdClass,
+  thClass,
+} from "@/components/admin/programmes/admin-ui";
 
 export default function SkillPassportPage() {
   const [rows, setRows] = useState<SkillPassportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -43,6 +56,11 @@ export default function SkillPassportPage() {
     const needle = query.trim().toLowerCase();
     return needle ? rows.filter((r) => r.skill.toLowerCase().includes(needle)) : rows;
   }, [rows, query]);
+
+  const total = filtered.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const visible = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const totalVerified = rows.reduce((sum, r) => sum + r.verified_count, 0);
   const rated = rows.filter((r) => r.avg_proficiency !== null);
@@ -73,66 +91,65 @@ export default function SkillPassportPage() {
         />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        {error && (
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <DemoBanner />
-            <span className="text-xs text-slate-500">Live data unavailable: {error}</span>
-            <button
-              type="button"
-              onClick={() => setReloadKey((k) => k + 1)}
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              Retry
-            </button>
-          </div>
-        )}
+      <ListCard>
+        <ListErrorBanner error={error} onRetry={() => setReloadKey((k) => k + 1)} />
 
         <AdminToolbar
           search={query}
-          onSearch={setQuery}
+          onSearch={(value) => {
+            setQuery(value);
+            setPage(1);
+          }}
           placeholder="Search skills..."
-          onReset={() => setQuery("")}
-          filters={null}
+          onReset={() => {
+            setQuery("");
+            setPage(1);
+          }}
         />
 
-        <div className="mt-5 overflow-x-auto">
-          {loading ? (
-            <div className="space-y-3" aria-busy="true" aria-label="Loading skill passport">
-              {Array.from({ length: 5 }, (_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-100" />
-              ))}
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
-              No verified skills found.
-            </div>
-          ) : (
-            <table className="w-full min-w-[560px] text-left text-sm">
+        {loading ? (
+          <TableSkeleton label="Loading skill passport" />
+        ) : visible.length === 0 ? (
+          <EmptyState message={rows.length === 0 ? "No verified skills yet." : "No skills match this search."} />
+        ) : (
+          <TableScroll>
+            <table className={tableClass}>
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-3 py-3 font-semibold">#</th>
-                  <th className="px-3 py-3 font-semibold">Skill</th>
-                  <th className="px-3 py-3 font-semibold">Verified Count</th>
-                  <th className="px-3 py-3 font-semibold">Avg Proficiency</th>
+                <tr>
+                  <th className={thClass}>Skill</th>
+                  <th className={thClass}>Verified Count</th>
+                  <th className={thClass}>Avg Proficiency</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((row, index) => (
-                  <tr key={row.skill} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                    <td className="px-3 py-3 text-slate-500">{index + 1}</td>
-                    <td className="px-3 py-3 font-medium text-slate-900">{row.skill}</td>
-                    <td className="px-3 py-3 text-slate-600">{row.verified_count.toLocaleString("en-IN")}</td>
-                    <td className="px-3 py-3 text-slate-600">
+                {visible.map((row) => (
+                  <tr key={row.skill_id} className={rowClass}>
+                    <td className={`${tdClass} font-medium`}>{row.skill}</td>
+                    <td className={`${tdClass} text-muted-foreground`}>{row.verified_count.toLocaleString("en-IN")}</td>
+                    <td className={`${tdClass} text-muted-foreground`}>
                       {row.avg_proficiency === null ? "-" : `${row.avg_proficiency.toFixed(1)} / 5`}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
+          </TableScroll>
+        )}
+
+        <div className="px-1">
+          <Pager
+            page={safePage}
+            pageCount={pageCount}
+            total={total}
+            pageSize={pageSize}
+            onPage={setPage}
+            onPageSize={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
         </div>
-      </div>
+      </ListCard>
     </div>
   );
 }

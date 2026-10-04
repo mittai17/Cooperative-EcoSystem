@@ -61,6 +61,7 @@ export const roleNav: Record<UserRole, RoleMeta> = {
       { label: "Programmes", href: "/trainee/programmes", icon: ClipboardList },
       { label: "My Learning", href: "/trainee/my-learning", icon: BookOpen },
       { label: "Courses", href: "/trainee/courses", icon: GraduationCap },
+      { label: "Learn", href: "/trainee/learn", icon: BookOpen },
       { label: "Assessments", href: "/trainee/assessments", icon: ClipboardCheck },
       {
         label: "Hostel Management",
@@ -164,6 +165,7 @@ export const roleNav: Record<UserRole, RoleMeta> = {
       { label: "Grading", href: "/trainer/assessments", icon: FileCheck2 },
       { label: "Trainees", href: "/trainer/trainees", icon: UserCheck },
       { label: "Content", href: "/trainer/content", icon: BookOpen },
+      { label: "Learn", href: "/trainee/learn", icon: BookOpen },
     ],
   },
   employer: {

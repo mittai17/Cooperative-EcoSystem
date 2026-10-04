@@ -34,8 +34,6 @@ class Settings(BaseSettings):
     # (features degrade to "not configured"). See GET /api/v1/system/integrations
     # and docs/mobile-api.md. Never log or return these values.
     # ------------------------------------------------------------------
-    moodle_url: Optional[str] = None
-    moodle_token: Optional[str] = None
     youtube_api_key: Optional[str] = None
     adzuna_app_id: Optional[str] = None
     adzuna_app_key: Optional[str] = None
@@ -66,7 +64,7 @@ class Settings(BaseSettings):
         return (self.app_env or "").strip().lower() == "development"
 
     @field_validator(
-        "moodle_url", "moodle_token", "youtube_api_key", "adzuna_app_id", "adzuna_app_key",
+        "youtube_api_key", "adzuna_app_id", "adzuna_app_key",
         "jooble_api_key", "bhashini_user_id", "bhashini_api_key", "face_model_pack",
         "face_match_threshold", "face_min_det_score", "media_base_url",
         "fcm_service_account_file", "cron_secret", "internal_api_secret", "certificate_signing_secret", "allow_anonymous_actor",

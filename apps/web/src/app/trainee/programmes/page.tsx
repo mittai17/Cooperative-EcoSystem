@@ -87,25 +87,20 @@ function ProgrammeCard({
   const isLimited = programme.availableSeats > 0 && programme.availableSeats <= 5;
   const reason = getRecommendationReason(programme.id, DEMO_TRAINEE_PROFILE);
 
-  const PROGRAMME_IMAGES: Record<string, string> = {
-    training: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80",
-    "short-course": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80",
-    "certification-exam": "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=600&q=80",
-    "skill-development": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80",
-    "digital-literacy": "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80",
+  const PROGRAMME_GRADIENTS: Record<string, string> = {
+    training:             "from-orange-400 to-rose-500",
+    "short-course":       "from-violet-500 to-blue-500",
+    "certification-exam": "from-emerald-400 to-teal-600",
+    "skill-development":  "from-amber-400 to-orange-500",
+    "digital-literacy":   "from-sky-400 to-blue-600",
   };
+  const gradient = PROGRAMME_GRADIENTS[programme.type] ?? "from-primary/80 to-primary";
 
   return (
     <Card className="group flex flex-col overflow-hidden border border-border/60 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 py-0">
       {/* Banner */}
-      <div className="relative h-36 w-full overflow-hidden bg-muted">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`${PROGRAMME_IMAGES[programme.type] ?? PROGRAMME_IMAGES.training}&sig=${programme.id}`}
-          alt=""
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
+      <div className={`relative h-36 w-full overflow-hidden bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+        <span className="text-7xl font-black text-white/20 select-none font-heading">{programme.title.charAt(0)}</span>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
         {/* Badges overlay */}

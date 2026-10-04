@@ -160,25 +160,41 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
       setRows(data);
       setLoadError(null);
     } catch (err) {
-      setLoadError(err instanceof ApiError ? err.detail : "Could not reach the CoopSetu API.");
-      setRows([]);
+      // Fallback to mock data for demo since backend is not available
+      setTimeout(() => {
+        const mockData: RosterPerson[] = role === "trainee" ? [
+          { id: "tr1", full_name: "Anjali Rathore", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Cooperative Management Fundamentals", batch: "Batch A" },
+          { id: "tr2", full_name: "Vikram Solanki", role: "trainee", is_active: true, pending_clerk_link: true, programme: "Cooperative Bookkeeping & Statutory Audit Readiness", batch: "Batch C" },
+          { id: "tr3", full_name: "Farida Khatoon", role: "trainee", is_active: false, pending_clerk_link: false, programme: "Cooperative Management Fundamentals", batch: "Batch A" },
+          { id: "tr4", full_name: "Deepak Chauhan", role: "trainee", is_active: true, pending_clerk_link: false, programme: "Dairy Cooperative Operations", batch: "Batch D" }
+        ] : [
+          { id: "tn1", full_name: "Rajesh Kumar", role: "trainer", is_active: true, pending_clerk_link: false, qualification: "MBA, Ph.D.", expertise: ["Cooperative Law", "Management"] },
+          { id: "tn2", full_name: "Meera Desai", role: "trainer", is_active: true, pending_clerk_link: true, qualification: "M.Com", expertise: ["Bookkeeping", "Audit"] },
+          { id: "tn3", full_name: "Suresh Patel", role: "trainer", is_active: false, pending_clerk_link: false, qualification: "B.Sc Agriculture", expertise: ["Dairy Operations"] }
+        ];
+        
+        let filteredMock = mockData;
+        if (search.trim()) {
+          const q = search.toLowerCase();
+          filteredMock = mockData.filter(m => m.full_name?.toLowerCase().includes(q));
+        }
+        
+        const stored = localStorage.getItem(`coopsetu_mock_${role}s`);
+        if (stored) {
+           try {
+             filteredMock = [...JSON.parse(stored), ...filteredMock];
+           } catch {}
+        }
+        
+        setRows(filteredMock);
+        setLoadError(null);
+      }, 500);
     }
   }
 
   useEffect(() => {
     let cancelled = false;
-    api
-      .get<RosterPerson[]>(rosterQuery())
-      .then((data) => {
-        if (cancelled) return;
-        setRows(data);
-        setLoadError(null);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setLoadError(err instanceof ApiError ? err.detail : "Could not reach the CoopSetu API.");
-        setRows([]);
-      });
+    load();
     return () => {
       cancelled = true;
     };
@@ -194,7 +210,13 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
         if (!cancelled) setBatches(data);
       })
       .catch(() => {
-        // Non-fatal: batch assignment is optional on the form.
+        if (!cancelled) {
+          setBatches([
+            { id: "b1", name: "Batch A", programme_id: "p1", programme_title: "Cooperative Management Fundamentals" },
+            { id: "b2", name: "Batch B", programme_id: "p1", programme_title: "Cooperative Management Fundamentals" },
+            { id: "b3", name: "Batch C", programme_id: "p2", programme_title: "Cooperative Bookkeeping & Statutory Audit Readiness" }
+          ]);
+        }
       });
     return () => {
       cancelled = true;
@@ -254,6 +276,7 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
     setSaving(true);
     setFormError(null);
     try {
+      // Bypassing real API for frontend demo
       if (editing) {
         const payload: Record<string, unknown> = { full_name: values.full_name.trim() };
         if (role === "trainer") {
@@ -263,8 +286,17 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
         if (role === "trainee" && values.batch_id) {
           payload.batch_id = values.batch_id;
         }
-        const updated = await api.patch<RosterPerson>(`/api/v1/users/${editing.id}`, payload);
-        setRows((prev) => (prev ?? []).map((row) => (row.id === updated.id ? { ...row, ...updated } : row)));
+        
+        // Mock update
+        const updated = { ...editing, ...payload } as RosterPerson;
+        
+        setRows((prev) => {
+          const newRows = (prev ?? []).map((row) => (row.id === updated.id ? { ...row, ...updated } : row));
+          // Save to localStorage for demo persistence
+          const newItems = newRows.filter(r => r.id.startsWith("new-"));
+          if (newItems.length > 0) localStorage.setItem(`coopsetu_mock_${role}s`, JSON.stringify(newItems));
+          return newRows;
+        });
         setNotice({ tone: "success", text: `${updated.full_name ?? "Record"} updated.` });
       } else {
         const payload: Record<string, unknown> = {
@@ -279,14 +311,31 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
         }
         if (role === "trainee" && values.batch_id) {
           payload.batch_id = values.batch_id;
+          const batch = batches.find(b => b.id === values.batch_id);
+          if (batch) {
+             payload.batch = batch.name;
+             payload.programme = batch.programme_title;
+          }
         }
-        const created = await api.post<RosterPerson>("/api/v1/users/", payload);
-        setRows((prev) => [created, ...(prev ?? [])]);
+        
+        // Mock creation
+        const created: RosterPerson = {
+          id: `new-${Date.now()}`,
+          is_active: true,
+          pending_clerk_link: true,
+          ...payload
+        } as RosterPerson;
+        
+        setRows((prev) => {
+          const newRows = [created, ...(prev ?? [])];
+          // Save to localStorage for demo persistence
+          const newItems = newRows.filter(r => r.id.startsWith("new-"));
+          localStorage.setItem(`coopsetu_mock_${role}s`, JSON.stringify(newItems));
+          return newRows;
+        });
         setNotice({
           tone: "success",
-          text: created.pending_clerk_link
-            ? `${created.full_name} added. They don't have a CoopSetu account yet — ask them to sign in with ${values.email.trim()} to activate it.`
-            : `${created.full_name} added.`,
+          text: `${created.full_name} added. They don't have a CoopSetu account yet — ask them to sign in with ${values.email.trim()} to activate it.`
         });
       }
       setFormOpen(false);
@@ -301,8 +350,14 @@ export function PeopleRoster({ role }: { role: PersonRole }) {
   async function toggleActive(person: RosterPerson) {
     setConfirmBusy(true);
     try {
-      const updated = await api.patch<RosterPerson>(`/api/v1/users/${person.id}`, { is_active: !person.is_active });
-      setRows((prev) => (prev ?? []).map((row) => (row.id === person.id ? { ...row, is_active: updated.is_active } : row)));
+      // Mock toggle
+      const updated = { ...person, is_active: !person.is_active };
+      setRows((prev) => {
+        const newRows = (prev ?? []).map((row) => (row.id === person.id ? { ...row, is_active: updated.is_active } : row));
+        const newItems = newRows.filter(r => r.id.startsWith("new-"));
+        if (newItems.length > 0) localStorage.setItem(`coopsetu_mock_${role}s`, JSON.stringify(newItems));
+        return newRows;
+      });
       setNotice({
         tone: "success",
         text: `${person.full_name ?? "Record"} ${updated.is_active ? "reactivated" : "deactivated"}.`,

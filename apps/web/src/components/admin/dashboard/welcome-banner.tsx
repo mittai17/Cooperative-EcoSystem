@@ -1,5 +1,43 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
+const CLOCK_TICK_MS = 30_000;
+
+function subscribeToClock(onChange: () => void): () => void {
+  const timer = window.setInterval(onChange, CLOCK_TICK_MS);
+  return () => window.clearInterval(timer);
+}
+
+/** Changes once per tick, so the snapshot is stable between renders. */
+function currentClockTick(): number | null {
+  return Math.floor(Date.now() / CLOCK_TICK_MS);
+}
+
+/** Server and hydration render the empty state, so the markup matches before the clock starts. */
+function serverClockTick(): number | null {
+  return null;
+}
+
+/** Renders the current date and time. Empty until the client has mounted. */
+function LiveClock() {
+  const tick = useSyncExternalStore(subscribeToClock, currentClockTick, serverClockTick);
+  const now = tick === null ? null : new Date(tick * CLOCK_TICK_MS);
+
+  const dateLabel = now?.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) ?? "";
+  const timeLabel = now?.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) ?? "";
+
+  return (
+    <div className="shrink-0 text-left lg:text-right" aria-live="off">
+      <p className="text-xs font-semibold text-slate-800 sm:text-sm dark:text-foreground">{dateLabel || " "}</p>
+      <p className="font-heading my-0.5 text-2xl leading-none font-extrabold tracking-tight text-slate-900 sm:text-[28px] dark:text-foreground">
+        {timeLabel || " "}
+      </p>
+      <p className="text-[11px] font-medium text-slate-500 dark:text-muted-foreground">National Cooperative Training Council</p>
+    </div>
+  );
+}
+
 export function WelcomeBanner() {
   return (
     <section className="relative overflow-hidden rounded-2xl border border-rose-100/90 dark:border-border bg-gradient-to-r from-[#FFF5F5] via-[#FFF8F1] to-[#EFF6FF] px-6 py-5 sm:px-8 shadow-2xs">
@@ -94,18 +132,8 @@ export function WelcomeBanner() {
           </div>
         </div>
 
-        {/* Far Right: Exact Date & Time from reference */}
-        <div className="shrink-0 text-left lg:text-right" suppressHydrationWarning>
-          <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-foreground">
-            Oct 3, 2026
-          </p>
-          <p className="font-heading text-2xl sm:text-[28px] font-extrabold text-slate-900 dark:text-foreground tracking-tight leading-none my-0.5">
-            12:29 PM
-          </p>
-          <p className="text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
-            National Cooperative Training Council
-          </p>
-        </div>
+        {/* Far Right: live date and time, set after mount to avoid a hydration mismatch */}
+        <LiveClock />
       </div>
     </section>
   );

@@ -33,21 +33,21 @@ export function DistributionDonut({ data }: { data: ChartPoint[] }) {
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-bold text-slate-900">{total.toLocaleString("en-IN")}</span>
-          <span className="text-xs text-slate-500">Total</span>
+          <span className="font-heading text-xl font-bold text-foreground">{total.toLocaleString("en-IN")}</span>
+          <span className="text-xs text-muted-foreground">Total</span>
         </div>
       </div>
       <ul className="flex flex-1 flex-col gap-2 text-sm">
         {data.map((entry, index) => (
           <li key={entry.label} className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2 text-slate-700">
+            <span className="flex items-center gap-2 text-foreground">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: DONUT_COLORS[index % DONUT_COLORS.length] }}
               />
               {entry.label}
             </span>
-            <span className="font-semibold text-slate-900">
+            <span className="font-semibold text-foreground">
               {total === 0 ? 0 : Math.round((entry.value / total) * 100)}%
             </span>
           </li>

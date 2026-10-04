@@ -584,7 +584,7 @@ The `?score=` parameter on the old submit route is removed. `scripts/verify_e2e_
    - The web mock's "97.5% TAR at 0.1% FAR" and "InsightFace buffalo_l" text should be removed or qualified. That model has a non-commercial licence.
 4. **Certifying assessments online-only.** I recommend this, because offline answers cannot be timed or trusted. The alternative is to allow offline attempts with a downloaded question set, which needs answers on the device and accepts client timestamps.
 5. **Anonymous fallback and demo login in production.** The optional-auth fallback in `resolve_actor_id` and the demo-login endpoint are both auth bypasses by design. I recommend they are env-gated and off in production. Do you agree?
-6. **"LMS integration" and "cloud ERP" wording.** Today the platform is its own LMS and its own ERP-style modules (timetable, hostel, logistics). Do you want a documented Moodle or OpenEduCat adapter interface (backend, stubbed), or to describe the native modules as the integrated LMS and ERP? I recommend being explicit about which it is.
+6. **"LMS integration" and "cloud ERP" wording.** The platform is its own LMS and its own ERP-style modules (timetable, hostel, logistics). There is no external LMS or ERP adapter, so the native modules are described as the integrated LMS and ERP.
 7. **Sponsor nominations.** Should a cooperative society (employer role) nominate staff on mobile, or is trainee self-nomination with institution review enough?
 8. **NCCT admin mobile view.** Included (4 screens, read-only). Cut it if you want less scope.
 9. **Push notifications.** In-app inbox plus local reminders need nothing extra. Remote push needs a Firebase project and `google-services.json`, which is your account.

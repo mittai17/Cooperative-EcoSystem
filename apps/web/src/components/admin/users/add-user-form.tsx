@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 
+import { FormCard, FormField, FormFooter } from "@/components/admin/trainers/people-ui";
 import { errorMessage } from "@/components/admin/trainers/people-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -65,7 +65,10 @@ export function AddUserForm() {
     // The client's UserInput type is older (it still lists the sub-roles), so the body
     // is asserted to it here.
     const role = roleParam(form.role);
-    if (!role) return;
+    if (!role) {
+      setErrors((prev) => ({ ...prev, role: "Select a role." }));
+      return;
+    }
     const payload: UserInput = {
       full_name: form.name.trim(),
       email: form.email.trim(),
@@ -84,73 +87,67 @@ export function AddUserForm() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="max-w-3xl space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm"
-    >
+    <form onSubmit={handleSubmit} noValidate className="max-w-4xl space-y-5">
       {serverError ? (
         <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {serverError}
         </div>
       ) : null}
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <Field id="user-name" label="Full Name" error={errors.name}>
-          <Input id="user-name" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="e.g. Priya Singh" aria-invalid={!!errors.name} />
-        </Field>
-        <Field id="user-email" label="Email" error={errors.email}>
-          <Input id="user-email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="name@ncct.gov.in" aria-invalid={!!errors.email} />
-        </Field>
-        <Field id="user-role" label="Role" error={errors.role}>
-          <Select value={form.role || null} onValueChange={(value) => update("role", value ? String(value) : "")}>
-            <SelectTrigger id="user-role" className="w-full" aria-invalid={!!errors.role}>
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              {ROLE_OPTIONS.map((role) => (
-                <SelectItem key={role.value} value={role.value}>
-                  {role.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
+      <FormCard
+        title="User details"
+        description="Admin-created users are invites. Sign-in is handled by Clerk, so no password is set here."
+      >
+        <div className="grid gap-5 md:grid-cols-2">
+          <FormField id="user-name" label="Full Name" required error={errors.name}>
+            <Input
+              id="user-name"
+              required
+              value={form.name}
+              onChange={(e) => update("name", e.target.value)}
+              placeholder="e.g. Priya Singh"
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? "user-name-error" : undefined}
+            />
+          </FormField>
+          <FormField id="user-email" label="Email" required error={errors.email}>
+            <Input
+              id="user-email"
+              type="email"
+              required
+              value={form.email}
+              onChange={(e) => update("email", e.target.value)}
+              placeholder="name@ncct.gov.in"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "user-email-error" : undefined}
+            />
+          </FormField>
+          <FormField id="user-role" label="Role" required error={errors.role}>
+            <Select value={form.role || null} onValueChange={(value) => update("role", value ? String(value) : "")}>
+              <SelectTrigger id="user-role" className="w-full" aria-invalid={!!errors.role}>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLE_OPTIONS.map((role) => (
+                  <SelectItem key={role.value} value={role.value}>
+                    {role.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        </div>
 
-      <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
-        <Button variant="outline" type="button" render={<Link href="/admin/user-management" />}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-          Create User
-        </Button>
-      </div>
+        <FormFooter>
+          <Button variant="outline" type="button" render={<Link href="/admin/user-management" />}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+            Create User
+          </Button>
+        </FormFooter>
+      </FormCard>
     </form>
-  );
-}
-
-function Field({
-  id,
-  label,
-  error,
-  children,
-}: {
-  id: string;
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-      {error ? (
-        <p id={`${id}-error`} className="text-xs text-destructive">
-          {error}
-        </p>
-      ) : null}
-    </div>
   );
 }

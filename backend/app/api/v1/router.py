@@ -59,3 +59,5 @@ from app.api.v1 import trainee_ai_interview  # noqa: E402
 api_router.include_router(trainee_ai_interview.router, prefix="/trainee/ai-interview", tags=["Trainee"])
 from app.api.v1 import diksha_content  # noqa: E402
 api_router.include_router(diksha_content.router, prefix="/content/diksha", tags=["Content"])
+from app.api.v1 import learning  # noqa: E402
+api_router.include_router(learning.router, prefix="/learning", tags=["Learning"])

@@ -30,3 +30,7 @@ from app.models.employer_workflow import (  # noqa: F401
 from app.models.job_detail import JobDetail  # noqa: F401
 from app.models.platform_settings import PlatformSetting  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
+from app.models.trainer import (  # noqa: F401
+    BatchCourse, Assignment, AssignmentSubmission, Announcement, DirectMessage, SkillEvaluation, ManualGrade,
+)
+from app.models.learning import LearningResource, LearningProgress, LearningEvent  # noqa: F401

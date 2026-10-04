@@ -361,3 +361,199 @@ async def my_courses(
             {"id": "crs-rural-dev", "title": "Rural Development Fundamentals", "progress": 45, "last_accessed": "2026-09-24"},
         ]
     }
+
+
+class ImportDikshaCourseRequest(BaseModel):
+    diksha_identifier: str
+    category: Optional[str] = "Cooperative Management"
+    level: Optional[str] = "Foundation"
+    skills: list[str] = Field(default_factory=list)
+
+
+class AddResourceToCourseRequest(BaseModel):
+    module_title: str = "Core Lessons"
+    diksha_resource_id: str
+
+
+@router.post("/import-diksha")
+async def import_diksha_course(
+    data: ImportDikshaCourseRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Imports a DIKSHA course/collection into a native CoopSetu Course with modules and lessons."""
+    from integrations.diksha import diksha_service, DikshaNotFound, DikshaUnavailable
+
+    # Check if already imported
+    existing = (
+        await db.execute(
+            select(Course).where(
+                Course.source == "DIKSHA",
+                Course.external_id == data.diksha_identifier,
+            )
+        )
+    ).scalar_one_or_none()
+
+    if existing is not None:
+        return {"status": "already_exists", "course_id": str(existing.id), "title": existing.title}
+
+    # Fetch details or hierarchy
+    try:
+        hierarchy = await diksha_service.get_course_hierarchy(data.diksha_identifier)
+        course_title = hierarchy.title
+        course_desc = hierarchy.description
+        modules_data = hierarchy.modules
+    except (DikshaNotFound, DikshaUnavailable):
+        # Fallback to single resource details
+        try:
+            res = await diksha_service.get_resource_details(data.diksha_identifier)
+            course_title = res.title
+            course_desc = res.description
+            modules_data = []
+        except Exception as exc:
+            raise HTTPException(status_code=404, detail=f"DIKSHA resource {data.diksha_identifier} could not be resolved: {exc}")
+
+    new_course = Course(
+        id=uuid.uuid4(),
+        title=course_title,
+        category=data.category or "Cooperative Education",
+        level=data.level or "Foundation",
+        duration_hours=20,
+        instructor="NCCT / DIKSHA National Learning",
+        rating=4.9,
+        enrolled_count=0,
+        skills=data.skills or ["Cooperative Operations", "Digital Skills"],
+        description=course_desc or "Curated national cooperative learning pathway from DIKSHA.",
+        is_active=True,
+        source="DIKSHA",
+        external_id=data.diksha_identifier,
+        external_url=f"https://diksha.gov.in/play/content/{data.diksha_identifier}",
+        synced_at=datetime.now(timezone.utc),
+    )
+    db.add(new_course)
+    await db.flush()
+
+    # Add modules & lessons
+    if modules_data:
+        for idx, mod in enumerate(modules_data[:8], start=1):
+            new_mod = Module(
+                id=uuid.uuid4(),
+                course_id=new_course.id,
+                title=mod.name,
+                position=idx,
+                duration_minutes=mod.duration or 30,
+                summary=mod.description or f"Module {idx} for {course_title}",
+                source="DIKSHA",
+                external_id=mod.identifier,
+            )
+            db.add(new_mod)
+            await db.flush()
+
+            # Add lessons
+            for l_idx, lesson_node in enumerate(mod.children[:5], start=1):
+                new_lesson = Lesson(
+                    id=uuid.uuid4(),
+                    module_id=new_mod.id,
+                    title=lesson_node.name,
+                    position=l_idx,
+                    lesson_type="video" if "video" in (lesson_node.mime_type or "") else "document" if "pdf" in (lesson_node.mime_type or "") else "mixed",
+                    duration_min=15,
+                    source="DIKSHA",
+                    external_id=lesson_node.identifier,
+                    external_url=lesson_node.artifact_url,
+                )
+                db.add(new_lesson)
+    else:
+        # Single module course
+        new_mod = Module(
+            id=uuid.uuid4(),
+            course_id=new_course.id,
+            title="Module 1: Core Content",
+            position=1,
+            duration_minutes=45,
+            summary=course_desc or "Primary instruction module",
+            source="DIKSHA",
+            external_id=data.diksha_identifier,
+        )
+        db.add(new_mod)
+        await db.flush()
+
+        new_lesson = Lesson(
+            id=uuid.uuid4(),
+            module_id=new_mod.id,
+            title=course_title,
+            position=1,
+            lesson_type="video",
+            duration_min=30,
+            source="DIKSHA",
+            external_id=data.diksha_identifier,
+        )
+        db.add(new_lesson)
+
+    await db.commit()
+    return {
+        "status": "imported",
+        "course_id": str(new_course.id),
+        "title": new_course.title,
+        "modules_count": len(modules_data) if modules_data else 1,
+    }
+
+
+@router.post("/{course_id}/add-resource")
+async def add_resource_to_course(
+    course_id: str,
+    data: AddResourceToCourseRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Adds an approved DIKSHA learning resource into a course module."""
+    if not _is_uuid(course_id):
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    course = (await db.execute(select(Course).where(Course.id == uuid.UUID(course_id)))).scalar_one_or_none()
+    if course is None:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    from integrations.diksha import diksha_service
+    res = await diksha_service.get_resource_details(data.diksha_resource_id)
+
+    # Find or create module
+    mod = (
+        await db.execute(
+            select(Module)
+            .where(Module.course_id == course.id, Module.title == data.module_title)
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+
+    if mod is None:
+        mod = Module(
+            id=uuid.uuid4(),
+            course_id=course.id,
+            title=data.module_title,
+            position=1,
+            source="DIKSHA",
+        )
+        db.add(mod)
+        await db.flush()
+
+    new_lesson = Lesson(
+        id=uuid.uuid4(),
+        module_id=mod.id,
+        title=res.title,
+        lesson_type="video" if res.content_type == "video" else "document" if res.content_type == "document" else "mixed",
+        duration_min=(res.duration // 60) if res.duration else 15,
+        source="DIKSHA",
+        external_id=res.external_id,
+        external_url=res.artifact_url or res.player_url,
+    )
+    db.add(new_lesson)
+    await db.commit()
+
+    return {
+        "status": "added",
+        "course_id": str(course.id),
+        "module_id": str(mod.id),
+        "lesson_id": str(new_lesson.id),
+        "lesson_title": new_lesson.title,
+        "license_status": res.license_status,
+        "attribution": res.attribution,
+    }

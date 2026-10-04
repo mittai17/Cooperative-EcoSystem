@@ -1,0 +1,1 @@
+"""CoopSetu external platform integrations."""

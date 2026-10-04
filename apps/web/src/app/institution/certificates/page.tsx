@@ -246,11 +246,9 @@ export default function CertificatesPage() {
                         {issuing.has(cert.id) ? "Issuing…" : "Issue"}
                       </Button>
                     ) : cert.status === "Issued" && cert.certificateId ? (
-                      <Link className="contents" href={`/verify-certificate/${cert.certificateId}`}>
-                        <Button variant="ghost" size="sm" className="gap-1.5" nativeButton={false}>
-                          <ExternalLink className="size-3.5" /> View
-                        </Button>
-                      </Link>
+                      <Button variant="ghost" size="sm" className="gap-1.5" render={<Link href={`/verify-certificate/${cert.certificateId}`} />}>
+                        <ExternalLink className="size-3.5" /> View
+                      </Button>
                     ) : (
                       <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
                         Pending

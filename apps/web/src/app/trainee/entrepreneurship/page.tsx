@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { Lightbulb, Users, LineChart, Info } from "lucide-react";
 
 export default function EntrepreneurshipPage() {
@@ -38,7 +39,7 @@ export default function EntrepreneurshipPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" variant="secondary">Explore Model</Button>
+                <Button render={<Link href="/trainee/programmes" />} className="w-full" variant="secondary">Explore Model</Button>
               </CardFooter>
             </Card>
 
@@ -57,7 +58,7 @@ export default function EntrepreneurshipPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" variant="secondary">Explore Model</Button>
+                <Button render={<Link href="/trainee/programmes" />} className="w-full" variant="secondary">Explore Model</Button>
               </CardFooter>
             </Card>
           </div>
@@ -80,7 +81,7 @@ export default function EntrepreneurshipPage() {
                   <span className="text-sm font-medium">Financial Modeling</span>
                   <Badge variant="destructive">Missing</Badge>
                 </div>
-                <Button className="w-fit mt-2" size="sm">View Learning Path</Button>
+                <Button render={<Link href="/trainee/my-learning" />} className="w-fit mt-2" size="sm">View Learning Path</Button>
               </div>
             </CardContent>
           </Card>
@@ -108,7 +109,7 @@ export default function EntrepreneurshipPage() {
                   <p className="text-xs text-muted-foreground">NCCT Startup Advisor</p>
                 </div>
               </div>
-              <Button variant="outline" className="w-full mt-2">Request Mentorship</Button>
+              <Button render={<Link href="/trainee/career-ai" />} variant="outline" className="w-full mt-2">Request Mentorship</Button>
             </CardContent>
           </Card>
         </div>

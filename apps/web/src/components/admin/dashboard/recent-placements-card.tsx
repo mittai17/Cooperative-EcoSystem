@@ -3,47 +3,16 @@
 import Link from "next/link";
 import { Briefcase, ArrowRight } from "lucide-react";
 
+const AVATAR_COLORS = [
+  "bg-rose-500", "bg-blue-500", "bg-emerald-500", "bg-violet-500", "bg-amber-500",
+];
+
 const PLACEMENTS = [
-  {
-    candidate: "Kiran Deshmukh",
-    role: "Quality Control Executive",
-    employer: "Amul Dairy",
-    date: "Oct 3, 2026",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=face",
-    initials: "KD",
-  },
-  {
-    candidate: "Amit Verma",
-    role: "Data Analyst",
-    employer: "GCMMF",
-    date: "Oct 2, 2026",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face",
-    initials: "AV",
-  },
-  {
-    candidate: "Neha Patel",
-    role: "Operations Trainee",
-    employer: "Saras Dairy",
-    date: "Oct 1, 2026",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=face",
-    initials: "NP",
-  },
-  {
-    candidate: "Rahul Thakur",
-    role: "Supply Chain Executive",
-    employer: "IFFCO",
-    date: "Sep 30, 2026",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=64&h=64&fit=crop&crop=face",
-    initials: "RT",
-  },
-  {
-    candidate: "Meera Singh",
-    role: "HR Assistant",
-    employer: "NCDC",
-    date: "Sep 30, 2026",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
-    initials: "MS",
-  },
+  { candidate: "Kiran Deshmukh",  role: "Quality Control Executive", employer: "Amul Dairy", date: "Oct 3, 2026",  initials: "KD" },
+  { candidate: "Amit Verma",      role: "Data Analyst",              employer: "GCMMF",      date: "Oct 2, 2026",  initials: "AV" },
+  { candidate: "Neha Patel",      role: "Operations Trainee",        employer: "Saras Dairy", date: "Oct 1, 2026", initials: "NP" },
+  { candidate: "Rahul Thakur",    role: "Supply Chain Executive",    employer: "IFFCO",      date: "Sep 30, 2026", initials: "RT" },
+  { candidate: "Meera Singh",     role: "HR Assistant",              employer: "NCDC",       date: "Sep 30, 2026", initials: "MS" },
 ];
 
 export function RecentPlacementsCard() {
@@ -80,14 +49,9 @@ export function RecentPlacementsCard() {
               <tr key={idx} className="hover:bg-slate-50/60 dark:hover:bg-muted/40 transition-colors">
                 <td className="py-2.5 pr-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <img
-                      src={item.avatar}
-                      alt={item.candidate}
-                      className="size-6 shrink-0 rounded-full object-cover border border-slate-200"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
+                    <span className={`size-6 shrink-0 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                      {item.initials}
+                    </span>
                     <span className="font-heading font-semibold text-slate-900 dark:text-foreground truncate text-xs">
                       {item.candidate}
                     </span>

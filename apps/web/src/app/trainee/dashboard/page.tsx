@@ -84,6 +84,11 @@ export default function TraineeDashboardRedesign() {
 
   // Calendar State
   const [currentDate, setCurrentDate] = useState(new Date(2026, 9, 1)); // Starts at Oct 2026
+  const [savedProgs, setSavedProgs] = useState<Record<number, boolean>>({});
+  
+  const toggleSaved = (index: number) => {
+    setSavedProgs(prev => ({ ...prev, [index]: !prev[index] }));
+  };
   
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const startDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay(); // 0 = Sunday
@@ -94,11 +99,11 @@ export default function TraineeDashboardRedesign() {
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
 
   const KPIS = [
-    { icon: BookOpen, value: MOCK_PROGRAMMES.length.toString(), title: "Available Programmes", desc: "Across 7 institutions", color: "text-red-500", bg: "bg-red-50" },
-    { icon: FileText, value: myApps.length.toString(), title: "My Applications", desc: `${approvedApps} approved • ${pendingApps} pending`, color: "text-purple-500", bg: "bg-purple-50" },
-    { icon: TrendingUp, value: "3", title: "Active Courses", desc: "Continue learning", color: "text-pink-500", bg: "bg-pink-50" },
-    { icon: Award, value: "2", title: "Certificates", desc: "View your achievements", color: "text-orange-500", bg: "bg-orange-50" },
-    { icon: Briefcase, value: "6", title: "Job Opportunities", desc: "Based on your skills", color: "text-violet-500", bg: "bg-violet-50" },
+    { icon: BookOpen, value: MOCK_PROGRAMMES.length.toString(), title: "Available Programmes", desc: "Across 7 institutions", color: "text-red-500", bg: "bg-red-50", href: "/trainee/programmes" },
+    { icon: FileText, value: myApps.length.toString(), title: "My Applications", desc: `${approvedApps} approved • ${pendingApps} pending`, color: "text-purple-500", bg: "bg-purple-50", href: "/trainee/applications" },
+    { icon: TrendingUp, value: "3", title: "Active Courses", desc: "Continue learning", color: "text-pink-500", bg: "bg-pink-50", href: "/trainee/my-learning" },
+    { icon: Award, value: "2", title: "Certificates", desc: "View your achievements", color: "text-orange-500", bg: "bg-orange-50", href: "/trainee/certificates" },
+    { icon: Briefcase, value: "6", title: "Job Opportunities", desc: "Based on your skills", color: "text-violet-500", bg: "bg-violet-50", href: "/jobs" },
   ];
 
   const RECOMMENDED = MOCK_PROGRAMMES.slice(0, 3).map((p, i) => ({
@@ -107,7 +112,7 @@ export default function TraineeDashboardRedesign() {
     mode: p.mode,
     start: new Date(p.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
     tags: p.skills.slice(0, 3),
-    img: i === 0 ? "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80" : i === 1 ? "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80" : "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=600&q=80",
+    img: ["from-orange-400 to-rose-500", "from-violet-500 to-blue-500", "from-emerald-400 to-teal-600"][i],
     badge: i === 0 ? { text: "Popular", icon: TrendingUp, color: "bg-amber-100 text-amber-700" } : i === 1 ? { text: "Trending", icon: TrendingUp, color: "bg-orange-100 text-orange-700" } : { text: "New", icon: TrendingUp, color: "bg-green-100 text-green-700" }
   }));
 
@@ -117,8 +122,8 @@ export default function TraineeDashboardRedesign() {
       {/* 1. TOP BANNER */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-50 to-orange-100/50 border border-orange-100/60 p-8 flex flex-col md:flex-row items-center justify-between min-h-[180px] w-full">
         {/* Background Graphic (Mockup style) */}
-        <div className="absolute right-0 top-0 bottom-0 w-[50%] opacity-90 mix-blend-multiply pointer-events-none hidden md:block" 
-             style={{ backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop')", backgroundSize: 'cover', backgroundPosition: 'center right', maskImage: 'linear-gradient(to right, transparent, black 60%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 60%)' }} />
+        <div className="absolute right-0 top-0 bottom-0 w-[45%] opacity-20 pointer-events-none hidden md:block"
+             style={{ background: 'linear-gradient(135deg, transparent 0%, hsl(var(--primary)/0.4) 100%)' }} />
         
         <div className="relative z-10 max-w-xl">
           <h1 className="text-3xl md:text-4xl font-extrabold font-heading text-foreground mb-3 tracking-tight">
@@ -143,21 +148,23 @@ export default function TraineeDashboardRedesign() {
         {KPIS.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
-            <Card key={i} className="hover:shadow-md transition-shadow cursor-pointer group rounded-2xl border border-border/60">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={cn("p-2.5 rounded-xl", kpi.bg, kpi.color)}>
-                      <Icon className="size-5" />
+            <Link key={i} href={kpi.href}>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer group rounded-2xl border border-border/60">
+                <CardContent className="p-5 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={cn("p-2.5 rounded-xl", kpi.bg, kpi.color)}>
+                        <Icon className="size-5" />
+                      </div>
+                      <span className="text-3xl font-bold font-heading text-foreground">{kpi.value}</span>
                     </div>
-                    <span className="text-3xl font-bold font-heading text-foreground">{kpi.value}</span>
+                    <h3 className="font-semibold text-sm text-foreground">{kpi.title}</h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{kpi.desc}</p>
                   </div>
-                  <h3 className="font-semibold text-sm text-foreground">{kpi.title}</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{kpi.desc}</p>
-                </div>
-                <ChevronRight className="size-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0" />
-              </CardContent>
-            </Card>
+                  <ChevronRight className="size-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0" />
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>
@@ -170,7 +177,7 @@ export default function TraineeDashboardRedesign() {
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <TrendingUp className="size-4 text-primary" /> My Learning Progress
             </CardTitle>
-            <Link href="#" className="text-xs font-bold text-primary hover:underline">View Details</Link>
+            <Link href="/trainee/my-learning" className="text-xs font-bold text-primary hover:underline">View Details</Link>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row items-center gap-8 pt-4 pb-6">
             <div className="shrink-0 pl-2">
@@ -198,7 +205,7 @@ export default function TraineeDashboardRedesign() {
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <CalendarIcon className="size-4 text-primary" /> Upcoming Schedule
             </CardTitle>
-            <Link href="#" className="text-xs font-bold text-primary hover:underline">View Calendar</Link>
+            <Link href="/trainee/dashboard" className="text-xs font-bold text-primary hover:underline">View Calendar</Link>
           </CardHeader>
           <CardContent className="pt-4 space-y-5 pb-6">
             {SCHEDULE.map((item, i) => (
@@ -273,16 +280,19 @@ export default function TraineeDashboardRedesign() {
           <CardContent className="pt-4 flex gap-4 overflow-x-auto pb-4 px-6 -mx-6 custom-scrollbar">
             {RECOMMENDED.map((prog, i) => (
               <div key={i} className="min-w-[260px] max-w-[260px] flex flex-col rounded-xl border border-border overflow-hidden group hover:shadow-md transition-shadow bg-card shrink-0">
-                <div className="relative h-32 w-full overflow-hidden">
+                <div className={`relative h-32 w-full overflow-hidden bg-gradient-to-br ${prog.img} flex items-center justify-center`}>
                   <div className="absolute inset-0 bg-black/10 z-10" />
-                  <img src={prog.img} alt={prog.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                  <span className="text-6xl font-black text-white/20 select-none font-heading">{prog.title.charAt(0)}</span>
                   <div className="absolute top-2 left-2 z-20">
                     <Badge className={cn("text-[10px] font-bold px-1.5 py-0 border-none shadow-sm flex items-center gap-1", prog.badge.color)}>
                       <prog.badge.icon className="size-3" /> {prog.badge.text}
                     </Badge>
                   </div>
-                  <button className="absolute top-2 right-2 z-20 size-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-background transition-colors">
-                    <Heart className="size-3.5" />
+                  <button 
+                    onClick={() => toggleSaved(i)}
+                    className="absolute top-2 right-2 z-20 size-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center transition-colors hover:bg-background"
+                  >
+                    <Heart className={cn("size-3.5 transition-colors", savedProgs[i] ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-500")} />
                   </button>
                 </div>
                 <div className="p-4 flex flex-col flex-1">
@@ -301,12 +311,8 @@ export default function TraineeDashboardRedesign() {
                     ))}
                   </div>
                   <div className="mt-auto flex gap-2">
-                    <Link href="/trainee/programmes" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full h-8 text-xs text-primary border-primary/20 hover:bg-primary/5">View Details</Button>
-                    </Link>
-                    <Link href="/trainee/programmes" className="flex-1">
-                      <Button size="sm" className="w-full h-8 text-xs">Apply Now</Button>
-                    </Link>
+                    <Button render={<Link href="/trainee/programmes" />} variant="outline" size="sm" className="flex-1 w-full h-8 text-xs text-primary border-primary/20 hover:bg-primary/5">View Details</Button>
+                    <Button render={<Link href="/trainee/programmes" />} size="sm" className="flex-1 w-full h-8 text-xs">Apply Now</Button>
                   </div>
                 </div>
               </div>
@@ -320,7 +326,7 @@ export default function TraineeDashboardRedesign() {
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <ActivityIcon className="size-4 text-primary" /> My Recent Activity
             </CardTitle>
-            <Link href="#" className="text-xs font-bold text-primary hover:underline">View All</Link>
+            <Link href="/trainee/profile" className="text-xs font-bold text-primary hover:underline">View All</Link>
           </CardHeader>
           <CardContent className="pt-4 pb-6">
             <div className="space-y-5">
@@ -367,7 +373,7 @@ export default function TraineeDashboardRedesign() {
                     <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="size-3" /> {job.loc}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="w-full h-7 text-xs text-primary border-primary hover:bg-primary hover:text-white transition-colors">
+                <Button render={<Link href="/jobs" />} variant="outline" size="sm" className="w-full h-7 text-xs text-primary border-primary hover:bg-primary hover:text-white transition-colors">
                   Apply Now
                 </Button>
               </div>

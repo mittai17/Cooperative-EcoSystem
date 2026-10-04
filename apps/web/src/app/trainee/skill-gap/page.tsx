@@ -237,7 +237,7 @@ export default function SkillGapPage() {
                     </div>
                     <Badge variant="secondary" className="shrink-0 text-xs">{course.duration}</Badge>
                   </div>
-                  <Link className="contents" href="/courses"><Button size="sm" variant="outline" className="w-fit text-xs"   nativeButton={false}>Enrol Now <ArrowRight className="ml-1 size-3" /></Button></Link>
+                  <Button render={<Link href="/courses" />} size="sm" variant="outline" className="w-fit text-xs" nativeButton={false}>Enrol Now <ArrowRight className="ml-1 size-3" /></Button>
                 </div>
               ))}
             </CardContent>
@@ -254,7 +254,7 @@ export default function SkillGapPage() {
                 close your skill gaps. Estimated time to full readiness:{" "}
                 <strong>{role.recommendedCourses.reduce((sum, c) => sum + parseInt(c.duration), 0)} weeks</strong>.
               </p>
-              <Link className="contents" href="/career-ai"><Button className="mt-1 w-full" size="sm"   nativeButton={false}>Get Full Career Plan</Button></Link>
+              <Button render={<Link href="/career-ai" />} className="mt-1 w-full" size="sm" nativeButton={false}>Get Full Career Plan</Button>
             </CardContent>
           </Card>
         </div>

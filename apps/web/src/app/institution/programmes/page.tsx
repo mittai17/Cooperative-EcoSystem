@@ -67,6 +67,17 @@ function ProgrammesPageContent() {
     const newStatus = prog?.status === "Active" ? "Archived" : "Active";
     const updated = programmes.map((p) => (p.id === id ? { ...p, status: newStatus } : p));
     setProgrammes(updated);
+    try {
+      const stored = localStorage.getItem("coopsetu_institution_programmes");
+      if (stored) {
+        const customProgs = JSON.parse(stored) as ProgrammeSummaryItem[];
+        const customUpdated = customProgs.map((p) => (p.id === id ? { ...p, status: newStatus } : p));
+        localStorage.setItem("coopsetu_institution_programmes", JSON.stringify(customUpdated));
+      } else {
+        // If it's a default programme that was archived, save the updated state
+        localStorage.setItem("coopsetu_institution_programmes", JSON.stringify(updated));
+      }
+    } catch {}
     setNotice(`"${prog?.title}" marked as ${newStatus}.`);
     setTimeout(() => setNotice(null), 4000);
   };
@@ -85,7 +96,7 @@ function ProgrammesPageContent() {
         title="Programmes"
         description="Manage your training programmes, cohorts, curriculum, and batch enrolment."
         action={
-          <Link className="contents" href="/institution/programmes/create"><Button   nativeButton={false}><Plus className="mr-1.5 size-4" /> Create Programme</Button></Link>
+          <Button render={<Link href="/institution/programmes/create" />}><Plus className="mr-1.5 size-4" /> Create Programme</Button>
         }
       />
 
@@ -157,7 +168,7 @@ function ProgrammesPageContent() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Link className="contents" href="/programmes"><Button variant="ghost" size="sm"   nativeButton={false}><Eye className="size-3.5 mr-1" /> View</Button></Link>
+                      <Button variant="ghost" size="sm" render={<Link href={`/courses/${programme.id}`} />}><Eye className="size-3.5 mr-1" /> View</Button>
                       <Button
                         variant="ghost"
                         size="sm"

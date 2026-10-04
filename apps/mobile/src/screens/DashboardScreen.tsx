@@ -11,7 +11,17 @@ import { Badge } from '../components/Badge';
 import { IconChip } from '../components/IconChip';
 import { ProgressBar } from '../components/ProgressBar';
 import { CourseThumb } from '../components/CourseThumb';
-import { QrCode, Award, GraduationCap, Download, MapPin, ChevronRight } from 'lucide-react-native';
+import {
+  QrCode,
+  Award,
+  GraduationCap,
+  Download,
+  MapPin,
+  ChevronRight,
+  BookOpen,
+  Briefcase,
+  TrendingUp,
+} from 'lucide-react-native';
 import { Course, JobMatch } from '../types';
 import { useAuthContext } from '../navigation/AuthContext';
 
@@ -94,9 +104,11 @@ export const DashboardScreen = ({ navigation }: any) => {
   const firstName = ((trainee?.name || user?.fullName || user?.email || '').split(/[\s@]/)[0]) ?? '';
 
   const stats = [
+    { label: 'Active courses', value: `${courses.length}`, Icon: BookOpen, tint: COLORS.primarySurface },
     { label: 'Attendance', value: data.attendance === null ? '-' : `${data.attendance}%` },
     { label: 'Skill strength', value: data.skillStrength === null ? '-' : `${data.skillStrength}%` },
     { label: 'Verified skills', value: data.verifiedSkills === null ? '-' : `${data.verifiedSkills}` },
+    { label: 'Job matches', value: `${jobs.length}`, Icon: Briefcase, tint: COLORS.primarySurface },
   ];
 
   const continueCourse = continueItem?.course;
@@ -121,11 +133,19 @@ export const DashboardScreen = ({ navigation }: any) => {
         <Text style={styles.greetingSub} numberOfLines={1}>
           {trainee?.enrolled_institution ?? user?.organisation?.name ?? ''}
         </Text>
+        <Text style={styles.greetingCopy}>
+          Continue learning, build your skills, and grow your cooperative future with NURVEX.
+        </Text>
       </View>
 
       <View style={styles.statsRow}>
         {stats.map((s) => (
           <View key={s.label} style={styles.statBox} accessible accessibilityLabel={`${s.label}: ${s.value}`}>
+            {'Icon' in s && s.Icon ? (
+              <View style={[styles.statIcon, { backgroundColor: s.tint }]}>
+                {React.createElement(s.Icon, { size: ICON.sm, color: COLORS.primary })}
+              </View>
+            ) : null}
             <Text style={styles.statValue}>{s.value}</Text>
             <Text style={styles.statLabel} numberOfLines={1}>
               {s.label}
@@ -194,9 +214,37 @@ export const DashboardScreen = ({ navigation }: any) => {
 
       <View>
         <SectionHeader
-          title="Top job matches"
+          title="My learning progress"
+          actionLabel="View details"
+          onAction={() => navigation.navigate('LearnTab')}
+        />
+        <View style={styles.progressPanel}>
+          <View style={styles.progressPanelHeader}>
+            <View style={styles.progressIcon}>
+              <TrendingUp size={ICON.md} color={COLORS.primary} />
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.cardTitle}>Your active learning pathway</Text>
+              <Text style={styles.cardMeta}>{withProgress.length} courses in your NURVEX workspace</Text>
+            </View>
+          </View>
+          {withProgress.slice(0, 3).map(({ course, progress }) => (
+            <View key={course.id} style={styles.courseProgressRow}>
+              <View style={styles.courseProgressLabelRow}>
+                <Text style={styles.cardMeta} numberOfLines={1}>{course.title}</Text>
+                <Text style={styles.progressText}>{progress}%</Text>
+              </View>
+              <ProgressBar value={progress} />
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View>
+        <SectionHeader
+          title="Career opportunities"
           actionLabel="See all"
-          onAction={() => navigation.navigate('JobsTab')}
+          onAction={() => navigation.navigate('CareerTab')}
         />
         {jobs.length === 0 ? (
           <EmptyState title="No jobs available" message="Pull down to refresh." />
@@ -207,7 +255,7 @@ export const DashboardScreen = ({ navigation }: any) => {
                 key={job.id}
                 style={styles.jobCard}
                 activeOpacity={0.8}
-                onPress={() => navigation.navigate('JobsTab')}
+                onPress={() => navigation.navigate('CareerTab')}
                 accessibilityRole="button"
                 accessibilityLabel={`${job.title}, ${job.employer}. Open jobs.`}
               >
@@ -253,14 +301,23 @@ const styles = StyleSheet.create({
   greetingBlock: { gap: 2 },
   greetingName: { ...TEXT.title },
   greetingSub: { ...TEXT.caption },
-  statsRow: { flexDirection: 'row', gap: SPACE.sm },
+  greetingCopy: { ...TEXT.body, color: COLORS.textSecondary, marginTop: SPACE.sm },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
   statBox: {
     ...CARD,
-    flex: 1,
+    width: '31%',
+    minWidth: 96,
     paddingVertical: SPACE.md,
     paddingHorizontal: SPACE.sm,
     alignItems: 'center',
     gap: SPACE.xs,
+  },
+  statIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statValue: { ...TEXT.title },
   statLabel: { ...TEXT.caption },
@@ -291,6 +348,18 @@ const styles = StyleSheet.create({
   cardMeta: { ...TEXT.caption },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm },
   progressText: { ...TEXT.captionStrong, color: COLORS.primary },
+  progressPanel: { ...CARD, padding: SPACE.md, gap: SPACE.md },
+  progressPanelHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm },
+  progressIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: COLORS.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  courseProgressRow: { gap: SPACE.xs },
+  courseProgressLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: SPACE.sm },
   jobCard: { ...CARD, padding: SPACE.md, gap: SPACE.sm },
   jobHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: SPACE.sm },
   matchPercent: { ...TEXT.bodyStrong, color: COLORS.primary },

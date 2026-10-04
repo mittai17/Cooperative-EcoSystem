@@ -71,6 +71,7 @@ export const StartSessionScreen = () => {
         room: room.trim(),
         allowed_methods: methods,
         is_rotating: rotatingQr,
+        slot_id: slotId,
       });
 
       setLaunching(false);

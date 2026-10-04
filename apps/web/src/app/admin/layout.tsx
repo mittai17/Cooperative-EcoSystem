@@ -375,7 +375,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <div className="flex min-w-0 flex-1 flex-col px-4 pt-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 shrink-0 flex-col px-4 pt-4 sm:px-6 lg:px-8">
           <AdminBreadcrumb pathname={pathname} />
         </div>
 

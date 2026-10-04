@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Logo } from "@/components/brand/logo";
 import { LoopDiagram } from "@/components/landing/loop-diagram";
 import { ROLE_OPTIONS } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -54,9 +55,11 @@ export default function LandingPage() {
       <section className="border-b border-border">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 pt-10 pb-14 sm:px-6 lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-8 lg:pt-16">
           <div className="lg:col-span-6">
-            <Badge variant="outline" className="gap-1.5 border-border bg-muted/70 text-foreground">
-              <Star className="size-3 fill-primary text-primary" />
-              AI Powered <span className="text-muted-foreground">|</span> NCCT Initiative
+            <Badge variant="outline" className="gap-2 border-border bg-muted/70 py-1 px-3 text-foreground shadow-xs">
+              <Logo variant="emblem" size="sm" iconClassName="size-4.5" />
+              <span className="font-semibold text-xs sm:text-sm">CoopSetu AI</span>
+              <span className="text-muted-foreground">|</span>
+              <span className="text-xs sm:text-sm text-muted-foreground font-medium">NCCT Initiative</span>
             </Badge>
             <h1 className="mt-5 text-4xl leading-[1.08] font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-[3.4rem]">
               From Learning

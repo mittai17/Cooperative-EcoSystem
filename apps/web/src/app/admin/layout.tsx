@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/logo";
-import { RoleSwitcherPills } from "@/components/admin/shared/role-switcher-pills";
+import { DemoRoleSwitcherBanner } from "@/components/auth/demo-role-switcher-banner";
 import { AdminBetaBadge } from "@/components/admin/shared/admin-page-header";
 import {
   DropdownMenu,
@@ -320,7 +320,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Role switcher kept for evaluator navigation across personas */}
-        <RoleSwitcherPills currentRole="admin" />
+        <DemoRoleSwitcherBanner currentRole="admin" />
 
         <header className="sticky top-0 z-30 flex h-15 items-center justify-between gap-3 border-b border-border/80 bg-white/95 px-4 backdrop-blur sm:px-6 dark:bg-card/95">
           <button

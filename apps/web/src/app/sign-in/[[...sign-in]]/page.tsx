@@ -10,7 +10,7 @@ export default function SignInPage() {
       {/* Top Header */}
       <div className="mx-auto w-full max-w-6xl flex items-center justify-between pb-6">
         <Link href="/" className="flex items-center gap-2">
-          <Logo size="sm" />
+          <Logo />
         </Link>
         <Link
           href="/"

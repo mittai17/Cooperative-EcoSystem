@@ -33,6 +33,15 @@ export const metadata: Metadata = {
   description:
     "CoopSetu AI connects cooperative training directly to skills and employment through an AI-powered closed loop: registration, training, certification, job matching, and employer feedback in one ecosystem.",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/brand/logo-emblem.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/brand/logo-emblem.png", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

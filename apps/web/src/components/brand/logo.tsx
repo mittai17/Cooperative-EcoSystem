@@ -1,51 +1,171 @@
-import { Diamond } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-interface LogoProps {
+export interface LogoProps {
   className?: string;
   iconClassName?: string;
   textClassName?: string;
-  /** Render the mark on a dark/photo background (white wordmark; the icon
-   * tile itself is solid brand red and already reads fine on any surface). */
+  /**
+   * Render the mark on a dark or photo background (forces white wordmark).
+   * In standard mode, the wordmark automatically adapts to system/Tailwind dark mode.
+   */
   inverted?: boolean;
+  /**
+   * Size presets:
+   * - "sm": compact (sidebars, dense headers, modals)
+   * - "default": standard (public nav, footers, headers)
+   * - "lg": prominent (hero sections, landing highlights)
+   */
   size?: "sm" | "default" | "lg";
+  /**
+   * Variant:
+   * - "default" (or "mark"): Official glossy ribbon emblem + responsive text typography
+   * - "full": Full official graphic wordmark with emblem, typography, and tagline
+   * - "emblem": Official glossy ribbon emblem icon only (no typography)
+   */
+  variant?: "default" | "mark" | "full" | "emblem";
+  /**
+   * Next.js Image priority loading (default: true for instant LCP)
+   */
+  priority?: boolean;
 }
 
 const sizeMap = {
-  sm: { icon: "size-7", glyph: "size-3.5", text: "text-base" },
-  default: { icon: "size-8", glyph: "size-4.5", text: "text-lg" },
-  lg: { icon: "size-10", glyph: "size-5", text: "text-2xl" },
-};
+  sm: {
+    emblemPx: 30,
+    emblemClass: "size-[30px]",
+    textClass: "text-base tracking-tight leading-none",
+    gap: "gap-2.5",
+    fullWidth: 92,
+    fullHeight: 35,
+    fullClass: "h-[30px] w-auto",
+  },
+  default: {
+    emblemPx: 38,
+    emblemClass: "size-[38px]",
+    textClass: "text-xl tracking-tight leading-none",
+    gap: "gap-2.5",
+    fullWidth: 120,
+    fullHeight: 46,
+    fullClass: "h-[38px] w-auto",
+  },
+  lg: {
+    emblemPx: 52,
+    emblemClass: "size-[52px]",
+    textClass: "text-2xl sm:text-3xl tracking-tight leading-none",
+    gap: "gap-3",
+    fullWidth: 160,
+    fullHeight: 61,
+    fullClass: "h-[50px] w-auto",
+  },
+} as const;
 
 /**
- * Shared "CoopSetu AI" wordmark: a solid red rounded-square icon tile with a
- * white diamond mark, plus "CoopSetu" in dark navy and "AI" in the brand
- * red -- matches the definitive reference mockup's logo treatment (the
- * wordmark now explicitly spells out "AI"). The underlying app/package name
- * stays "CoopSetu AI" in metadata.
+ * Official CoopSetu AI Brand Logo Component.
+ *
+ * Integrates the official 3D glossy red ribbon book emblem and official wordmark:
+ * - Default: Ribbon emblem alongside bold responsive typography ("CoopSetu AI").
+ * - Full: The complete official brand logo graphic with the "Learn • Skill • Work • Grow Together" tagline.
+ * - Emblem: Standalone ribbon emblem icon.
+ *
+ * Fully supports dark mode, light mode, and inverted backgrounds.
  */
-export function Logo({ className, iconClassName, textClassName, inverted, size = "default" }: LogoProps) {
+export function Logo({
+  className,
+  iconClassName,
+  textClassName,
+  inverted = false,
+  size = "default",
+  variant = "default",
+  priority = true,
+}: LogoProps) {
   const s = sizeMap[size];
-  return (
-    <span className={cn("inline-flex items-center gap-2.5 font-heading font-extrabold tracking-tight select-none", s.text, className)}>
-      <svg
-        viewBox="0 0 36 36"
-        className={cn("shrink-0", s.icon, iconClassName)}
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M18 2.2 L31.8 10.2 V25.8 L18 33.8 L4.2 25.8 V10.2 Z"
-          fill="#E30B1C"
+
+  // Full Wordmark Graphic Logo (with tagline)
+  if (variant === "full") {
+    return (
+      <span className={cn("inline-flex items-center select-none", className)}>
+        {/* Light mode full graphic logo */}
+        <Image
+          src="/brand/logo-full.png"
+          alt="CoopSetu AI - Learn, Skill, Work, Grow Together"
+          width={s.fullWidth}
+          height={s.fullHeight}
+          priority={priority}
+          unoptimized
+          className={cn(
+            "object-contain select-none",
+            inverted ? "hidden" : "block dark:hidden",
+            s.fullClass,
+            iconClassName
+          )}
         />
-        <circle cx="18" cy="11.5" r="2.8" fill="white" />
-        <circle cx="11.5" cy="22.5" r="2.8" fill="white" />
-        <circle cx="24.5" cy="22.5" r="2.8" fill="white" />
-        <line x1="18" y1="11.5" x2="11.5" y2="22.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-        <line x1="18" y1="11.5" x2="24.5" y2="22.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-        <line x1="11.5" y1="22.5" x2="24.5" y2="22.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-      <span className={cn(inverted ? "text-white" : "text-slate-900 dark:text-white", "font-extrabold", textClassName)}>
+        {/* Dark mode / Inverted full graphic logo */}
+        <Image
+          src="/brand/logo-full-dark.png"
+          alt="CoopSetu AI - Learn, Skill, Work, Grow Together"
+          width={s.fullWidth}
+          height={s.fullHeight}
+          priority={priority}
+          unoptimized
+          className={cn(
+            "object-contain select-none",
+            inverted ? "block" : "hidden dark:block",
+            s.fullClass,
+            iconClassName
+          )}
+        />
+      </span>
+    );
+  }
+
+  // Emblem Only Icon
+  if (variant === "emblem") {
+    return (
+      <span className={cn("inline-flex items-center shrink-0 select-none", className)}>
+        <Image
+          src="/brand/logo-emblem.png"
+          alt="CoopSetu AI Emblem"
+          width={s.emblemPx}
+          height={s.emblemPx}
+          priority={priority}
+          unoptimized
+          className={cn("shrink-0 object-contain", s.emblemClass, iconClassName)}
+        />
+      </span>
+    );
+  }
+
+  // Default: Ribbon Emblem + Responsive Typography
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center font-heading font-extrabold select-none",
+        s.gap,
+        s.textClass,
+        className
+      )}
+    >
+      <Image
+        src="/brand/logo-emblem.png"
+        alt="CoopSetu AI Emblem"
+        width={s.emblemPx}
+        height={s.emblemPx}
+        priority={priority}
+        unoptimized
+        className={cn(
+          "shrink-0 object-contain transition-transform duration-200",
+          s.emblemClass,
+          iconClassName
+        )}
+      />
+      <span
+        className={cn(
+          inverted ? "text-white" : "text-slate-900 dark:text-white",
+          "font-extrabold tracking-tight",
+          textClassName
+        )}
+      >
         CoopSetu<span className="text-[#E30B1C]"> AI</span>
       </span>
     </span>

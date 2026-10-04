@@ -163,7 +163,7 @@ async function mockFetch(path: string): Promise<unknown> {
 }
 
 export async function fetchWithAuth(path: string, options: RequestInit = {}) {
-  if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
+  if (process.env.NEXT_PUBLIC_MOCK_API !== 'false') {
     if (!options.method || options.method === 'GET') {
       return mockFetch(path);
     }
